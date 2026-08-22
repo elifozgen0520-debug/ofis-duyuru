@@ -183,6 +183,46 @@
     letter-spacing: 0.03em;
   }
 
+  /* Geçmiş duyurular listesi */
+  .history { margin-top: 28px; }
+  .history h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    margin: 0 0 14px;
+    color: var(--paper);
+  }
+  .history-item {
+    background: var(--paper);
+    color: var(--ink);
+    border-radius: 4px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-left: 4px solid var(--ink);
+  }
+  .history-item.acil { border-left-color: var(--amber); }
+  .history-item.yemek { border-left-color: var(--sage); }
+  .history-item.vefat { border-left-color: var(--clay); }
+  .history-item.dogum { border-left-color: var(--gold); }
+  .history-item .htop {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .history-item .htag {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #888;
+  }
+  .history-item .htime { font-size: 11px; color: #999; white-space: nowrap; }
+  .history-item .htitle { font-family: 'Fraunces', serif; font-weight: 700; font-size: 15px; margin: 0 0 3px; }
+  .history-item .hbody { font-size: 13px; color: #555; line-height: 1.45; margin: 0; }
+  .history-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 20px; }
+
   /* Açılış logosu: döner + yanıp söner, birkaç saniye sonra kaybolur */
   #splash {
     position: fixed;
@@ -266,7 +306,7 @@
   function playNotifSound() {
     try {
       const audio = new Audio('/notify.wav');
-      audio.volume = 0.9;
+      audio.volume = 1.0;
       audio.play().catch(() => {});
     } catch (e) {}
   }
@@ -346,7 +386,10 @@
     </div>
   </section>
 
-  <footer>Ofis içi duyuru sistemi — web push ile çalışır, ücretsizdir.</footer>
+  <div class="history" id="historySection">
+    <h2>Son Duyurular</h2>
+    <div id="historyList" class="history-empty">Yükleniyor...</div>
+  </div>
 </div>
 
 <script>
@@ -458,6 +501,42 @@ sendBtn.addEventListener('click', async () => {
 });
 
 refreshCount();
+
+// Geçmiş duyuruları yükle ve göster
+const catNames = { acil: 'Acil', yemek: 'Yemek Listesi', vefat: 'Vefat', dogum: 'Doğum', genel: 'Genel' };
+function formatTime(iso) {
+  const d = new Date(iso);
+  return d.toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+async function loadHistory() {
+  const listEl = document.getElementById('historyList');
+  try {
+    const res = await fetch('/api/messages');
+    const data = await res.json();
+    if (!data.messages || data.messages.length === 0) {
+      listEl.className = 'history-empty';
+      listEl.textContent = 'Henüz duyuru gönderilmedi.';
+      return;
+    }
+    listEl.className = '';
+    listEl.innerHTML = data.messages.map(m => `
+      <div class="history-item ${m.category || 'genel'}">
+        <div class="htop">
+          <span class="htag">${catNames[m.category] || 'Genel'}</span>
+          <span class="htime">${formatTime(m.time)}</span>
+        </div>
+        <div class="htitle">${(m.title || '').replace(/</g, '&lt;')}</div>
+        <div class="hbody">${(m.body || '').replace(/</g, '&lt;')}</div>
+      </div>
+    `).join('');
+  } catch {
+    listEl.className = 'history-empty';
+    listEl.textContent = 'Duyurular yüklenemedi.';
+  }
+}
+loadHistory();
+// Yeni duyuru gönderildiğinde listeyi tazele
+sendBtn.addEventListener('click', () => setTimeout(loadHistory, 600));
 </script>
 </body>
 </html>
