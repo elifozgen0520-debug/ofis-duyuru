@@ -6,14 +6,55 @@ const express = require('express');
 const webpush = require('web-push');
 const fs = require('fs');
 const path = require('path');
+const multer = require('multer');
 
 const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// ---- Dosya ekleri (JPG/PNG/PDF) ----
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+app.use('/uploads', express.static(UPLOADS_DIR));
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => cb(null, UPLOADS_DIR),
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase();
+      cb(null, Date.now().toString(36) + Math.random().toString(36).slice(2, 8) + ext);
+    },
+  }),
+  limits: { fileSize: 8 * 1024 * 1024 }, // 8MB
+  fileFilter: (req, file, cb) => {
+    const ok = ['image/jpeg', 'image/png', 'application/pdf'].includes(file.mimetype);
+    cb(ok ? null : new Error('Sadece JPG, PNG veya PDF yükleyebilirsiniz.'), ok);
+  },
+});
+
+function attachmentFromFile(file) {
+  if (!file) return null;
+  return {
+    url: '/uploads/' + file.filename,
+    type: file.mimetype === 'application/pdf' ? 'pdf' : 'image',
+    name: file.originalname,
+  };
+}
+
 const SUBS_FILE = path.join(__dirname, 'subscriptions.json');
 const MESSAGES_FILE = path.join(__dirname, 'messages.json');
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'degistir-bu-sifreyi';
+const ADMIN_PASSWORD = (process.env.ADMIN_PASSWORD || 'degistir-bu-sifreyi').trim();
+
+// Şifre karşılaştırması: baştaki/sondaki görünmez boşlukları temizler.
+// Hatalıysa (şifrenin kendisini değil) sadece uzunluk bilgisini loglar — teşhis için.
+function checkPassword(input) {
+  const clean = (input || '').trim();
+  const ok = clean === ADMIN_PASSWORD;
+  if (!ok) {
+    console.log(`[şifre reddedildi] gelen uzunluk=${clean.length}, beklenen uzunluk=${ADMIN_PASSWORD.length}`);
+  }
+  return ok;
+}
 
 // ---- VAPID anahtarları ----
 // Bunlar sunucunun kimliğini push servislerine kanıtlar.
@@ -75,16 +116,48 @@ app.get('/api/vapid-public-key', (req, res) => {
   res.json({ publicKey: VAPID_PUBLIC_KEY });
 });
 
-// Personel telefonu bildirime izin verince buraya kaydolur
+// Personel telefonu bildirime izin verince buraya kaydolur.
+// Kullanıcıdan isim İSTENMEZ (yalan yazılabilir) — sadece cihaza görünmez bir kimlik atanır.
+// İsim eşleştirmesini sadece yönetici, /api/devices üzerinden yapar.
 app.post('/api/subscribe', (req, res) => {
-  const subscription = req.body;
+  const { deviceId, ...subscription } = req.body;
   const subs = loadSubs();
-  const exists = subs.some(s => s.endpoint === subscription.endpoint);
+  const exists = subs.find(s => s.endpoint === subscription.endpoint);
   if (!exists) {
-    subs.push(subscription);
+    subs.push({ ...subscription, deviceId: deviceId || null, name: null, subscribedAt: new Date().toISOString() });
+    saveSubs(subs);
+  } else if (deviceId && !exists.deviceId) {
+    exists.deviceId = deviceId;
     saveSubs(subs);
   }
   res.status(201).json({ ok: true, total: subs.length });
+});
+
+// Yönetici: bilinen cihazları listele (isim ataması yapmak için)
+app.get('/api/devices', (req, res) => {
+  const subs = loadSubs();
+  const byDevice = new Map();
+  for (const s of subs) {
+    if (!s.deviceId) continue;
+    byDevice.set(s.deviceId, { deviceId: s.deviceId, name: s.name || null, subscribedAt: s.subscribedAt || null });
+  }
+  res.json({ devices: Array.from(byDevice.values()).sort((a, b) => (b.subscribedAt || '').localeCompare(a.subscribedAt || '')) });
+});
+
+// Yönetici: bir cihaza gerçek isim ata (sadece bu, kullanıcı kendi giremez)
+app.post('/api/devices/name', (req, res) => {
+  const { password, deviceId, name } = req.body;
+  if (!checkPassword(password)) {
+    return res.status(401).json({ ok: false, error: 'Şifre hatalı.' });
+  }
+  if (!deviceId) return res.status(400).json({ ok: false, error: 'Cihaz kimliği eksik.' });
+  const subs = loadSubs();
+  let matched = false;
+  for (const s of subs) {
+    if (s.deviceId === deviceId) { s.name = (name || '').trim() || null; matched = true; }
+  }
+  saveSubs(subs);
+  res.json({ ok: true, matched });
 });
 
 // Abonelikten çık (opsiyonel, ileride kullanılabilir)
@@ -95,23 +168,29 @@ app.post('/api/unsubscribe', (req, res) => {
   res.json({ ok: true });
 });
 
-// Yönetici mesaj gönderir -> herkese push bildirimi gider
-app.post('/api/send', async (req, res) => {
+// Yönetici mesaj gönderir -> herkese push bildirimi gider (opsiyonel JPG/PNG/PDF ekli)
+app.post('/api/send', upload.single('attachment'), async (req, res) => {
   const { password, category, title, body } = req.body;
 
-  if (password !== ADMIN_PASSWORD) {
+  if (!checkPassword(password)) {
     return res.status(401).json({ ok: false, error: 'Şifre hatalı.' });
   }
   if (!title || !body) {
     return res.status(400).json({ ok: false, error: 'Başlık ve mesaj zorunlu.' });
   }
 
+  const attachment = attachmentFromFile(req.file);
+  const messageId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
   const subs = loadSubs();
   const payload = JSON.stringify({
+    id: messageId,
     title: `${categoryEmoji(category)} ${title}`,
     body,
     category: category || 'genel',
     urgent: category === 'acil',
+    // Resimli ekler bildirim tepsisinde büyük görsel olarak görünür (Android/Chrome)
+    image: attachment && attachment.type === 'image' ? attachment.url : undefined,
   });
 
   let sent = 0;
@@ -138,14 +217,58 @@ app.post('/api/send', async (req, res) => {
   // Duyuruyu geçmişe kaydet (herkesin sitede görebileceği liste)
   const messages = loadMessages();
   messages.push({
+    id: messageId,
     category: category || 'genel',
     title,
     body,
     time: new Date().toISOString(),
+    attachment,
+    reads: [],
   });
   saveMessages(messages.slice(-100)); // en fazla son 100 kayıt tut
 
-  res.json({ ok: true, sent, removed, totalSubscribers: stillValid.length });
+  res.json({ ok: true, sent, removed, totalSubscribers: stillValid.length, messageId });
+});
+
+// Duyuruyu sil (yanlış/anlamsız yazılmışsa)
+app.delete('/api/messages/:id', (req, res) => {
+  const { password } = req.body;
+  if (!checkPassword(password)) {
+    return res.status(401).json({ ok: false, error: 'Şifre hatalı.' });
+  }
+  const messages = loadMessages().filter(m => m.id !== req.params.id);
+  saveMessages(messages);
+  res.json({ ok: true });
+});
+
+// Personel duyuruyu görüntülediğinde (bildirime tıklayınca) okundu olarak işaretlenir.
+// Kullanıcıdan isim alınmaz — sadece görünmez cihaz kimliği kaydedilir.
+app.post('/api/messages/:id/read', (req, res) => {
+  const { deviceId } = req.body;
+  if (!deviceId) return res.status(400).json({ ok: false, error: 'Cihaz kimliği eksik.' });
+  const messages = loadMessages();
+  const msg = messages.find(m => m.id === req.params.id);
+  if (!msg) return res.status(404).json({ ok: false });
+  if (!msg.reads) msg.reads = [];
+  if (!msg.reads.some(r => r.deviceId === deviceId)) {
+    msg.reads.push({ deviceId, time: new Date().toISOString() });
+    saveMessages(messages);
+  }
+  res.json({ ok: true, reads: msg.reads.length });
+});
+
+// Bir duyuruyu kimlerin okuduğunu getir — yönetici tarafından atanmış isimlerle eşleştirilir
+app.get('/api/messages/:id/reads', (req, res) => {
+  const messages = loadMessages();
+  const msg = messages.find(m => m.id === req.params.id);
+  if (!msg) return res.status(404).json({ ok: false });
+  const subs = loadSubs();
+  const reads = (msg.reads || []).map(r => {
+    const sub = subs.find(s => s.deviceId === r.deviceId);
+    const label = (sub && sub.name) || ('Cihaz #' + (r.deviceId || '').slice(-4));
+    return { name: label, time: r.time };
+  });
+  res.json({ reads, totalSubscribers: subs.length });
 });
 
 function categoryEmoji(cat) {
@@ -177,13 +300,14 @@ function makeListApi(name, fileName) {
     res.json({ items: load().slice().reverse() });
   });
 
-  app.post(`/api/${name}`, (req, res) => {
+  app.post(`/api/${name}`, upload.single('attachment'), (req, res) => {
     const { password, ...fields } = req.body;
-    if (password !== ADMIN_PASSWORD) {
+    if (!checkPassword(password)) {
       return res.status(401).json({ ok: false, error: 'Şifre hatalı.' });
     }
+    const attachment = attachmentFromFile(req.file);
     const items = load();
-    const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), time: new Date().toISOString(), done: false, ...fields };
+    const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), time: new Date().toISOString(), done: false, attachment, ...fields };
     items.push(item);
     save(items.slice(-200));
     res.json({ ok: true, item });
@@ -191,7 +315,7 @@ function makeListApi(name, fileName) {
 
   app.delete(`/api/${name}/:id`, (req, res) => {
     const { password } = req.body;
-    if (password !== ADMIN_PASSWORD) {
+    if (!checkPassword(password)) {
       return res.status(401).json({ ok: false, error: 'Şifre hatalı.' });
     }
     const items = load().filter(i => i.id !== req.params.id);
