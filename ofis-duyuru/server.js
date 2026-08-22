@@ -12,6 +12,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 const SUBS_FILE = path.join(__dirname, 'subscriptions.json');
+const MESSAGES_FILE = path.join(__dirname, 'messages.json');
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'degistir-bu-sifreyi';
 
 // ---- VAPID anahtarları ----
@@ -50,6 +51,24 @@ function loadSubs() {
 function saveSubs(subs) {
   fs.writeFileSync(SUBS_FILE, JSON.stringify(subs, null, 2));
 }
+
+// ---- Gönderilen duyuruların geçmişi (herkes görebilir, kimlik bilgisi içermez) ----
+function loadMessages() {
+  try {
+    return JSON.parse(fs.readFileSync(MESSAGES_FILE, 'utf8'));
+  } catch {
+    return [];
+  }
+}
+function saveMessages(messages) {
+  fs.writeFileSync(MESSAGES_FILE, JSON.stringify(messages, null, 2));
+}
+
+app.get('/api/messages', (req, res) => {
+  const messages = loadMessages();
+  // en yeni en üstte, en fazla son 30 duyuru
+  res.json({ messages: messages.slice(-30).reverse() });
+});
 
 // Telefonun genel açık anahtarını (public key) frontend'e ver
 app.get('/api/vapid-public-key', (req, res) => {
@@ -115,6 +134,17 @@ app.post('/api/send', async (req, res) => {
   }
 
   saveSubs(stillValid);
+
+  // Duyuruyu geçmişe kaydet (herkesin sitede görebileceği liste)
+  const messages = loadMessages();
+  messages.push({
+    category: category || 'genel',
+    title,
+    body,
+    time: new Date().toISOString(),
+  });
+  saveMessages(messages.slice(-100)); // en fazla son 100 kayıt tut
+
   res.json({ ok: true, sent, removed, totalSubscribers: stillValid.length });
 });
 
@@ -131,6 +161,60 @@ function categoryEmoji(cat) {
 app.get('/api/subscriber-count', (req, res) => {
   res.json({ total: loadSubs().length });
 });
+
+// ==========================================================
+// Notlar / Telefonlar / Aylık İşler — ortak basit CRUD sistemi
+// Ekleme ve silme sadece yönetici şifresiyle olur.
+// ==========================================================
+function makeListApi(name, fileName) {
+  const FILE = path.join(__dirname, fileName);
+  function load() {
+    try { return JSON.parse(fs.readFileSync(FILE, 'utf8')); } catch { return []; }
+  }
+  function save(items) { fs.writeFileSync(FILE, JSON.stringify(items, null, 2)); }
+
+  app.get(`/api/${name}`, (req, res) => {
+    res.json({ items: load().slice().reverse() });
+  });
+
+  app.post(`/api/${name}`, (req, res) => {
+    const { password, ...fields } = req.body;
+    if (password !== ADMIN_PASSWORD) {
+      return res.status(401).json({ ok: false, error: 'Şifre hatalı.' });
+    }
+    const items = load();
+    const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), time: new Date().toISOString(), done: false, ...fields };
+    items.push(item);
+    save(items.slice(-200));
+    res.json({ ok: true, item });
+  });
+
+  app.delete(`/api/${name}/:id`, (req, res) => {
+    const { password } = req.body;
+    if (password !== ADMIN_PASSWORD) {
+      return res.status(401).json({ ok: false, error: 'Şifre hatalı.' });
+    }
+    const items = load().filter(i => i.id !== req.params.id);
+    save(items);
+    res.json({ ok: true });
+  });
+
+  // Tamamlandı/tamamlanmadı işaretleme — herkes yapabilir, şifre gerekmez
+  app.post(`/api/${name}/:id/toggle`, (req, res) => {
+    const items = load();
+    const item = items.find(i => i.id === req.params.id);
+    if (!item) return res.status(404).json({ ok: false });
+    item.done = !item.done;
+    save(items);
+    res.json({ ok: true, done: item.done });
+  });
+
+  return { load, save };
+}
+
+makeListApi('notes', 'notes.json');
+makeListApi('phones', 'phones.json');
+makeListApi('tasks', 'tasks.json');
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
