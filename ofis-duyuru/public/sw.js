@@ -12,12 +12,13 @@ self.addEventListener('push', (event) => {
     body: data.body,
     icon: '/icon-192.png',
     badge: '/icon-192.png',
+    image: data.image || undefined, // varsa büyük resim bildirim tepsisinde görünür
     // Acil duyurularda titreşim deseni farklı olsun
     vibrate: data.urgent ? [200, 100, 200, 100, 200] : [100],
     tag: data.category || 'genel',
     renotify: true,
     requireInteraction: !!data.urgent,
-    data: { category: data.category || 'genel', urgent: !!data.urgent },
+    data: { category: data.category || 'genel', urgent: !!data.urgent, id: data.id },
   };
 
   event.waitUntil(self.registration.showNotification(data.title, options));
@@ -29,7 +30,8 @@ self.addEventListener('notificationclick', (event) => {
   const params = new URLSearchParams({
     notif: '1',
     cat: data.category || 'genel',
-    title: (event.notification.title || '').replace(/^\S+\s/, ''), // emoji'yi baştan at
+    id: data.id || '',
+    title: (event.notification.title || '').replace(/^\S+\s/, ''),
     body: event.notification.body || '',
   });
   const targetUrl = '/?' + params.toString();

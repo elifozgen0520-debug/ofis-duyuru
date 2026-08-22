@@ -1,6 +1,6 @@
 {
-  "name": "Ofis Panosu",
-  "short_name": "Ofis Panosu",
+  "name": "Müdürlük Duyuru Sistemi",
+  "short_name": "Müdürlük Duyuru",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1F2430",

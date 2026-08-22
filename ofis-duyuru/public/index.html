@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ofis Panosu</title>
+<title>Müdürlük Duyuru Sistemi</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#1F2430">
 <style>
@@ -20,6 +20,11 @@
     --line: rgba(255,255,255,0.12);
     --muted: #9AA0AE;
   }
+
+  /* Tema varyasyonları — sadece vurgu rengi değişir, kartlar hep okunaklı kalır */
+  body[data-theme="lacivert"] { --amber: #3E8FD0; --gold: #5AA8E0; --ink: #0F1F33; }
+  body[data-theme="zeytin"] { --amber: #7C9A4A; --gold: #A3C15E; --ink: #1E2A1C; }
+  body[data-theme="bordo"] { --amber: #B5384A; --gold: #D46B7A; --ink: #2A1418; }
 
   * { box-sizing: border-box; }
 
@@ -233,9 +238,26 @@
 
 <div class="wrap">
   <header>
-    <h1>Ofis Panosu</h1>
-    <span class="pin-count" id="subCount">— abone</span>
+    <h1>Müdürlük Duyuru</h1>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <select id="themeSelect" style="background:transparent; color:var(--muted); border:1px solid var(--line); border-radius:20px; font-size:11px; padding:4px 8px;">
+        <option value="klasik">🎨 Varsayılan</option>
+        <option value="lacivert">🔵 Lacivert</option>
+        <option value="zeytin">🟢 Zeytin</option>
+        <option value="bordo">🔴 Bordo</option>
+      </select>
+      <span class="pin-count" id="subCount" style="cursor:pointer; text-decoration:underline dotted;" title="Cihazları yönet">— abone</span>
+    </div>
   </header>
+
+  <div class="card" id="devicesPanel" style="display:none;">
+    <h2>Cihazları Yönet</h2>
+    <div class="sub">Kim okudu bilgisinde doğru isimlerin görünmesi için, her cihazı gerçek sahibiyle eşleştir. Kullanıcılar isim giremez, sadece sen atayabilirsin.</div>
+    <label>Yönetici Şifresi</label>
+    <input type="password" id="devicesPassword" placeholder="Şifre">
+    <div id="devicesList" style="margin-top:14px;"></div>
+    <div class="feedback" id="devicesFeedback"></div>
+  </div>
 
   <div class="status-card" id="subscribeCard">
     <h2>Bildirimleri Aç</h2>
@@ -247,7 +269,7 @@
     <button class="tab-btn active" data-tab="duyurular">Duyurular</button>
     <button class="tab-btn" data-tab="notlar">Notlar</button>
     <button class="tab-btn" data-tab="telefonlar">Telefonlar</button>
-    <button class="tab-btn" data-tab="isler">Aylık İşler</button>
+    <button class="tab-btn" data-tab="isler">İşler</button>
   </div>
 
   <div class="tab-panel active" id="panel-duyurular">
@@ -255,19 +277,21 @@
       <h2>Duyuru Yaz</h2>
       <div class="sub">Sadece yetkili personel gönderebilir.</div>
       <label>Kategori</label>
-      <div class="cat-row" id="catRow">
-        <button type="button" class="cat-btn active" data-cat="genel">Genel</button>
-        <button type="button" class="cat-btn" data-cat="acil">Acil</button>
-        <button type="button" class="cat-btn" data-cat="yemek">Yemek Listesi</button>
-        <button type="button" class="cat-btn" data-cat="vefat">Vefat</button>
-        <button type="button" class="cat-btn" data-cat="dogum">Doğum</button>
-      </div>
+      <select id="catSelect" style="width:100%; font-family:'Inter',sans-serif; font-size:14.5px; padding:10px 12px; border:1.5px solid #ddd; border-radius:3px; background:#fff; color:var(--ink);">
+        <option value="genel">📢 Genel</option>
+        <option value="acil">🚨 Acil</option>
+        <option value="yemek">🍽️ Yemek Listesi</option>
+        <option value="vefat">🕯️ Vefat</option>
+        <option value="dogum">🎉 Doğum</option>
+      </select>
       <label>Başlık</label>
       <input type="text" id="title" placeholder="Örn: Bugünün Menüsü">
       <label>Mesaj</label>
       <textarea id="body" placeholder="Mesajınızı yazın..."></textarea>
       <label>Yönetici Şifresi</label>
       <input type="password" id="adminPassword" placeholder="Şifre">
+      <label>Görsel / PDF Ekle (opsiyonel)</label>
+      <input type="file" id="attachment" accept="image/jpeg,image/png,application/pdf">
       <div class="send-row"><button class="btn-primary" id="sendBtn">Gönder</button></div>
       <div class="feedback" id="feedback"></div>
     </div>
@@ -285,6 +309,8 @@
       <textarea id="noteText" placeholder="Notunuzu yazın..."></textarea>
       <label>Yönetici Şifresi</label>
       <input type="password" id="notePassword" placeholder="Şifre">
+      <label>Görsel / PDF Ekle (opsiyonel)</label>
+      <input type="file" id="noteAttachment" accept="image/jpeg,image/png,application/pdf">
       <div class="send-row"><button class="btn-primary" id="noteSendBtn">Ekle</button></div>
       <div class="feedback" id="noteFeedback"></div>
     </div>
@@ -304,6 +330,8 @@
       </div>
       <label>Yönetici Şifresi</label>
       <input type="password" id="phonePassword" placeholder="Şifre">
+      <label>Görsel / PDF Ekle (opsiyonel)</label>
+      <input type="file" id="phoneAttachment" accept="image/jpeg,image/png,application/pdf">
       <div class="send-row"><button class="btn-primary" id="phoneSendBtn">Ekle</button></div>
       <div class="feedback" id="phoneFeedback"></div>
     </div>
@@ -321,6 +349,8 @@
       <input type="text" id="taskText" placeholder="Örn: Yangın tüplerini kontrol et">
       <label>Yönetici Şifresi</label>
       <input type="password" id="taskPassword" placeholder="Şifre">
+      <label>Görsel / PDF Ekle (opsiyonel)</label>
+      <input type="file" id="taskAttachment" accept="image/jpeg,image/png,application/pdf">
       <div class="send-row"><button class="btn-primary" id="taskSendBtn">Ekle</button></div>
       <div class="feedback" id="taskFeedback"></div>
     </div>
@@ -348,6 +378,40 @@ window.addEventListener('load', () => {
   }, 1800);
 });
 
+// ---------- Tema seçici ----------
+const themeSelect = document.getElementById('themeSelect');
+const savedTheme = localStorage.getItem('theme') || 'klasik';
+if (savedTheme !== 'klasik') document.body.setAttribute('data-theme', savedTheme);
+themeSelect.value = savedTheme;
+themeSelect.addEventListener('change', () => {
+  const val = themeSelect.value;
+  if (val === 'klasik') document.body.removeAttribute('data-theme');
+  else document.body.setAttribute('data-theme', val);
+  localStorage.setItem('theme', val);
+});
+
+// ---------- Cihaz kimliği (okundu takibi için — kullanıcıdan İSİM SORULMAZ) ----------
+// Her cihaza görünmez, değiştirilemez bir kimlik atanır. Kullanıcı hiçbir şey yazmaz,
+// dolayısıyla yanlış/yanıltıcı isim girme ihtimali yoktur. İsim eşleştirmesini sadece
+// yönetici, "Cihazlar" panelinden yapar.
+function getDeviceId() {
+  let id = localStorage.getItem('deviceId');
+  if (!id) {
+    id = (crypto.randomUUID ? crypto.randomUUID() : (Date.now().toString(36) + Math.random().toString(36).slice(2)));
+    localStorage.setItem('deviceId', id);
+  }
+  return id;
+}
+async function ackRead(messageId) {
+  if (!messageId) return;
+  try {
+    await fetch('/api/messages/' + messageId + '/read', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deviceId: getDeviceId() }),
+    });
+  } catch (e) {}
+}
+
 function playNotifSound() {
   try {
     const audio = new Audio('/notify.wav');
@@ -367,6 +431,7 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'NOTIF_OPENED') {
       showNotifBanner(event.data.category, (event.data.title || '').replace(/^\S+\s/, ''), event.data.body);
+      ackRead(event.data.id);
     }
   });
 }
@@ -374,6 +439,7 @@ if ('serviceWorker' in navigator) {
   const params = new URLSearchParams(window.location.search);
   if (params.get('notif') === '1') {
     showNotifBanner(params.get('cat'), params.get('title'), params.get('body'));
+    ackRead(params.get('id'));
     window.history.replaceState({}, '', window.location.pathname);
   }
 })();
@@ -381,15 +447,7 @@ if ('serviceWorker' in navigator) {
 const subscribeBtn = document.getElementById('subscribeBtn');
 const subscribeCard = document.getElementById('subscribeCard');
 const subCountEl = document.getElementById('subCount');
-let selectedCategory = 'genel';
-
-document.getElementById('catRow').addEventListener('click', (e) => {
-  const btn = e.target.closest('.cat-btn');
-  if (!btn) return;
-  document.querySelectorAll('#catRow .cat-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  selectedCategory = btn.dataset.cat;
-});
+const catSelect = document.getElementById('catSelect');
 
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -404,24 +462,82 @@ async function refreshCount() {
     subCountEl.textContent = data.total + ' abone';
   } catch { subCountEl.textContent = ''; }
 }
-async function subscribeToPush() {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    alert('Bu tarayıcı push bildirimi desteklemiyor.');
-    return;
-  }
-  const permission = await Notification.requestPermission();
-  if (permission !== 'granted') return;
-  const reg = await navigator.serviceWorker.register('/sw.js');
-  const { publicKey } = await (await fetch('/api/vapid-public-key')).json();
-  const subscription = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicKey) });
-  await fetch('/api/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(subscription) });
+
+function markSubscribed() {
   subscribeCard.querySelector('h2').textContent = 'Bildirimler Açık ✓';
   subscribeCard.querySelector('p').textContent = 'Artık her şeyi telefonunda anında alacaksın.';
-  subscribeBtn.remove();
-  refreshCount();
+  if (subscribeBtn) subscribeBtn.remove();
 }
-subscribeBtn.addEventListener('click', subscribeToPush);
+
+async function doSubscribe(silent) {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    if (!silent) alert('Bu tarayıcı push bildirimi desteklemiyor.');
+    return false;
+  }
+  const permission = silent ? Notification.permission : await Notification.requestPermission();
+  if (permission !== 'granted') return false;
+  const reg = await navigator.serviceWorker.register('/sw.js');
+  let subscription = await reg.pushManager.getSubscription();
+  if (!subscription) {
+    const { publicKey } = await (await fetch('/api/vapid-public-key')).json();
+    subscription = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicKey) });
+  }
+  const deviceId = getDeviceId();
+  await fetch('/api/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...subscription.toJSON(), deviceId }) });
+  markSubscribed();
+  refreshCount();
+  return true;
+}
+
+// Sayfa her açıldığında: izin zaten verilmişse buton hiç gösterilmeden sessizce abone kalsın
+(async function initSubscription() {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    await doSubscribe(true);
+  }
+})();
+
+subscribeBtn.addEventListener('click', () => doSubscribe(false));
 refreshCount();
+
+// ---------- Yönetici: Cihazları Yönet paneli ----------
+const devicesPanel = document.getElementById('devicesPanel');
+subCountEl.addEventListener('click', () => {
+  devicesPanel.style.display = devicesPanel.style.display === 'none' ? 'block' : 'none';
+  if (devicesPanel.style.display === 'block') loadDevices();
+});
+
+async function loadDevices() {
+  const listEl = document.getElementById('devicesList');
+  listEl.innerHTML = 'Yükleniyor...';
+  try {
+    const res = await fetch('/api/devices');
+    const data = await res.json();
+    if (!data.devices || data.devices.length === 0) { listEl.innerHTML = '<div class="list-empty">Henüz abone olan cihaz yok.</div>'; return; }
+    listEl.innerHTML = data.devices.map(d =>
+      '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">' +
+        '<span style="font-size:11px;color:#999;min-width:70px;">#' + esc(d.deviceId.slice(-4)) + '</span>' +
+        '<input type="text" value="' + esc(d.name || '') + '" placeholder="İsim yaz..." data-device-id="' + esc(d.deviceId) + '" style="flex:1;padding:7px 10px;border:1.5px solid #ddd;border-radius:3px;font-size:13px;">' +
+        '<button class="btn-primary" style="padding:7px 12px;font-size:12px;" data-save-device="' + esc(d.deviceId) + '">Kaydet</button>' +
+      '</div>'
+    ).join('');
+    listEl.querySelectorAll('[data-save-device]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const deviceId = btn.dataset.saveDevice;
+        const input = listEl.querySelector('input[data-device-id="' + deviceId + '"]');
+        const password = document.getElementById('devicesPassword').value;
+        const fb = document.getElementById('devicesFeedback');
+        if (!password) { fb.textContent = 'Şifre gerekli.'; fb.className = 'feedback err'; return; }
+        try {
+          const res = await fetch('/api/devices/name', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password, deviceId, name: input.value.trim() }) });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Kaydedilemedi');
+          fb.textContent = 'Kaydedildi.'; fb.className = 'feedback ok';
+        } catch (e) { fb.textContent = e.message; fb.className = 'feedback err'; }
+      });
+    });
+  } catch { listEl.innerHTML = '<div class="list-empty">Yüklenemedi.</div>'; }
+}
+
 
 const catNames = { acil: 'Acil', yemek: 'Yemek Listesi', vefat: 'Vefat', dogum: 'Doğum', genel: 'Genel' };
 function formatTime(iso) {
@@ -433,20 +549,35 @@ document.getElementById('sendBtn').addEventListener('click', async () => {
   const title = document.getElementById('title').value.trim();
   const body = document.getElementById('body').value.trim();
   const password = document.getElementById('adminPassword').value;
+  const fileInput = document.getElementById('attachment');
   const fb = document.getElementById('feedback');
   if (!title || !body || !password) { fb.textContent = 'Başlık, mesaj ve şifre gerekli.'; fb.className = 'feedback err'; return; }
   const btn = document.getElementById('sendBtn');
   btn.disabled = true; fb.textContent = 'Gönderiliyor...'; fb.className = 'feedback';
   try {
-    const res = await fetch('/api/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password, category: selectedCategory, title, body }) });
+    const formData = new FormData();
+    formData.append('password', password);
+    formData.append('category', catSelect.value);
+    formData.append('title', title);
+    formData.append('body', body);
+    if (fileInput.files[0]) formData.append('attachment', fileInput.files[0]);
+    const res = await fetch('/api/send', { method: 'POST', body: formData });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Gönderilemedi');
     fb.textContent = 'Gönderildi: ' + data.sent + ' kişiye ulaştı.'; fb.className = 'feedback ok';
-    document.getElementById('title').value = ''; document.getElementById('body').value = '';
+    document.getElementById('title').value = ''; document.getElementById('body').value = ''; fileInput.value = '';
     refreshCount(); loadHistory();
   } catch (err) { fb.textContent = err.message; fb.className = 'feedback err'; }
   finally { btn.disabled = false; }
 });
+
+function renderAttachment(att) {
+  if (!att) return '';
+  if (att.type === 'image') {
+    return '<a href="' + att.url + '" target="_blank"><img src="' + att.url + '" style="max-width:100%;border-radius:4px;margin-top:8px;display:block;"></a>';
+  }
+  return '<a href="' + att.url + '" target="_blank" style="display:inline-block;margin-top:8px;font-size:12.5px;color:var(--clay);font-weight:600;">📄 ' + esc(att.name || 'Dosyayı Aç') + '</a>';
+}
 
 async function loadHistory() {
   const listEl = document.getElementById('historyList');
@@ -461,15 +592,46 @@ async function loadHistory() {
           '<div class="li-top"><span class="li-tag">' + (catNames[m.category] || 'Genel') + '</span><span class="li-time">' + formatTime(m.time) + '</span></div>' +
           '<div class="li-title">' + esc(m.title) + '</div>' +
           '<div class="li-body">' + esc(m.body) + '</div>' +
+          renderAttachment(m.attachment) +
+          '<div style="margin-top:8px;font-size:11.5px;color:#999;cursor:pointer;" data-reads-id="' + m.id + '">👁 ' + ((m.reads && m.reads.length) || 0) + ' kişi okudu — kimler?</div>' +
+          '<div class="reads-detail" id="reads-' + m.id + '" style="display:none;font-size:12px;color:#666;margin-top:4px;"></div>' +
         '</div>' +
+        '<button class="btn-danger" data-del-msg-id="' + m.id + '">Sil</button>' +
       '</div>'
     ).join('');
+    listEl.querySelectorAll('[data-del-msg-id]').forEach(b => b.addEventListener('click', () => deleteMessage(b.dataset.delMsgId)));
+    listEl.querySelectorAll('[data-reads-id]').forEach(el => el.addEventListener('click', () => toggleReads(el.dataset.readsId)));
   } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
 }
 loadHistory();
 
+async function deleteMessage(id) {
+  const password = prompt('Bu duyuruyu silmek için yönetici şifresi:');
+  if (!password) return;
+  try {
+    const res = await fetch('/api/messages/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+    if (!res.ok) { const d = await res.json(); alert(d.error || 'Silinemedi'); return; }
+    loadHistory();
+  } catch { alert('Silinemedi.'); }
+}
+
+async function toggleReads(id) {
+  const el = document.getElementById('reads-' + id);
+  if (!el) return;
+  if (el.style.display !== 'none') { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  el.textContent = 'Yükleniyor...';
+  try {
+    const res = await fetch('/api/messages/' + id + '/reads');
+    const data = await res.json();
+    if (!data.reads || data.reads.length === 0) { el.textContent = 'Henüz kimse okumadı.'; return; }
+    el.textContent = data.reads.map(r => r.name).join(', ') + ' okudu (' + data.reads.length + '/' + data.totalSubscribers + ' abone).';
+  } catch { el.textContent = 'Yüklenemedi.'; }
+}
+
+
 function setupSimpleList(opts) {
-  const { endpoint, sendBtnId, feedbackId, passwordId, listId, buildPayload, validate, renderItem, emptyText } = opts;
+  const { endpoint, sendBtnId, feedbackId, passwordId, listId, buildPayload, validate, renderItem, emptyText, attachmentId } = opts;
   document.getElementById(sendBtnId).addEventListener('click', async () => {
     const fb = document.getElementById(feedbackId);
     const password = document.getElementById(passwordId).value;
@@ -479,10 +641,16 @@ function setupSimpleList(opts) {
     const btn = document.getElementById(sendBtnId);
     btn.disabled = true; fb.textContent = 'Ekleniyor...'; fb.className = 'feedback';
     try {
-      const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ password: password }, payload)) });
+      const formData = new FormData();
+      formData.append('password', password);
+      Object.keys(payload).forEach(k => formData.append(k, payload[k]));
+      const fileInput = attachmentId && document.getElementById(attachmentId);
+      if (fileInput && fileInput.files[0]) formData.append('attachment', fileInput.files[0]);
+      const res = await fetch(endpoint, { method: 'POST', body: formData });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Eklenemedi');
       fb.textContent = 'Eklendi.'; fb.className = 'feedback ok';
+      if (fileInput) fileInput.value = '';
       opts.onSuccess && opts.onSuccess();
       load();
     } catch (e) { fb.textContent = e.message; fb.className = 'feedback err'; }
@@ -521,7 +689,7 @@ function setupSimpleList(opts) {
 }
 
 setupSimpleList({
-  endpoint: '/api/notes', sendBtnId: 'noteSendBtn', feedbackId: 'noteFeedback', passwordId: 'notePassword', listId: 'notesList',
+  endpoint: '/api/notes', sendBtnId: 'noteSendBtn', feedbackId: 'noteFeedback', passwordId: 'notePassword', listId: 'notesList', attachmentId: 'noteAttachment',
   buildPayload: () => ({ text: document.getElementById('noteText').value.trim() }),
   validate: (p, pw) => (!p.text || !pw) ? 'Not ve şifre gerekli.' : null,
   onSuccess: () => { document.getElementById('noteText').value = ''; },
@@ -531,13 +699,14 @@ setupSimpleList({
       '<div class="li-main">' +
         '<div class="li-top"><span class="li-time">' + formatTime(n.time) + '</span></div>' +
         '<div class="li-body">' + esc(n.text) + '</div>' +
+        renderAttachment(n.attachment) +
       '</div>' +
       '<button class="btn-danger" data-del-id="' + n.id + '">Sil</button>' +
     '</div>',
 });
 
 setupSimpleList({
-  endpoint: '/api/phones', sendBtnId: 'phoneSendBtn', feedbackId: 'phoneFeedback', passwordId: 'phonePassword', listId: 'phonesList',
+  endpoint: '/api/phones', sendBtnId: 'phoneSendBtn', feedbackId: 'phoneFeedback', passwordId: 'phonePassword', listId: 'phonesList', attachmentId: 'phoneAttachment',
   buildPayload: () => ({ name: document.getElementById('phoneName').value.trim(), number: document.getElementById('phoneNumber').value.trim() }),
   validate: (p, pw) => (!p.name || !p.number || !pw) ? 'İsim, numara ve şifre gerekli.' : null,
   onSuccess: () => { document.getElementById('phoneName').value = ''; document.getElementById('phoneNumber').value = ''; },
@@ -547,13 +716,14 @@ setupSimpleList({
       '<div class="li-main">' +
         '<div class="li-title">' + esc(p.name) + '</div>' +
         '<a class="li-phone" href="tel:' + esc(p.number) + '">' + esc(p.number) + '</a>' +
+        renderAttachment(p.attachment) +
       '</div>' +
       '<button class="btn-danger" data-del-id="' + p.id + '">Sil</button>' +
     '</div>',
 });
 
 setupSimpleList({
-  endpoint: '/api/tasks', sendBtnId: 'taskSendBtn', feedbackId: 'taskFeedback', passwordId: 'taskPassword', listId: 'tasksList',
+  endpoint: '/api/tasks', sendBtnId: 'taskSendBtn', feedbackId: 'taskFeedback', passwordId: 'taskPassword', listId: 'tasksList', attachmentId: 'taskAttachment',
   buildPayload: () => ({ text: document.getElementById('taskText').value.trim() }),
   validate: (p, pw) => (!p.text || !pw) ? 'Görev ve şifre gerekli.' : null,
   onSuccess: () => { document.getElementById('taskText').value = ''; },
@@ -561,7 +731,7 @@ setupSimpleList({
   renderItem: (t) =>
     '<div class="list-item ' + (t.done ? 'done' : '') + '">' +
       '<input type="checkbox" class="checkbox" data-toggle-id="' + t.id + '" ' + (t.done ? 'checked' : '') + '>' +
-      '<div class="li-main"><div class="li-title">' + esc(t.text) + '</div></div>' +
+      '<div class="li-main"><div class="li-title">' + esc(t.text) + '</div>' + renderAttachment(t.attachment) + '</div>' +
       '<button class="btn-danger" data-del-id="' + t.id + '">Sil</button>' +
     '</div>',
 });
