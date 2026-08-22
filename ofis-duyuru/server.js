@@ -45,16 +45,60 @@ const SUBS_FILE = path.join(__dirname, 'subscriptions.json');
 const MESSAGES_FILE = path.join(__dirname, 'messages.json');
 const ADMIN_PASSWORD = (process.env.ADMIN_PASSWORD || 'degistir-bu-sifreyi').trim();
 
-// Şifre karşılaştırması: baştaki/sondaki görünmez boşlukları temizler.
-// Hatalıysa (şifrenin kendisini değil) sadece uzunluk bilgisini loglar — teşhis için.
-function checkPassword(input) {
+// ---- Brute-force koruması ----
+// Aynı IP art arda 8 kere yanlış şifre denerse 10 dakika kilitlenir.
+const loginAttempts = new Map(); // ip -> { count, first }
+const MAX_ATTEMPTS = 8;
+const WINDOW_MS = 10 * 60 * 1000;
+
+function getIp(req) {
+  return (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress || 'unknown';
+}
+
+// Şifre karşılaştırması: baştaki/sondaki görünmez boşlukları temizler,
+// çok fazla yanlış denemede geçici olarak kilitler.
+function checkPassword(input, req) {
+  const ip = getIp(req);
+  const now = Date.now();
+  let entry = loginAttempts.get(ip);
+  if (entry && now - entry.first > WINDOW_MS) entry = null;
+
+  if (entry && entry.count >= MAX_ATTEMPTS) {
+    return 'locked';
+  }
+
   const clean = (input || '').trim();
   const ok = clean === ADMIN_PASSWORD;
+
   if (!ok) {
-    console.log(`[şifre reddedildi] gelen uzunluk=${clean.length}, beklenen uzunluk=${ADMIN_PASSWORD.length}`);
+    if (!entry) entry = { count: 0, first: now };
+    entry.count++;
+    loginAttempts.set(ip, entry);
+    console.log(`[şifre reddedildi] ip=${ip} deneme=${entry.count}/${MAX_ATTEMPTS}`);
+  } else {
+    loginAttempts.delete(ip);
   }
   return ok;
 }
+
+function passwordCheckResponse(res, result) {
+  if (result === 'locked') {
+    res.status(429).json({ ok: false, error: 'Çok fazla yanlış deneme yapıldı. 10 dakika sonra tekrar dene.' });
+    return true;
+  }
+  if (!result) {
+    res.status(401).json({ ok: false, error: 'Şifre hatalı.' });
+    return true;
+  }
+  return false;
+}
+
+// Yönetici giriş kontrolü — frontend bunu kullanarak "yönetici modu"na geçer
+app.post('/api/admin-check', express.json(), (req, res) => {
+  const result = checkPassword(req.body.password, req);
+  if (passwordCheckResponse(res, result)) return;
+  res.json({ ok: true });
+});
 
 // ---- VAPID anahtarları ----
 // Bunlar sunucunun kimliğini push servislerine kanıtlar.
@@ -147,9 +191,8 @@ app.get('/api/devices', (req, res) => {
 // Yönetici: bir cihaza gerçek isim ata (sadece bu, kullanıcı kendi giremez)
 app.post('/api/devices/name', (req, res) => {
   const { password, deviceId, name } = req.body;
-  if (!checkPassword(password)) {
-    return res.status(401).json({ ok: false, error: 'Şifre hatalı.' });
-  }
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
   if (!deviceId) return res.status(400).json({ ok: false, error: 'Cihaz kimliği eksik.' });
   const subs = loadSubs();
   let matched = false;
@@ -172,9 +215,8 @@ app.post('/api/unsubscribe', (req, res) => {
 app.post('/api/send', upload.single('attachment'), async (req, res) => {
   const { password, category, title, body } = req.body;
 
-  if (!checkPassword(password)) {
-    return res.status(401).json({ ok: false, error: 'Şifre hatalı.' });
-  }
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
   if (!title || !body) {
     return res.status(400).json({ ok: false, error: 'Başlık ve mesaj zorunlu.' });
   }
@@ -233,9 +275,8 @@ app.post('/api/send', upload.single('attachment'), async (req, res) => {
 // Duyuruyu sil (yanlış/anlamsız yazılmışsa)
 app.delete('/api/messages/:id', (req, res) => {
   const { password } = req.body;
-  if (!checkPassword(password)) {
-    return res.status(401).json({ ok: false, error: 'Şifre hatalı.' });
-  }
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
   const messages = loadMessages().filter(m => m.id !== req.params.id);
   saveMessages(messages);
   res.json({ ok: true });
@@ -302,9 +343,8 @@ function makeListApi(name, fileName) {
 
   app.post(`/api/${name}`, upload.single('attachment'), (req, res) => {
     const { password, ...fields } = req.body;
-    if (!checkPassword(password)) {
-      return res.status(401).json({ ok: false, error: 'Şifre hatalı.' });
-    }
+    const result = checkPassword(password, req);
+    if (passwordCheckResponse(res, result)) return;
     const attachment = attachmentFromFile(req.file);
     const items = load();
     const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), time: new Date().toISOString(), done: false, attachment, ...fields };
@@ -315,9 +355,8 @@ function makeListApi(name, fileName) {
 
   app.delete(`/api/${name}/:id`, (req, res) => {
     const { password } = req.body;
-    if (!checkPassword(password)) {
-      return res.status(401).json({ ok: false, error: 'Şifre hatalı.' });
-    }
+    const result = checkPassword(password, req);
+    if (passwordCheckResponse(res, result)) return;
     const items = load().filter(i => i.id !== req.params.id);
     save(items);
     res.json({ ok: true });

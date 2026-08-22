@@ -201,6 +201,13 @@
   .list-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 18px; }
   .checkbox { width: 20px; height: 20px; margin-top: 2px; flex-shrink: 0; cursor: pointer; }
 
+  /* Yönetici moduna girmeden bu alanlar gizli kalır — normal personel görmez */
+  .admin-only { display: none !important; }
+  body.admin-mode .admin-only { display: block !important; }
+  body.admin-mode .admin-only.inline { display: inline-block !important; }
+  #adminGateBar { font-size: 11.5px; color: var(--muted); cursor: pointer; text-decoration: underline dotted; }
+  body.admin-mode #adminGateBar { color: var(--sage); text-decoration: none; cursor: default; }
+
   /* Açılış logosu */
   #splash {
     position: fixed; inset: 0; background: var(--ink);
@@ -246,15 +253,14 @@
         <option value="zeytin">🟢 Zeytin</option>
         <option value="bordo">🔴 Bordo</option>
       </select>
-      <span class="pin-count" id="subCount" style="cursor:pointer; text-decoration:underline dotted;" title="Cihazları yönet">— abone</span>
+      <span class="pin-count" id="subCount">— abone</span>
+      <span id="adminGateBar" title="Yönetici girişi">🔒 Yönetici</span>
     </div>
   </header>
 
-  <div class="card" id="devicesPanel" style="display:none;">
+  <div class="card admin-only" id="devicesPanel">
     <h2>Cihazları Yönet</h2>
     <div class="sub">Kim okudu bilgisinde doğru isimlerin görünmesi için, her cihazı gerçek sahibiyle eşleştir. Kullanıcılar isim giremez, sadece sen atayabilirsin.</div>
-    <label>Yönetici Şifresi</label>
-    <input type="password" id="devicesPassword" placeholder="Şifre">
     <div id="devicesList" style="margin-top:14px;"></div>
     <div class="feedback" id="devicesFeedback"></div>
   </div>
@@ -273,7 +279,7 @@
   </div>
 
   <div class="tab-panel active" id="panel-duyurular">
-    <div class="card">
+    <div class="card admin-only">
       <h2>Duyuru Yaz</h2>
       <div class="sub">Sadece yetkili personel gönderebilir.</div>
       <label>Kategori</label>
@@ -288,8 +294,6 @@
       <input type="text" id="title" placeholder="Örn: Bugünün Menüsü">
       <label>Mesaj</label>
       <textarea id="body" placeholder="Mesajınızı yazın..."></textarea>
-      <label>Yönetici Şifresi</label>
-      <input type="password" id="adminPassword" placeholder="Şifre">
       <label>Görsel / PDF Ekle (opsiyonel)</label>
       <input type="file" id="attachment" accept="image/jpeg,image/png,application/pdf">
       <div class="send-row"><button class="btn-primary" id="sendBtn">Gönder</button></div>
@@ -302,13 +306,11 @@
   </div>
 
   <div class="tab-panel" id="panel-notlar">
-    <div class="card">
+    <div class="card admin-only">
       <h2>Not Ekle</h2>
       <div class="sub">Sadece yetkili personel ekleyebilir.</div>
       <label>Not</label>
       <textarea id="noteText" placeholder="Notunuzu yazın..."></textarea>
-      <label>Yönetici Şifresi</label>
-      <input type="password" id="notePassword" placeholder="Şifre">
       <label>Görsel / PDF Ekle (opsiyonel)</label>
       <input type="file" id="noteAttachment" accept="image/jpeg,image/png,application/pdf">
       <div class="send-row"><button class="btn-primary" id="noteSendBtn">Ekle</button></div>
@@ -321,15 +323,13 @@
   </div>
 
   <div class="tab-panel" id="panel-telefonlar">
-    <div class="card">
+    <div class="card admin-only">
       <h2>Acil Durum Telefonu Ekle</h2>
       <div class="sub">İtfaiye, ambulans, müdür vb. Sadece yetkili personel ekleyebilir.</div>
       <div class="two-col">
         <div><label>İsim</label><input type="text" id="phoneName" placeholder="Örn: İtfaiye"></div>
         <div><label>Numara</label><input type="tel" id="phoneNumber" placeholder="Örn: 110"></div>
       </div>
-      <label>Yönetici Şifresi</label>
-      <input type="password" id="phonePassword" placeholder="Şifre">
       <label>Görsel / PDF Ekle (opsiyonel)</label>
       <input type="file" id="phoneAttachment" accept="image/jpeg,image/png,application/pdf">
       <div class="send-row"><button class="btn-primary" id="phoneSendBtn">Ekle</button></div>
@@ -342,13 +342,11 @@
   </div>
 
   <div class="tab-panel" id="panel-isler">
-    <div class="card">
+    <div class="card admin-only">
       <h2>Görev Ekle</h2>
       <div class="sub">Sadece yetkili personel ekleyebilir. İşaretlemeyi herkes yapabilir.</div>
       <label>Görev</label>
       <input type="text" id="taskText" placeholder="Örn: Yangın tüplerini kontrol et">
-      <label>Yönetici Şifresi</label>
-      <input type="password" id="taskPassword" placeholder="Şifre">
       <label>Görsel / PDF Ekle (opsiyonel)</label>
       <input type="file" id="taskAttachment" accept="image/jpeg,image/png,application/pdf">
       <div class="send-row"><button class="btn-primary" id="taskSendBtn">Ekle</button></div>
@@ -499,14 +497,44 @@ async function doSubscribe(silent) {
 subscribeBtn.addEventListener('click', () => doSubscribe(false));
 refreshCount();
 
-// ---------- Yönetici: Cihazları Yönet paneli ----------
-const devicesPanel = document.getElementById('devicesPanel');
-subCountEl.addEventListener('click', () => {
-  devicesPanel.style.display = devicesPanel.style.display === 'none' ? 'block' : 'none';
-  if (devicesPanel.style.display === 'block') loadDevices();
+// ---------- Yönetici Girişi/Çıkışı ----------
+// Şifre, girişten sonra sadece bu tarayıcı sekmesinin hafızasında (sessionStorage) tutulur.
+// Sayfa kapanıp yeniden açılınca (veya sekme kapanınca) tekrar giriş istenir.
+function isAdmin() { return document.body.classList.contains('admin-mode'); }
+function getAdminPassword() { return sessionStorage.getItem('adminPassword') || ''; }
+
+const adminGateBar = document.getElementById('adminGateBar');
+function setAdminMode(on) {
+  document.body.classList.toggle('admin-mode', on);
+  adminGateBar.textContent = on ? '🔓 Yönetici (Çıkış)' : '🔒 Yönetici';
+}
+if (getAdminPassword()) setAdminMode(true);
+
+adminGateBar.addEventListener('click', async () => {
+  if (isAdmin()) {
+    if (!confirm('Yönetici modundan çıkmak istiyor musun?')) return;
+    sessionStorage.removeItem('adminPassword');
+    setAdminMode(false);
+    loadHistory(); loadDevices();
+    return;
+  }
+  const password = prompt('Yönetici şifresi:');
+  if (!password) return;
+  try {
+    const res = await fetch('/api/admin-check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Şifre hatalı.'); return; }
+    sessionStorage.setItem('adminPassword', password);
+    setAdminMode(true);
+    loadHistory(); loadDevices();
+  } catch { alert('Bağlantı hatası, tekrar dene.'); }
 });
 
+// ---------- Yönetici: Cihazları Yönet paneli ----------
+const devicesPanel = document.getElementById('devicesPanel');
+
 async function loadDevices() {
+  if (!isAdmin()) return;
   const listEl = document.getElementById('devicesList');
   listEl.innerHTML = 'Yükleniyor...';
   try {
@@ -524,11 +552,9 @@ async function loadDevices() {
       btn.addEventListener('click', async () => {
         const deviceId = btn.dataset.saveDevice;
         const input = listEl.querySelector('input[data-device-id="' + deviceId + '"]');
-        const password = document.getElementById('devicesPassword').value;
         const fb = document.getElementById('devicesFeedback');
-        if (!password) { fb.textContent = 'Şifre gerekli.'; fb.className = 'feedback err'; return; }
         try {
-          const res = await fetch('/api/devices/name', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password, deviceId, name: input.value.trim() }) });
+          const res = await fetch('/api/devices/name', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: getAdminPassword(), deviceId, name: input.value.trim() }) });
           const data = await res.json();
           if (!res.ok) throw new Error(data.error || 'Kaydedilemedi');
           fb.textContent = 'Kaydedildi.'; fb.className = 'feedback ok';
@@ -537,6 +563,7 @@ async function loadDevices() {
     });
   } catch { listEl.innerHTML = '<div class="list-empty">Yüklenemedi.</div>'; }
 }
+if (isAdmin()) loadDevices();
 
 
 const catNames = { acil: 'Acil', yemek: 'Yemek Listesi', vefat: 'Vefat', dogum: 'Doğum', genel: 'Genel' };
@@ -548,10 +575,10 @@ function esc(s) { return (s || '').replace(/</g, '&lt;'); }
 document.getElementById('sendBtn').addEventListener('click', async () => {
   const title = document.getElementById('title').value.trim();
   const body = document.getElementById('body').value.trim();
-  const password = document.getElementById('adminPassword').value;
+  const password = getAdminPassword();
   const fileInput = document.getElementById('attachment');
   const fb = document.getElementById('feedback');
-  if (!title || !body || !password) { fb.textContent = 'Başlık, mesaj ve şifre gerekli.'; fb.className = 'feedback err'; return; }
+  if (!title || !body) { fb.textContent = 'Başlık ve mesaj gerekli.'; fb.className = 'feedback err'; return; }
   const btn = document.getElementById('sendBtn');
   btn.disabled = true; fb.textContent = 'Gönderiliyor...'; fb.className = 'feedback';
   try {
@@ -596,7 +623,7 @@ async function loadHistory() {
           '<div style="margin-top:8px;font-size:11.5px;color:#999;cursor:pointer;" data-reads-id="' + m.id + '">👁 ' + ((m.reads && m.reads.length) || 0) + ' kişi okudu — kimler?</div>' +
           '<div class="reads-detail" id="reads-' + m.id + '" style="display:none;font-size:12px;color:#666;margin-top:4px;"></div>' +
         '</div>' +
-        '<button class="btn-danger" data-del-msg-id="' + m.id + '">Sil</button>' +
+        (isAdmin() ? '<button class="btn-danger" data-del-msg-id="' + m.id + '">Sil</button>' : '') +
       '</div>'
     ).join('');
     listEl.querySelectorAll('[data-del-msg-id]').forEach(b => b.addEventListener('click', () => deleteMessage(b.dataset.delMsgId)));
@@ -606,10 +633,9 @@ async function loadHistory() {
 loadHistory();
 
 async function deleteMessage(id) {
-  const password = prompt('Bu duyuruyu silmek için yönetici şifresi:');
-  if (!password) return;
+  if (!confirm('Bu duyuruyu silmek istediğine emin misin?')) return;
   try {
-    const res = await fetch('/api/messages/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+    const res = await fetch('/api/messages/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: getAdminPassword() }) });
     if (!res.ok) { const d = await res.json(); alert(d.error || 'Silinemedi'); return; }
     loadHistory();
   } catch { alert('Silinemedi.'); }
@@ -631,10 +657,10 @@ async function toggleReads(id) {
 
 
 function setupSimpleList(opts) {
-  const { endpoint, sendBtnId, feedbackId, passwordId, listId, buildPayload, validate, renderItem, emptyText, attachmentId } = opts;
+  const { endpoint, sendBtnId, feedbackId, listId, buildPayload, validate, renderItem, emptyText, attachmentId } = opts;
   document.getElementById(sendBtnId).addEventListener('click', async () => {
     const fb = document.getElementById(feedbackId);
-    const password = document.getElementById(passwordId).value;
+    const password = getAdminPassword();
     const payload = buildPayload();
     const err = validate(payload, password);
     if (err) { fb.textContent = err; fb.className = 'feedback err'; return; }
@@ -671,10 +697,9 @@ function setupSimpleList(opts) {
   }
 
   async function deleteItem(id) {
-    const password = prompt('Silmek için yönetici şifresi:');
-    if (!password) return;
+    if (!confirm('Silmek istediğine emin misin?')) return;
     try {
-      const res = await fetch(endpoint + '/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+      const res = await fetch(endpoint + '/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: getAdminPassword() }) });
       if (!res.ok) { const d = await res.json(); alert(d.error || 'Silinemedi'); return; }
       load();
     } catch { alert('Silinemedi.'); }
@@ -689,9 +714,9 @@ function setupSimpleList(opts) {
 }
 
 setupSimpleList({
-  endpoint: '/api/notes', sendBtnId: 'noteSendBtn', feedbackId: 'noteFeedback', passwordId: 'notePassword', listId: 'notesList', attachmentId: 'noteAttachment',
+  endpoint: '/api/notes', sendBtnId: 'noteSendBtn', feedbackId: 'noteFeedback', listId: 'notesList', attachmentId: 'noteAttachment',
   buildPayload: () => ({ text: document.getElementById('noteText').value.trim() }),
-  validate: (p, pw) => (!p.text || !pw) ? 'Not ve şifre gerekli.' : null,
+  validate: (p, pw) => (!p.text || !pw) ? 'Not gerekli.' : null,
   onSuccess: () => { document.getElementById('noteText').value = ''; },
   emptyText: 'Henüz not eklenmedi.',
   renderItem: (n) =>
@@ -701,14 +726,14 @@ setupSimpleList({
         '<div class="li-body">' + esc(n.text) + '</div>' +
         renderAttachment(n.attachment) +
       '</div>' +
-      '<button class="btn-danger" data-del-id="' + n.id + '">Sil</button>' +
+      (isAdmin() ? '<button class="btn-danger" data-del-id="' + n.id + '">Sil</button>' : '') +
     '</div>',
 });
 
 setupSimpleList({
-  endpoint: '/api/phones', sendBtnId: 'phoneSendBtn', feedbackId: 'phoneFeedback', passwordId: 'phonePassword', listId: 'phonesList', attachmentId: 'phoneAttachment',
+  endpoint: '/api/phones', sendBtnId: 'phoneSendBtn', feedbackId: 'phoneFeedback', listId: 'phonesList', attachmentId: 'phoneAttachment',
   buildPayload: () => ({ name: document.getElementById('phoneName').value.trim(), number: document.getElementById('phoneNumber').value.trim() }),
-  validate: (p, pw) => (!p.name || !p.number || !pw) ? 'İsim, numara ve şifre gerekli.' : null,
+  validate: (p, pw) => (!p.name || !p.number || !pw) ? 'İsim ve numara gerekli.' : null,
   onSuccess: () => { document.getElementById('phoneName').value = ''; document.getElementById('phoneNumber').value = ''; },
   emptyText: 'Henüz telefon eklenmedi.',
   renderItem: (p) =>
@@ -718,21 +743,21 @@ setupSimpleList({
         '<a class="li-phone" href="tel:' + esc(p.number) + '">' + esc(p.number) + '</a>' +
         renderAttachment(p.attachment) +
       '</div>' +
-      '<button class="btn-danger" data-del-id="' + p.id + '">Sil</button>' +
+      (isAdmin() ? '<button class="btn-danger" data-del-id="' + p.id + '">Sil</button>' : '') +
     '</div>',
 });
 
 setupSimpleList({
-  endpoint: '/api/tasks', sendBtnId: 'taskSendBtn', feedbackId: 'taskFeedback', passwordId: 'taskPassword', listId: 'tasksList', attachmentId: 'taskAttachment',
+  endpoint: '/api/tasks', sendBtnId: 'taskSendBtn', feedbackId: 'taskFeedback', listId: 'tasksList', attachmentId: 'taskAttachment',
   buildPayload: () => ({ text: document.getElementById('taskText').value.trim() }),
-  validate: (p, pw) => (!p.text || !pw) ? 'Görev ve şifre gerekli.' : null,
+  validate: (p, pw) => (!p.text || !pw) ? 'Görev gerekli.' : null,
   onSuccess: () => { document.getElementById('taskText').value = ''; },
   emptyText: 'Henüz görev eklenmedi.',
   renderItem: (t) =>
     '<div class="list-item ' + (t.done ? 'done' : '') + '">' +
       '<input type="checkbox" class="checkbox" data-toggle-id="' + t.id + '" ' + (t.done ? 'checked' : '') + '>' +
       '<div class="li-main"><div class="li-title">' + esc(t.text) + '</div>' + renderAttachment(t.attachment) + '</div>' +
-      '<button class="btn-danger" data-del-id="' + t.id + '">Sil</button>' +
+      (isAdmin() ? '<button class="btn-danger" data-del-id="' + t.id + '">Sil</button>' : '') +
     '</div>',
 });
 </script>
