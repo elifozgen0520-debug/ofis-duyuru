@@ -44,22 +44,25 @@
 
   header {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
+    gap: 12px;
     margin-bottom: 22px;
     border-bottom: 1px solid var(--line);
     padding-bottom: 18px;
+    flex-wrap: wrap;
   }
 
   h1 {
     font-family: 'Fraunces', serif;
     font-weight: 700;
-    font-size: 26px;
+    font-size: clamp(20px, 6vw, 26px);
     margin: 0;
     letter-spacing: -0.01em;
+    white-space: nowrap;
   }
 
-  .pin-count { font-size: 12px; color: var(--muted); letter-spacing: 0.04em; }
+  .pin-count { font-size: 12px; color: var(--muted); letter-spacing: 0.04em; white-space: nowrap; }
 
   .status-card {
     background: var(--paper);
@@ -81,6 +84,21 @@
   }
   .status-card h2 { font-family: 'Fraunces', serif; font-size: 15px; margin: 0 0 5px; }
   .status-card p { margin: 0 0 10px; font-size: 13px; line-height: 1.5; color: #444; }
+
+  /* Bildirimler zaten açıksa, büyük kart yerine küçük bir gösterge */
+  .bell-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--paper);
+    color: var(--sage);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .bell-status.off { color: var(--clay); }
 
   button {
     font-family: 'Inter', sans-serif;
@@ -208,6 +226,17 @@
   #adminGateBar { font-size: 11.5px; color: var(--muted); cursor: pointer; text-decoration: underline dotted; }
   body.admin-mode #adminGateBar { color: var(--sage); text-decoration: none; cursor: default; }
 
+  .site-footer {
+    text-align: center;
+    margin-top: 36px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-size: 11.5px;
+  }
+  .site-footer a { color: var(--muted); text-decoration: none; cursor: pointer; }
+  .site-footer a:hover { color: var(--paper); }
+  .site-footer .fdot { color: var(--line); margin: 0 8px; }
+
   /* Açılış logosu */
   #splash {
     position: fixed; inset: 0; background: var(--ink);
@@ -245,7 +274,10 @@
 
 <div class="wrap">
   <header>
-    <h1>Müdürlük Duyuru</h1>
+    <div style="display:flex; align-items:center; gap:10px; min-width:0;">
+      <img src="/icon-192.png" alt="" style="width:32px; height:32px; border-radius:50%; flex-shrink:0;">
+      <h1>Duyurular</h1>
+    </div>
     <div style="display:flex; align-items:center; gap:10px;">
       <select id="themeSelect" style="background:transparent; color:var(--muted); border:1px solid var(--line); border-radius:20px; font-size:11px; padding:4px 8px;">
         <option value="klasik">🎨 Varsayılan</option>
@@ -254,21 +286,29 @@
         <option value="bordo">🔴 Bordo</option>
       </select>
       <span class="pin-count" id="subCount">— abone</span>
-      <span id="adminGateBar" title="Yönetici girişi">🔒 Yönetici</span>
     </div>
   </header>
 
   <div class="card admin-only" id="devicesPanel">
     <h2>Cihazları Yönet</h2>
-    <div class="sub">Kim okudu bilgisinde doğru isimlerin görünmesi için, her cihazı gerçek sahibiyle eşleştir. Kullanıcılar isim giremez, sadece sen atayabilirsin.</div>
+    <div class="sub">Kim okudu bilgisinde doğru isimlerin görünmesi için, her cihazı gerçek sahibiyle eşleştir. "Öneri" olarak görünen isim, kişinin kendi girdiği isimdir — onaylamak için "Kaydet"e bas.</div>
     <div id="devicesList" style="margin-top:14px;"></div>
     <div class="feedback" id="devicesFeedback"></div>
+  </div>
+
+  <div class="card admin-only" id="feedbackPanel">
+    <h2>Görüş &amp; Öneriler</h2>
+    <div class="sub">Personelin gönderdiği (kimden geldiği belirtilmeyen) görüş ve öneriler.</div>
+    <div id="feedbackList" style="margin-top:14px;"></div>
   </div>
 
   <div class="status-card" id="subscribeCard">
     <h2>Bildirimleri Aç</h2>
     <p>Duyuru, acil bilgi, not ve hatırlatmaları telefonuna anında almak için bir kere izin ver.</p>
     <button class="btn-primary" id="subscribeBtn">Bildirimleri Aç</button>
+  </div>
+  <div class="bell-status" id="bellStatus" style="display:none;" title="Bildirimler açık">
+    🔔 <span>Bildirimler açık</span>
   </div>
 
   <div class="tabs">
@@ -356,6 +396,33 @@
       <h3>Aylık Yapılacak İşler</h3>
       <div id="tasksList" class="list-empty">Yükleniyor...</div>
     </div>
+  </div>
+
+  <footer class="site-footer">
+    <a href="#" id="profileLink">👤 Profilim</a>
+    <span class="fdot">·</span>
+    <a href="#" id="feedbackLink">💬 Görüş &amp; Öneri</a>
+    <span class="fdot">·</span>
+    <a href="#" id="adminGateBar">🔒 Yönetici Girişi</a>
+  </footer>
+
+  <div class="card" id="profileModal" style="display:none;">
+    <h2>Profilim</h2>
+    <div class="sub">İsteğe bağlı: adını ve telefonunu bildirebilirsin. Bu, "kim okudu" bilgisinde bir öneri olarak görünür — yönetici onaylarsa kesinleşir.</div>
+    <label>Adın</label>
+    <input type="text" id="profileName" placeholder="Örn: Ali Yılmaz">
+    <label>Telefon (opsiyonel)</label>
+    <input type="tel" id="profilePhone" placeholder="Örn: 0555 xxx xx xx">
+    <div class="send-row"><button class="btn-primary" id="profileSaveBtn">Kaydet</button></div>
+    <div class="feedback" id="profileFeedback"></div>
+  </div>
+
+  <div class="card" id="feedbackModal" style="display:none;">
+    <h2>Görüş &amp; Öneri Gönder</h2>
+    <div class="sub">Kimden geldiği kaydedilmez, tamamen isimsiz iletilir.</div>
+    <textarea id="feedbackText" placeholder="Görüş, öneri veya şikayetini yaz..."></textarea>
+    <div class="send-row"><button class="btn-primary" id="feedbackSendBtn">Gönder</button></div>
+    <div class="feedback" id="feedbackModalFeedback"></div>
   </div>
 </div>
 
@@ -462,9 +529,11 @@ async function refreshCount() {
 }
 
 function markSubscribed() {
-  subscribeCard.querySelector('h2').textContent = 'Bildirimler Açık ✓';
-  subscribeCard.querySelector('p').textContent = 'Artık her şeyi telefonunda anında alacaksın.';
-  if (subscribeBtn) subscribeBtn.remove();
+  subscribeCard.style.display = 'none';
+  const bell = document.getElementById('bellStatus');
+  bell.style.display = 'inline-flex';
+  bell.classList.remove('off');
+  bell.innerHTML = '🔔 <span>Bildirimler açık</span>';
 }
 
 async function doSubscribe(silent) {
@@ -515,7 +584,7 @@ adminGateBar.addEventListener('click', async () => {
     if (!confirm('Yönetici modundan çıkmak istiyor musun?')) return;
     sessionStorage.removeItem('adminPassword');
     setAdminMode(false);
-    loadHistory(); loadDevices();
+    loadHistory(); loadDevices(); loadFeedback();
     return;
   }
   const password = prompt('Yönetici şifresi:');
@@ -526,7 +595,7 @@ adminGateBar.addEventListener('click', async () => {
     if (!res.ok) { alert(data.error || 'Şifre hatalı.'); return; }
     sessionStorage.setItem('adminPassword', password);
     setAdminMode(true);
-    loadHistory(); loadDevices();
+    loadHistory(); loadDevices(); loadFeedback();
   } catch { alert('Bağlantı hatası, tekrar dene.'); }
 });
 
@@ -541,13 +610,14 @@ async function loadDevices() {
     const res = await fetch('/api/devices');
     const data = await res.json();
     if (!data.devices || data.devices.length === 0) { listEl.innerHTML = '<div class="list-empty">Henüz abone olan cihaz yok.</div>'; return; }
-    listEl.innerHTML = data.devices.map(d =>
-      '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">' +
+    listEl.innerHTML = data.devices.map(d => {
+      const hint = d.suggestedName ? ('Öneri: ' + esc(d.suggestedName) + (d.suggestedPhone ? ' (' + esc(d.suggestedPhone) + ')' : '')) : 'İsim yaz...';
+      return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">' +
         '<span style="font-size:11px;color:#999;min-width:70px;">#' + esc(d.deviceId.slice(-4)) + '</span>' +
-        '<input type="text" value="' + esc(d.name || '') + '" placeholder="İsim yaz..." data-device-id="' + esc(d.deviceId) + '" style="flex:1;padding:7px 10px;border:1.5px solid #ddd;border-radius:3px;font-size:13px;">' +
+        '<input type="text" value="' + esc(d.name || '') + '" placeholder="' + hint + '" data-device-id="' + esc(d.deviceId) + '" style="flex:1;padding:7px 10px;border:1.5px solid #ddd;border-radius:3px;font-size:13px;">' +
         '<button class="btn-primary" style="padding:7px 12px;font-size:12px;" data-save-device="' + esc(d.deviceId) + '">Kaydet</button>' +
-      '</div>'
-    ).join('');
+      '</div>';
+    }).join('');
     listEl.querySelectorAll('[data-save-device]').forEach(btn => {
       btn.addEventListener('click', async () => {
         const deviceId = btn.dataset.saveDevice;
@@ -563,7 +633,68 @@ async function loadDevices() {
     });
   } catch { listEl.innerHTML = '<div class="list-empty">Yüklenemedi.</div>'; }
 }
-if (isAdmin()) loadDevices();
+if (isAdmin()) { loadDevices(); loadFeedback(); }
+
+// ---------- Görüş & Öneri (yönetici paneli) ----------
+async function loadFeedback() {
+  if (!isAdmin()) return;
+  const listEl = document.getElementById('feedbackList');
+  listEl.innerHTML = 'Yükleniyor...';
+  try {
+    const res = await fetch('/api/feedback?password=' + encodeURIComponent(getAdminPassword()));
+    const data = await res.json();
+    if (!data.items || data.items.length === 0) { listEl.innerHTML = '<div class="list-empty">Henüz görüş gönderilmedi.</div>'; return; }
+    listEl.innerHTML = data.items.map(f =>
+      '<div class="list-item"><div class="li-main"><div class="li-top"><span class="li-time">' + formatTime(f.time) + '</span></div><div class="li-body">' + esc(f.text) + '</div></div></div>'
+    ).join('');
+  } catch { listEl.innerHTML = '<div class="list-empty">Yüklenemedi.</div>'; }
+}
+
+// ---------- Profilim (footer) ----------
+const profileLink = document.getElementById('profileLink');
+const profileModal = document.getElementById('profileModal');
+profileLink.addEventListener('click', (e) => {
+  e.preventDefault();
+  const showing = profileModal.style.display !== 'none';
+  profileModal.style.display = showing ? 'none' : 'block';
+  if (!showing) {
+    document.getElementById('profileName').value = localStorage.getItem('selfName') || '';
+    document.getElementById('profilePhone').value = localStorage.getItem('selfPhone') || '';
+    profileModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+});
+document.getElementById('profileSaveBtn').addEventListener('click', async () => {
+  const name = document.getElementById('profileName').value.trim();
+  const phone = document.getElementById('profilePhone').value.trim();
+  const fb = document.getElementById('profileFeedback');
+  try {
+    await fetch('/api/self-profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), name, phone }) });
+    localStorage.setItem('selfName', name);
+    localStorage.setItem('selfPhone', phone);
+    fb.textContent = 'Kaydedildi. Yönetici onaylarsa "kim okudu" listesinde görünecek.'; fb.className = 'feedback ok';
+  } catch { fb.textContent = 'Kaydedilemedi.'; fb.className = 'feedback err'; }
+});
+
+// ---------- Görüş & Öneri Gönder (footer) ----------
+const feedbackLink = document.getElementById('feedbackLink');
+const feedbackModal = document.getElementById('feedbackModal');
+feedbackLink.addEventListener('click', (e) => {
+  e.preventDefault();
+  const showing = feedbackModal.style.display !== 'none';
+  feedbackModal.style.display = showing ? 'none' : 'block';
+  if (!showing) feedbackModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
+document.getElementById('feedbackSendBtn').addEventListener('click', async () => {
+  const text = document.getElementById('feedbackText').value.trim();
+  const fb = document.getElementById('feedbackModalFeedback');
+  if (!text) { fb.textContent = 'Boş gönderilemez.'; fb.className = 'feedback err'; return; }
+  try {
+    const res = await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
+    if (!res.ok) throw new Error('Gönderilemedi');
+    document.getElementById('feedbackText').value = '';
+    fb.textContent = 'Gönderildi, teşekkürler!'; fb.className = 'feedback ok';
+  } catch { fb.textContent = 'Gönderilemedi.'; fb.className = 'feedback err'; }
+});
 
 
 const catNames = { acil: 'Acil', yemek: 'Yemek Listesi', vefat: 'Vefat', dogum: 'Doğum', genel: 'Genel' };
@@ -620,7 +751,7 @@ async function loadHistory() {
           '<div class="li-title">' + esc(m.title) + '</div>' +
           '<div class="li-body">' + esc(m.body) + '</div>' +
           renderAttachment(m.attachment) +
-          '<div style="margin-top:8px;font-size:11.5px;color:#999;cursor:pointer;" data-reads-id="' + m.id + '">👁 ' + ((m.reads && m.reads.length) || 0) + ' kişi okudu — kimler?</div>' +
+          (isAdmin() ? '<div style="margin-top:8px;font-size:11.5px;color:#999;cursor:pointer;" data-reads-id="' + m.id + '">👁 ' + ((m.reads && m.reads.length) || 0) + ' kişi okudu — kimler?</div>' : '') +
           '<div class="reads-detail" id="reads-' + m.id + '" style="display:none;font-size:12px;color:#666;margin-top:4px;"></div>' +
         '</div>' +
         (isAdmin() ? '<button class="btn-danger" data-del-msg-id="' + m.id + '">Sil</button>' : '') +
