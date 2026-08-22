@@ -182,9 +182,51 @@
     margin-top: 40px;
     letter-spacing: 0.03em;
   }
+
+  /* Açılış logosu: döner + yanıp söner, birkaç saniye sonra kaybolur */
+  #splash {
+    position: fixed;
+    inset: 0;
+    background: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    transition: opacity 0.6s ease;
+  }
+  #splash img {
+    width: 120px;
+    height: 120px;
+    animation: splash-spin 2.2s linear infinite, splash-blink 1.4s ease-in-out infinite;
+  }
+  @keyframes splash-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes splash-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+  #splash.hide {
+    opacity: 0;
+    pointer-events: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #splash img { animation: none; }
+  }
 </style>
 </head>
 <body>
+
+<div id="splash"><img src="/icon-192.png" alt="Amasya İl Müdürlüğü"></div>
+<script>
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      const s = document.getElementById('splash');
+      if (s) { s.classList.add('hide'); setTimeout(() => s.remove(), 700); }
+    }, 1800);
+  });
+</script>
 <div class="wrap">
   <header>
     <h1>Ofis Panosu</h1>
