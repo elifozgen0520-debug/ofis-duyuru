@@ -162,6 +162,60 @@ app.get('/api/subscriber-count', (req, res) => {
   res.json({ total: loadSubs().length });
 });
 
+// ==========================================================
+// Notlar / Telefonlar / Aylık İşler — ortak basit CRUD sistemi
+// Ekleme ve silme sadece yönetici şifresiyle olur.
+// ==========================================================
+function makeListApi(name, fileName) {
+  const FILE = path.join(__dirname, fileName);
+  function load() {
+    try { return JSON.parse(fs.readFileSync(FILE, 'utf8')); } catch { return []; }
+  }
+  function save(items) { fs.writeFileSync(FILE, JSON.stringify(items, null, 2)); }
+
+  app.get(`/api/${name}`, (req, res) => {
+    res.json({ items: load().slice().reverse() });
+  });
+
+  app.post(`/api/${name}`, (req, res) => {
+    const { password, ...fields } = req.body;
+    if (password !== ADMIN_PASSWORD) {
+      return res.status(401).json({ ok: false, error: 'Şifre hatalı.' });
+    }
+    const items = load();
+    const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), time: new Date().toISOString(), done: false, ...fields };
+    items.push(item);
+    save(items.slice(-200));
+    res.json({ ok: true, item });
+  });
+
+  app.delete(`/api/${name}/:id`, (req, res) => {
+    const { password } = req.body;
+    if (password !== ADMIN_PASSWORD) {
+      return res.status(401).json({ ok: false, error: 'Şifre hatalı.' });
+    }
+    const items = load().filter(i => i.id !== req.params.id);
+    save(items);
+    res.json({ ok: true });
+  });
+
+  // Tamamlandı/tamamlanmadı işaretleme — herkes yapabilir, şifre gerekmez
+  app.post(`/api/${name}/:id/toggle`, (req, res) => {
+    const items = load();
+    const item = items.find(i => i.id === req.params.id);
+    if (!item) return res.status(404).json({ ok: false });
+    item.done = !item.done;
+    save(items);
+    res.json({ ok: true, done: item.done });
+  });
+
+  return { load, save };
+}
+
+makeListApi('notes', 'notes.json');
+makeListApi('phones', 'phones.json');
+makeListApi('tasks', 'tasks.json');
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Ofis Duyuru Sistemi çalışıyor: http://localhost:${PORT}`);

@@ -41,7 +41,7 @@
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    margin-bottom: 28px;
+    margin-bottom: 22px;
     border-bottom: 1px solid var(--line);
     padding-bottom: 18px;
   }
@@ -49,23 +49,19 @@
   h1 {
     font-family: 'Fraunces', serif;
     font-weight: 700;
-    font-size: 28px;
+    font-size: 26px;
     margin: 0;
     letter-spacing: -0.01em;
   }
 
-  .pin-count {
-    font-size: 12px;
-    color: var(--muted);
-    letter-spacing: 0.04em;
-  }
+  .pin-count { font-size: 12px; color: var(--muted); letter-spacing: 0.04em; }
 
   .status-card {
     background: var(--paper);
     color: var(--ink);
     border-radius: 4px;
-    padding: 18px 20px;
-    margin-bottom: 24px;
+    padding: 16px 18px;
+    margin-bottom: 20px;
     box-shadow: 0 8px 24px var(--paper-shadow);
     position: relative;
   }
@@ -78,13 +74,8 @@
     background: var(--clay);
     box-shadow: 0 2px 4px rgba(0,0,0,0.3);
   }
-
-  .status-card h2 {
-    font-family: 'Fraunces', serif;
-    font-size: 16px;
-    margin: 0 0 6px;
-  }
-  .status-card p { margin: 0 0 12px; font-size: 13.5px; line-height: 1.5; color: #444; }
+  .status-card h2 { font-family: 'Fraunces', serif; font-size: 15px; margin: 0 0 5px; }
+  .status-card p { margin: 0 0 10px; font-size: 13px; line-height: 1.5; color: #444; }
 
   button {
     font-family: 'Inter', sans-serif;
@@ -92,66 +83,70 @@
     font-size: 14px;
     border: none;
     border-radius: 3px;
-    padding: 11px 18px;
+    padding: 10px 16px;
     cursor: pointer;
     transition: transform 0.1s ease, opacity 0.15s ease;
   }
   button:active { transform: scale(0.97); }
   button:disabled { opacity: 0.5; cursor: default; }
-
   .btn-primary { background: var(--ink); color: var(--paper); }
   .btn-primary:hover:not(:disabled) { opacity: 0.85; }
+  .btn-danger { background: transparent; color: var(--clay); border: 1px solid var(--clay); padding: 5px 10px; font-size: 12px; }
 
-  section.board { margin-top: 8px; }
+  /* Sekme çubuğu */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+  }
+  .tab-btn {
+    background: transparent;
+    color: var(--muted);
+    border-radius: 0;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    font-weight: 600;
+    border-bottom: 2px solid transparent;
+    flex: 1;
+  }
+  .tab-btn.active { color: var(--paper); border-bottom-color: var(--amber); }
+  .tab-panel { display: none; animation: fade-in 0.35s ease; }
+  .tab-panel.active { display: block; }
+  @keyframes fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-  .composer {
+  .card {
     background: var(--paper);
     color: var(--ink);
     border-radius: 4px;
-    padding: 22px;
+    padding: 20px;
     box-shadow: 0 12px 28px var(--paper-shadow);
+    margin-bottom: 18px;
   }
-
-  .composer h2 {
-    font-family: 'Fraunces', serif;
-    font-size: 18px;
-    margin: 0 0 4px;
-  }
-  .composer .sub { font-size: 12.5px; color: #6b6b6b; margin-bottom: 18px; }
+  .card h2 { font-family: 'Fraunces', serif; font-size: 17px; margin: 0 0 4px; }
+  .card .sub { font-size: 12.5px; color: #6b6b6b; margin-bottom: 16px; }
 
   label {
     display: block;
-    font-size: 11.5px;
+    font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.05em;
     text-transform: uppercase;
     color: #777;
     margin-bottom: 6px;
-    margin-top: 16px;
+    margin-top: 14px;
   }
   label:first-of-type { margin-top: 0; }
 
-  .cat-row {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .cat-btn {
-    background: #fff;
-    border: 1.5px solid #ddd;
-    color: #555;
-    font-size: 13px;
-    font-weight: 500;
-    padding: 8px 14px;
-    border-radius: 20px;
-  }
+  .cat-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .cat-btn { background: #fff; border: 1.5px solid #ddd; color: #555; font-size: 13px; font-weight: 500; padding: 8px 14px; border-radius: 20px; }
   .cat-btn.active[data-cat="acil"] { background: var(--amber); border-color: var(--amber); color: #fff; }
   .cat-btn.active[data-cat="yemek"] { background: var(--sage); border-color: var(--sage); color: #fff; }
   .cat-btn.active[data-cat="vefat"] { background: var(--clay); border-color: var(--clay); color: #fff; }
   .cat-btn.active[data-cat="dogum"] { background: var(--gold); border-color: var(--gold); color: #fff; }
   .cat-btn.active[data-cat="genel"] { background: var(--ink); border-color: var(--ink); color: #fff; }
 
-  input[type="text"], input[type="password"], textarea {
+  input[type="text"], input[type="password"], input[type="tel"], textarea {
     width: 100%;
     font-family: 'Inter', sans-serif;
     font-size: 14.5px;
@@ -161,132 +156,73 @@
     background: #fff;
     color: var(--ink);
   }
-  textarea { resize: vertical; min-height: 80px; }
+  textarea { resize: vertical; min-height: 70px; }
   input:focus, textarea:focus { outline: 2px solid var(--ink); outline-offset: 1px; }
 
-  .send-row {
-    margin-top: 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
+  .send-row { margin-top: 18px; display: flex; align-items: center; gap: 12px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .feedback { font-size: 13px; margin-top: 10px; min-height: 18px; }
   .feedback.ok { color: var(--sage); }
   .feedback.err { color: var(--clay); }
 
-  footer {
-    text-align: center;
-    color: var(--muted);
-    font-size: 11.5px;
-    margin-top: 40px;
-    letter-spacing: 0.03em;
-  }
-
-  /* Geçmiş duyurular listesi */
-  .history { margin-top: 28px; }
-  .history h2 {
-    font-family: 'Fraunces', serif;
-    font-size: 18px;
-    margin: 0 0 14px;
-    color: var(--paper);
-  }
-  .history-item {
+  /* Listeler (geçmiş duyuru, not, telefon, görev) */
+  .list-section { margin-top: 8px; }
+  .list-section h3 { font-family: 'Fraunces', serif; font-size: 16px; margin: 0 0 12px; color: var(--paper); }
+  .list-item {
     background: var(--paper);
     color: var(--ink);
     border-radius: 4px;
-    padding: 14px 16px;
-    margin-bottom: 10px;
+    padding: 13px 15px;
+    margin-bottom: 9px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     border-left: 4px solid var(--ink);
-  }
-  .history-item.acil { border-left-color: var(--amber); }
-  .history-item.yemek { border-left-color: var(--sage); }
-  .history-item.vefat { border-left-color: var(--clay); }
-  .history-item.dogum { border-left-color: var(--gold); }
-  .history-item .htop {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
+    align-items: flex-start;
     gap: 10px;
-    margin-bottom: 4px;
   }
-  .history-item .htag {
-    font-size: 10.5px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: #888;
-  }
-  .history-item .htime { font-size: 11px; color: #999; white-space: nowrap; }
-  .history-item .htitle { font-family: 'Fraunces', serif; font-weight: 700; font-size: 15px; margin: 0 0 3px; }
-  .history-item .hbody { font-size: 13px; color: #555; line-height: 1.45; margin: 0; }
-  .history-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 20px; }
+  .list-item.acil { border-left-color: var(--amber); }
+  .list-item.yemek { border-left-color: var(--sage); }
+  .list-item.vefat { border-left-color: var(--clay); }
+  .list-item.dogum { border-left-color: var(--gold); }
+  .list-item .li-main { flex: 1; min-width: 0; }
+  .list-item .li-top { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 3px; }
+  .list-item .li-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #888; }
+  .list-item .li-time { font-size: 10.5px; color: #999; white-space: nowrap; }
+  .list-item .li-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 14.5px; margin: 0 0 2px; }
+  .list-item .li-body { font-size: 12.5px; color: #555; line-height: 1.45; margin: 0; }
+  .list-item .li-phone { font-family: 'Fraunces', serif; font-weight: 700; font-size: 16px; color: var(--clay); text-decoration: none; }
+  .list-item.done .li-title { text-decoration: line-through; opacity: 0.5; }
+  .list-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 18px; }
+  .checkbox { width: 20px; height: 20px; margin-top: 2px; flex-shrink: 0; cursor: pointer; }
 
-  /* Açılış logosu: döner + yanıp söner, birkaç saniye sonra kaybolur */
+  /* Açılış logosu */
   #splash {
-    position: fixed;
-    inset: 0;
-    background: var(--ink);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-    transition: opacity 0.6s ease;
+    position: fixed; inset: 0; background: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 999; transition: opacity 0.6s ease;
   }
-  #splash img {
-    width: 120px;
-    height: 120px;
-    animation: splash-spin 2.2s linear infinite, splash-blink 1.4s ease-in-out infinite;
-  }
-  @keyframes splash-spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-  @keyframes splash-blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.35; }
-  }
-  #splash.hide {
-    opacity: 0;
-    pointer-events: none;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    #splash img { animation: none; }
-  }
+  #splash img { width: 120px; height: 120px; animation: splash-spin 2.2s linear infinite, splash-blink 1.4s ease-in-out infinite; border-radius: 50%; }
+  @keyframes splash-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  @keyframes splash-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+  #splash.hide { opacity: 0; pointer-events: none; }
+  @media (prefers-reduced-motion: reduce) { #splash img { animation: none; } }
 
-  /* Bildirime tıklayıp açıldığında çıkan renkli duyuru şeridi */
+  /* Bildirimden açılınca çıkan şerit */
   #notifBanner {
-    display: none;
-    max-width: 640px;
-    margin: 0 auto 20px;
-    padding: 16px 18px;
-    border-radius: 4px;
-    font-family: 'Inter', sans-serif;
-    color: #fff;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-    animation: banner-in 0.4s ease;
+    display: none; max-width: 640px; margin: 0 auto 20px; padding: 16px 18px;
+    border-radius: 4px; font-family: 'Inter', sans-serif; color: #fff;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25); animation: fade-in 0.4s ease;
   }
   #notifBanner.show { display: block; }
-  #notifBanner .tag {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    background: rgba(255,255,255,0.25);
-    padding: 3px 9px;
-    border-radius: 20px;
-    margin-bottom: 8px;
-  }
+  #notifBanner .tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(255,255,255,0.25); padding: 3px 9px; border-radius: 20px; margin-bottom: 8px; }
   #notifBanner .btitle { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 700; margin: 0 0 4px; }
   #notifBanner .bbody { font-size: 13.5px; line-height: 1.5; opacity: 0.95; margin: 0; }
-  #notifBanner.acil { background: linear-gradient(135deg, #E0972C, #B5674A); animation: banner-in 0.4s ease, banner-pulse 1.4s ease-in-out 2; }
+  #notifBanner.acil { background: linear-gradient(135deg, #E0972C, #B5674A); animation: fade-in 0.4s ease, banner-pulse 1.4s ease-in-out 2; }
   #notifBanner.vefat { background: linear-gradient(135deg, #6b4a45, #3d2b28); }
   #notifBanner.dogum { background: linear-gradient(135deg, #C9A24B, #8f7332); }
   #notifBanner.yemek { background: linear-gradient(135deg, #6B8F71, #4a6650); }
   #notifBanner.genel { background: linear-gradient(135deg, #3a4152, #1F2430); }
-  @keyframes banner-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes banner-pulse { 0%, 100% { box-shadow: 0 8px 20px rgba(224,151,44,0.25); } 50% { box-shadow: 0 8px 30px rgba(224,151,44,0.6); } }
 </style>
 </head>
@@ -294,56 +230,7 @@
 
 <div id="splash"><img src="/icon-192.png" alt="Amasya İl Müdürlüğü"></div>
 <div id="notifBanner"></div>
-<script>
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      const s = document.getElementById('splash');
-      if (s) { s.classList.add('hide'); setTimeout(() => s.remove(), 700); }
-    }, 1800);
-  });
 
-  // Resmi bildirim zili
-  function playNotifSound() {
-    try {
-      const audio = new Audio('/notify.wav');
-      audio.volume = 1.0;
-      audio.play().catch(() => {});
-    } catch (e) {}
-  }
-
-  function showNotifBanner(category, title, body) {
-    const el = document.getElementById('notifBanner');
-    if (!el) return;
-    el.className = 'notifBanner show ' + (category || 'genel');
-    el.id = 'notifBanner';
-    const tagNames = { acil: '🚨 ACİL DUYURU', yemek: '🍽️ Yemek Listesi', vefat: '🕯️ Vefat', dogum: '🎉 Doğum', genel: '📢 Duyuru' };
-    el.innerHTML = `
-      <div class="tag">${tagNames[category] || tagNames.genel}</div>
-      <div class="btitle">${title || ''}</div>
-      <div class="bbody">${body || ''}</div>
-    `;
-    playNotifSound();
-  }
-
-  // Bildirim tıklanıp uygulama zaten açıkken service worker'dan gelen mesajı yakala
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.addEventListener('message', (event) => {
-      if (event.data && event.data.type === 'NOTIF_OPENED') {
-        showNotifBanner(event.data.category, (event.data.title || '').replace(/^\S+\s/, ''), event.data.body);
-      }
-    });
-  }
-
-  // Bildirime tıklayıp uygulama kapalıyken yeni pencere açıldığında URL'den yakala
-  (function () {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('notif') === '1') {
-      showNotifBanner(params.get('cat'), params.get('title'), params.get('body'));
-      // URL'yi temizle
-      window.history.replaceState({}, '', window.location.pathname);
-    }
-  })();
-</script>
 <div class="wrap">
   <header>
     <h1>Ofis Panosu</h1>
@@ -352,15 +239,21 @@
 
   <div class="status-card" id="subscribeCard">
     <h2>Bildirimleri Aç</h2>
-    <p>Yemek listesi, acil duyuru, vefat/doğum haberleri gibi mesajları telefonuna anında almak için bir kere izin ver. SMS veya WhatsApp gerekmez.</p>
+    <p>Duyuru, acil bilgi, not ve hatırlatmaları telefonuna anında almak için bir kere izin ver.</p>
     <button class="btn-primary" id="subscribeBtn">Bildirimleri Aç</button>
   </div>
 
-  <section class="board">
-    <div class="composer">
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="duyurular">Duyurular</button>
+    <button class="tab-btn" data-tab="notlar">Notlar</button>
+    <button class="tab-btn" data-tab="telefonlar">Telefonlar</button>
+    <button class="tab-btn" data-tab="isler">Aylık İşler</button>
+  </div>
+
+  <div class="tab-panel active" id="panel-duyurular">
+    <div class="card">
       <h2>Duyuru Yaz</h2>
       <div class="sub">Sadece yetkili personel gönderebilir.</div>
-
       <label>Kategori</label>
       <div class="cat-row" id="catRow">
         <button type="button" class="cat-btn active" data-cat="genel">Genel</button>
@@ -369,43 +262,131 @@
         <button type="button" class="cat-btn" data-cat="vefat">Vefat</button>
         <button type="button" class="cat-btn" data-cat="dogum">Doğum</button>
       </div>
-
       <label>Başlık</label>
       <input type="text" id="title" placeholder="Örn: Bugünün Menüsü">
-
       <label>Mesaj</label>
       <textarea id="body" placeholder="Mesajınızı yazın..."></textarea>
-
       <label>Yönetici Şifresi</label>
       <input type="password" id="adminPassword" placeholder="Şifre">
-
-      <div class="send-row">
-        <button class="btn-primary" id="sendBtn">Gönder</button>
-      </div>
+      <div class="send-row"><button class="btn-primary" id="sendBtn">Gönder</button></div>
       <div class="feedback" id="feedback"></div>
     </div>
-  </section>
+    <div class="list-section">
+      <h3>Son Duyurular</h3>
+      <div id="historyList" class="list-empty">Yükleniyor...</div>
+    </div>
+  </div>
 
-  <div class="history" id="historySection">
-    <h2>Son Duyurular</h2>
-    <div id="historyList" class="history-empty">Yükleniyor...</div>
+  <div class="tab-panel" id="panel-notlar">
+    <div class="card">
+      <h2>Not Ekle</h2>
+      <div class="sub">Sadece yetkili personel ekleyebilir.</div>
+      <label>Not</label>
+      <textarea id="noteText" placeholder="Notunuzu yazın..."></textarea>
+      <label>Yönetici Şifresi</label>
+      <input type="password" id="notePassword" placeholder="Şifre">
+      <div class="send-row"><button class="btn-primary" id="noteSendBtn">Ekle</button></div>
+      <div class="feedback" id="noteFeedback"></div>
+    </div>
+    <div class="list-section">
+      <h3>Notlar</h3>
+      <div id="notesList" class="list-empty">Yükleniyor...</div>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="panel-telefonlar">
+    <div class="card">
+      <h2>Acil Durum Telefonu Ekle</h2>
+      <div class="sub">İtfaiye, ambulans, müdür vb. Sadece yetkili personel ekleyebilir.</div>
+      <div class="two-col">
+        <div><label>İsim</label><input type="text" id="phoneName" placeholder="Örn: İtfaiye"></div>
+        <div><label>Numara</label><input type="tel" id="phoneNumber" placeholder="Örn: 110"></div>
+      </div>
+      <label>Yönetici Şifresi</label>
+      <input type="password" id="phonePassword" placeholder="Şifre">
+      <div class="send-row"><button class="btn-primary" id="phoneSendBtn">Ekle</button></div>
+      <div class="feedback" id="phoneFeedback"></div>
+    </div>
+    <div class="list-section">
+      <h3>Acil Durum Telefonları</h3>
+      <div id="phonesList" class="list-empty">Yükleniyor...</div>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="panel-isler">
+    <div class="card">
+      <h2>Görev Ekle</h2>
+      <div class="sub">Sadece yetkili personel ekleyebilir. İşaretlemeyi herkes yapabilir.</div>
+      <label>Görev</label>
+      <input type="text" id="taskText" placeholder="Örn: Yangın tüplerini kontrol et">
+      <label>Yönetici Şifresi</label>
+      <input type="password" id="taskPassword" placeholder="Şifre">
+      <div class="send-row"><button class="btn-primary" id="taskSendBtn">Ekle</button></div>
+      <div class="feedback" id="taskFeedback"></div>
+    </div>
+    <div class="list-section">
+      <h3>Aylık Yapılacak İşler</h3>
+      <div id="tasksList" class="list-empty">Yükleniyor...</div>
+    </div>
   </div>
 </div>
 
 <script>
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const s = document.getElementById('splash');
+    if (s) { s.classList.add('hide'); setTimeout(() => s.remove(), 700); }
+  }, 1800);
+});
+
+function playNotifSound() {
+  try {
+    const audio = new Audio('/notify.wav');
+    audio.volume = 1.0;
+    audio.play().catch(() => {});
+  } catch (e) {}
+}
+function showNotifBanner(category, title, body) {
+  const el = document.getElementById('notifBanner');
+  if (!el) return;
+  el.className = 'show ' + (category || 'genel');
+  const tagNames = { acil: '🚨 ACİL DUYURU', yemek: '🍽️ Yemek Listesi', vefat: '🕯️ Vefat', dogum: '🎉 Doğum', genel: '📢 Duyuru' };
+  el.innerHTML = '<div class="tag">' + (tagNames[category] || tagNames.genel) + '</div><div class="btitle">' + (title || '') + '</div><div class="bbody">' + (body || '') + '</div>';
+  playNotifSound();
+}
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'NOTIF_OPENED') {
+      showNotifBanner(event.data.category, (event.data.title || '').replace(/^\S+\s/, ''), event.data.body);
+    }
+  });
+}
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('notif') === '1') {
+    showNotifBanner(params.get('cat'), params.get('title'), params.get('body'));
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+})();
+
 const subscribeBtn = document.getElementById('subscribeBtn');
 const subscribeCard = document.getElementById('subscribeCard');
 const subCountEl = document.getElementById('subCount');
-const catRow = document.getElementById('catRow');
-const sendBtn = document.getElementById('sendBtn');
-const feedback = document.getElementById('feedback');
-
 let selectedCategory = 'genel';
 
-catRow.addEventListener('click', (e) => {
+document.getElementById('catRow').addEventListener('click', (e) => {
   const btn = e.target.closest('.cat-btn');
   if (!btn) return;
-  [...catRow.children].forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#catRow .cat-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   selectedCategory = btn.dataset.cat;
 });
@@ -416,127 +397,174 @@ function urlBase64ToUint8Array(base64String) {
   const rawData = atob(base64);
   return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
 }
-
 async function refreshCount() {
   try {
     const res = await fetch('/api/subscriber-count');
     const data = await res.json();
     subCountEl.textContent = data.total + ' abone';
-  } catch {
-    subCountEl.textContent = '';
-  }
+  } catch { subCountEl.textContent = ''; }
 }
-
 async function subscribeToPush() {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    alert('Bu tarayıcı push bildirimi desteklemiyor. Chrome (Android) veya Safari (iOS 16.4+, ana ekrana eklenmiş olmalı) kullanın.');
+    alert('Bu tarayıcı push bildirimi desteklemiyor.');
     return;
   }
-
   const permission = await Notification.requestPermission();
-  if (permission !== 'granted') {
-    feedback.textContent = 'Bildirim izni verilmedi.';
-    feedback.className = 'feedback err';
-    return;
-  }
-
+  if (permission !== 'granted') return;
   const reg = await navigator.serviceWorker.register('/sw.js');
   const { publicKey } = await (await fetch('/api/vapid-public-key')).json();
-
-  const subscription = await reg.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array(publicKey),
-  });
-
-  await fetch('/api/subscribe', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(subscription),
-  });
-
+  const subscription = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicKey) });
+  await fetch('/api/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(subscription) });
   subscribeCard.querySelector('h2').textContent = 'Bildirimler Açık ✓';
-  subscribeCard.querySelector('p').textContent = 'Artık ofis duyurularını telefonunda anında alacaksın.';
+  subscribeCard.querySelector('p').textContent = 'Artık her şeyi telefonunda anında alacaksın.';
   subscribeBtn.remove();
   refreshCount();
 }
-
 subscribeBtn.addEventListener('click', subscribeToPush);
+refreshCount();
 
-sendBtn.addEventListener('click', async () => {
+const catNames = { acil: 'Acil', yemek: 'Yemek Listesi', vefat: 'Vefat', dogum: 'Doğum', genel: 'Genel' };
+function formatTime(iso) {
+  return new Date(iso).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+function esc(s) { return (s || '').replace(/</g, '&lt;'); }
+
+document.getElementById('sendBtn').addEventListener('click', async () => {
   const title = document.getElementById('title').value.trim();
   const body = document.getElementById('body').value.trim();
   const password = document.getElementById('adminPassword').value;
-
-  if (!title || !body || !password) {
-    feedback.textContent = 'Başlık, mesaj ve şifre gerekli.';
-    feedback.className = 'feedback err';
-    return;
-  }
-
-  sendBtn.disabled = true;
-  feedback.textContent = 'Gönderiliyor...';
-  feedback.className = 'feedback';
-
+  const fb = document.getElementById('feedback');
+  if (!title || !body || !password) { fb.textContent = 'Başlık, mesaj ve şifre gerekli.'; fb.className = 'feedback err'; return; }
+  const btn = document.getElementById('sendBtn');
+  btn.disabled = true; fb.textContent = 'Gönderiliyor...'; fb.className = 'feedback';
   try {
-    const res = await fetch('/api/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password, category: selectedCategory, title, body }),
-    });
+    const res = await fetch('/api/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password, category: selectedCategory, title, body }) });
     const data = await res.json();
-
     if (!res.ok) throw new Error(data.error || 'Gönderilemedi');
-
-    feedback.textContent = `Gönderildi: ${data.sent} kişiye ulaştı.`;
-    feedback.className = 'feedback ok';
-    document.getElementById('title').value = '';
-    document.getElementById('body').value = '';
-    refreshCount();
-  } catch (err) {
-    feedback.textContent = err.message;
-    feedback.className = 'feedback err';
-  } finally {
-    sendBtn.disabled = false;
-  }
+    fb.textContent = 'Gönderildi: ' + data.sent + ' kişiye ulaştı.'; fb.className = 'feedback ok';
+    document.getElementById('title').value = ''; document.getElementById('body').value = '';
+    refreshCount(); loadHistory();
+  } catch (err) { fb.textContent = err.message; fb.className = 'feedback err'; }
+  finally { btn.disabled = false; }
 });
 
-refreshCount();
-
-// Geçmiş duyuruları yükle ve göster
-const catNames = { acil: 'Acil', yemek: 'Yemek Listesi', vefat: 'Vefat', dogum: 'Doğum', genel: 'Genel' };
-function formatTime(iso) {
-  const d = new Date(iso);
-  return d.toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-}
 async function loadHistory() {
   const listEl = document.getElementById('historyList');
   try {
     const res = await fetch('/api/messages');
     const data = await res.json();
-    if (!data.messages || data.messages.length === 0) {
-      listEl.className = 'history-empty';
-      listEl.textContent = 'Henüz duyuru gönderilmedi.';
-      return;
-    }
+    if (!data.messages || data.messages.length === 0) { listEl.className = 'list-empty'; listEl.textContent = 'Henüz duyuru gönderilmedi.'; return; }
     listEl.className = '';
-    listEl.innerHTML = data.messages.map(m => `
-      <div class="history-item ${m.category || 'genel'}">
-        <div class="htop">
-          <span class="htag">${catNames[m.category] || 'Genel'}</span>
-          <span class="htime">${formatTime(m.time)}</span>
-        </div>
-        <div class="htitle">${(m.title || '').replace(/</g, '&lt;')}</div>
-        <div class="hbody">${(m.body || '').replace(/</g, '&lt;')}</div>
-      </div>
-    `).join('');
-  } catch {
-    listEl.className = 'history-empty';
-    listEl.textContent = 'Duyurular yüklenemedi.';
-  }
+    listEl.innerHTML = data.messages.map(m =>
+      '<div class="list-item ' + (m.category || 'genel') + '">' +
+        '<div class="li-main">' +
+          '<div class="li-top"><span class="li-tag">' + (catNames[m.category] || 'Genel') + '</span><span class="li-time">' + formatTime(m.time) + '</span></div>' +
+          '<div class="li-title">' + esc(m.title) + '</div>' +
+          '<div class="li-body">' + esc(m.body) + '</div>' +
+        '</div>' +
+      '</div>'
+    ).join('');
+  } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
 }
 loadHistory();
-// Yeni duyuru gönderildiğinde listeyi tazele
-sendBtn.addEventListener('click', () => setTimeout(loadHistory, 600));
+
+function setupSimpleList(opts) {
+  const { endpoint, sendBtnId, feedbackId, passwordId, listId, buildPayload, validate, renderItem, emptyText } = opts;
+  document.getElementById(sendBtnId).addEventListener('click', async () => {
+    const fb = document.getElementById(feedbackId);
+    const password = document.getElementById(passwordId).value;
+    const payload = buildPayload();
+    const err = validate(payload, password);
+    if (err) { fb.textContent = err; fb.className = 'feedback err'; return; }
+    const btn = document.getElementById(sendBtnId);
+    btn.disabled = true; fb.textContent = 'Ekleniyor...'; fb.className = 'feedback';
+    try {
+      const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ password: password }, payload)) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Eklenemedi');
+      fb.textContent = 'Eklendi.'; fb.className = 'feedback ok';
+      opts.onSuccess && opts.onSuccess();
+      load();
+    } catch (e) { fb.textContent = e.message; fb.className = 'feedback err'; }
+    finally { btn.disabled = false; }
+  });
+
+  async function load() {
+    const listEl = document.getElementById(listId);
+    try {
+      const res = await fetch(endpoint);
+      const data = await res.json();
+      if (!data.items || data.items.length === 0) { listEl.className = 'list-empty'; listEl.textContent = emptyText; return; }
+      listEl.className = '';
+      listEl.innerHTML = data.items.map(renderItem).join('');
+      listEl.querySelectorAll('[data-del-id]').forEach(b => b.addEventListener('click', () => deleteItem(b.dataset.delId)));
+      listEl.querySelectorAll('[data-toggle-id]').forEach(c => c.addEventListener('change', () => toggleItem(c.dataset.toggleId)));
+    } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
+  }
+
+  async function deleteItem(id) {
+    const password = prompt('Silmek için yönetici şifresi:');
+    if (!password) return;
+    try {
+      const res = await fetch(endpoint + '/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+      if (!res.ok) { const d = await res.json(); alert(d.error || 'Silinemedi'); return; }
+      load();
+    } catch { alert('Silinemedi.'); }
+  }
+
+  async function toggleItem(id) {
+    try { await fetch(endpoint + '/' + id + '/toggle', { method: 'POST' }); load(); } catch {}
+  }
+
+  load();
+  return { load };
+}
+
+setupSimpleList({
+  endpoint: '/api/notes', sendBtnId: 'noteSendBtn', feedbackId: 'noteFeedback', passwordId: 'notePassword', listId: 'notesList',
+  buildPayload: () => ({ text: document.getElementById('noteText').value.trim() }),
+  validate: (p, pw) => (!p.text || !pw) ? 'Not ve şifre gerekli.' : null,
+  onSuccess: () => { document.getElementById('noteText').value = ''; },
+  emptyText: 'Henüz not eklenmedi.',
+  renderItem: (n) =>
+    '<div class="list-item">' +
+      '<div class="li-main">' +
+        '<div class="li-top"><span class="li-time">' + formatTime(n.time) + '</span></div>' +
+        '<div class="li-body">' + esc(n.text) + '</div>' +
+      '</div>' +
+      '<button class="btn-danger" data-del-id="' + n.id + '">Sil</button>' +
+    '</div>',
+});
+
+setupSimpleList({
+  endpoint: '/api/phones', sendBtnId: 'phoneSendBtn', feedbackId: 'phoneFeedback', passwordId: 'phonePassword', listId: 'phonesList',
+  buildPayload: () => ({ name: document.getElementById('phoneName').value.trim(), number: document.getElementById('phoneNumber').value.trim() }),
+  validate: (p, pw) => (!p.name || !p.number || !pw) ? 'İsim, numara ve şifre gerekli.' : null,
+  onSuccess: () => { document.getElementById('phoneName').value = ''; document.getElementById('phoneNumber').value = ''; },
+  emptyText: 'Henüz telefon eklenmedi.',
+  renderItem: (p) =>
+    '<div class="list-item">' +
+      '<div class="li-main">' +
+        '<div class="li-title">' + esc(p.name) + '</div>' +
+        '<a class="li-phone" href="tel:' + esc(p.number) + '">' + esc(p.number) + '</a>' +
+      '</div>' +
+      '<button class="btn-danger" data-del-id="' + p.id + '">Sil</button>' +
+    '</div>',
+});
+
+setupSimpleList({
+  endpoint: '/api/tasks', sendBtnId: 'taskSendBtn', feedbackId: 'taskFeedback', passwordId: 'taskPassword', listId: 'tasksList',
+  buildPayload: () => ({ text: document.getElementById('taskText').value.trim() }),
+  validate: (p, pw) => (!p.text || !pw) ? 'Görev ve şifre gerekli.' : null,
+  onSuccess: () => { document.getElementById('taskText').value = ''; },
+  emptyText: 'Henüz görev eklenmedi.',
+  renderItem: (t) =>
+    '<div class="list-item ' + (t.done ? 'done' : '') + '">' +
+      '<input type="checkbox" class="checkbox" data-toggle-id="' + t.id + '" ' + (t.done ? 'checked' : '') + '>' +
+      '<div class="li-main"><div class="li-title">' + esc(t.text) + '</div></div>' +
+      '<button class="btn-danger" data-del-id="' + t.id + '">Sil</button>' +
+    '</div>',
+});
 </script>
 </body>
 </html>
