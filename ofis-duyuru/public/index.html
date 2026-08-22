@@ -214,11 +214,46 @@
   @media (prefers-reduced-motion: reduce) {
     #splash img { animation: none; }
   }
+
+  /* Bildirime tıklayıp açıldığında çıkan renkli duyuru şeridi */
+  #notifBanner {
+    display: none;
+    max-width: 640px;
+    margin: 0 auto 20px;
+    padding: 16px 18px;
+    border-radius: 4px;
+    font-family: 'Inter', sans-serif;
+    color: #fff;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    animation: banner-in 0.4s ease;
+  }
+  #notifBanner.show { display: block; }
+  #notifBanner .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: rgba(255,255,255,0.25);
+    padding: 3px 9px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+  }
+  #notifBanner .btitle { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 700; margin: 0 0 4px; }
+  #notifBanner .bbody { font-size: 13.5px; line-height: 1.5; opacity: 0.95; margin: 0; }
+  #notifBanner.acil { background: linear-gradient(135deg, #E0972C, #B5674A); animation: banner-in 0.4s ease, banner-pulse 1.4s ease-in-out 2; }
+  #notifBanner.vefat { background: linear-gradient(135deg, #6b4a45, #3d2b28); }
+  #notifBanner.dogum { background: linear-gradient(135deg, #C9A24B, #8f7332); }
+  #notifBanner.yemek { background: linear-gradient(135deg, #6B8F71, #4a6650); }
+  #notifBanner.genel { background: linear-gradient(135deg, #3a4152, #1F2430); }
+  @keyframes banner-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes banner-pulse { 0%, 100% { box-shadow: 0 8px 20px rgba(224,151,44,0.25); } 50% { box-shadow: 0 8px 30px rgba(224,151,44,0.6); } }
 </style>
 </head>
 <body>
 
 <div id="splash"><img src="/icon-192.png" alt="Amasya İl Müdürlüğü"></div>
+<div id="notifBanner"></div>
 <script>
   window.addEventListener('load', () => {
     setTimeout(() => {
@@ -226,6 +261,48 @@
       if (s) { s.classList.add('hide'); setTimeout(() => s.remove(), 700); }
     }, 1800);
   });
+
+  // Resmi bildirim zili
+  function playNotifSound() {
+    try {
+      const audio = new Audio('/notify.wav');
+      audio.volume = 0.9;
+      audio.play().catch(() => {});
+    } catch (e) {}
+  }
+
+  function showNotifBanner(category, title, body) {
+    const el = document.getElementById('notifBanner');
+    if (!el) return;
+    el.className = 'notifBanner show ' + (category || 'genel');
+    el.id = 'notifBanner';
+    const tagNames = { acil: '🚨 ACİL DUYURU', yemek: '🍽️ Yemek Listesi', vefat: '🕯️ Vefat', dogum: '🎉 Doğum', genel: '📢 Duyuru' };
+    el.innerHTML = `
+      <div class="tag">${tagNames[category] || tagNames.genel}</div>
+      <div class="btitle">${title || ''}</div>
+      <div class="bbody">${body || ''}</div>
+    `;
+    playNotifSound();
+  }
+
+  // Bildirim tıklanıp uygulama zaten açıkken service worker'dan gelen mesajı yakala
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'NOTIF_OPENED') {
+        showNotifBanner(event.data.category, (event.data.title || '').replace(/^\S+\s/, ''), event.data.body);
+      }
+    });
+  }
+
+  // Bildirime tıklayıp uygulama kapalıyken yeni pencere açıldığında URL'den yakala
+  (function () {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('notif') === '1') {
+      showNotifBanner(params.get('cat'), params.get('title'), params.get('body'));
+      // URL'yi temizle
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  })();
 </script>
 <div class="wrap">
   <header>

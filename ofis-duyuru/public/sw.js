@@ -17,6 +17,7 @@ self.addEventListener('push', (event) => {
     tag: data.category || 'genel',
     renotify: true,
     requireInteraction: !!data.urgent,
+    data: { category: data.category || 'genel', urgent: !!data.urgent },
   };
 
   event.waitUntil(self.registration.showNotification(data.title, options));
@@ -24,12 +25,24 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+  const data = event.notification.data || {};
+  const params = new URLSearchParams({
+    notif: '1',
+    cat: data.category || 'genel',
+    title: (event.notification.title || '').replace(/^\S+\s/, ''), // emoji'yi baştan at
+    body: event.notification.body || '',
+  });
+  const targetUrl = '/?' + params.toString();
+
   event.waitUntil(
     clients.matchAll({ type: 'window' }).then((clientList) => {
       for (const client of clientList) {
-        if ('focus' in client) return client.focus();
+        if ('focus' in client) {
+          client.postMessage({ type: 'NOTIF_OPENED', ...data, title: event.notification.title, body: event.notification.body });
+          return client.focus();
+        }
       }
-      if (clients.openWindow) return clients.openWindow('/');
+      if (clients.openWindow) return clients.openWindow(targetUrl);
     })
   );
 });
