@@ -1,0 +1,13 @@
+{
+  "name": "ofis-duyuru",
+  "version": "1.0.0",
+  "description": "Ofis içi acil/duyuru bildirim sistemi (web push)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "web-push": "^3.6.7"
+  }
+}

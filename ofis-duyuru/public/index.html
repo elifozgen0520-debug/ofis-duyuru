@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ofis Panosu</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1F2430">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --ink: #1F2430;
+    --paper: #F7F5F0;
+    --paper-shadow: rgba(0,0,0,0.18);
+    --amber: #E0972C;
+    --sage: #6B8F71;
+    --clay: #B5674A;
+    --gold: #C9A24B;
+    --line: rgba(255,255,255,0.12);
+    --muted: #9AA0AE;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: var(--ink);
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(224,151,44,0.06), transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(107,143,113,0.06), transparent 40%);
+    color: var(--paper);
+    min-height: 100vh;
+    padding: 32px 16px 80px;
+  }
+
+  .wrap { max-width: 640px; margin: 0 auto; }
+
+  header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 18px;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 28px;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  .pin-count {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+
+  .status-card {
+    background: var(--paper);
+    color: var(--ink);
+    border-radius: 4px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 24px var(--paper-shadow);
+    position: relative;
+  }
+  .status-card::before {
+    content: '';
+    position: absolute;
+    top: -6px; left: 24px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--clay);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+
+  .status-card h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    margin: 0 0 6px;
+  }
+  .status-card p { margin: 0 0 12px; font-size: 13.5px; line-height: 1.5; color: #444; }
+
+  button {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    border: none;
+    border-radius: 3px;
+    padding: 11px 18px;
+    cursor: pointer;
+    transition: transform 0.1s ease, opacity 0.15s ease;
+  }
+  button:active { transform: scale(0.97); }
+  button:disabled { opacity: 0.5; cursor: default; }
+
+  .btn-primary { background: var(--ink); color: var(--paper); }
+  .btn-primary:hover:not(:disabled) { opacity: 0.85; }
+
+  section.board { margin-top: 8px; }
+
+  .composer {
+    background: var(--paper);
+    color: var(--ink);
+    border-radius: 4px;
+    padding: 22px;
+    box-shadow: 0 12px 28px var(--paper-shadow);
+  }
+
+  .composer h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    margin: 0 0 4px;
+  }
+  .composer .sub { font-size: 12.5px; color: #6b6b6b; margin-bottom: 18px; }
+
+  label {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #777;
+    margin-bottom: 6px;
+    margin-top: 16px;
+  }
+  label:first-of-type { margin-top: 0; }
+
+  .cat-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .cat-btn {
+    background: #fff;
+    border: 1.5px solid #ddd;
+    color: #555;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: 20px;
+  }
+  .cat-btn.active[data-cat="acil"] { background: var(--amber); border-color: var(--amber); color: #fff; }
+  .cat-btn.active[data-cat="yemek"] { background: var(--sage); border-color: var(--sage); color: #fff; }
+  .cat-btn.active[data-cat="vefat"] { background: var(--clay); border-color: var(--clay); color: #fff; }
+  .cat-btn.active[data-cat="dogum"] { background: var(--gold); border-color: var(--gold); color: #fff; }
+  .cat-btn.active[data-cat="genel"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+  input[type="text"], input[type="password"], textarea {
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    font-size: 14.5px;
+    padding: 10px 12px;
+    border: 1.5px solid #ddd;
+    border-radius: 3px;
+    background: #fff;
+    color: var(--ink);
+  }
+  textarea { resize: vertical; min-height: 80px; }
+  input:focus, textarea:focus { outline: 2px solid var(--ink); outline-offset: 1px; }
+
+  .send-row {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .feedback { font-size: 13px; margin-top: 10px; min-height: 18px; }
+  .feedback.ok { color: var(--sage); }
+  .feedback.err { color: var(--clay); }
+
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 11.5px;
+    margin-top: 40px;
+    letter-spacing: 0.03em;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Ofis Panosu</h1>
+    <span class="pin-count" id="subCount">— abone</span>
+  </header>
+
+  <div class="status-card" id="subscribeCard">
+    <h2>Bildirimleri Aç</h2>
+    <p>Yemek listesi, acil duyuru, vefat/doğum haberleri gibi mesajları telefonuna anında almak için bir kere izin ver. SMS veya WhatsApp gerekmez.</p>
+    <button class="btn-primary" id="subscribeBtn">Bildirimleri Aç</button>
+  </div>
+
+  <section class="board">
+    <div class="composer">
+      <h2>Duyuru Yaz</h2>
+      <div class="sub">Sadece yetkili personel gönderebilir.</div>
+
+      <label>Kategori</label>
+      <div class="cat-row" id="catRow">
+        <button type="button" class="cat-btn active" data-cat="genel">Genel</button>
+        <button type="button" class="cat-btn" data-cat="acil">Acil</button>
+        <button type="button" class="cat-btn" data-cat="yemek">Yemek Listesi</button>
+        <button type="button" class="cat-btn" data-cat="vefat">Vefat</button>
+        <button type="button" class="cat-btn" data-cat="dogum">Doğum</button>
+      </div>
+
+      <label>Başlık</label>
+      <input type="text" id="title" placeholder="Örn: Bugünün Menüsü">
+
+      <label>Mesaj</label>
+      <textarea id="body" placeholder="Mesajınızı yazın..."></textarea>
+
+      <label>Yönetici Şifresi</label>
+      <input type="password" id="adminPassword" placeholder="Şifre">
+
+      <div class="send-row">
+        <button class="btn-primary" id="sendBtn">Gönder</button>
+      </div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+  </section>
+
+  <footer>Ofis içi duyuru sistemi — web push ile çalışır, ücretsizdir.</footer>
+</div>
+
+<script>
+const subscribeBtn = document.getElementById('subscribeBtn');
+const subscribeCard = document.getElementById('subscribeCard');
+const subCountEl = document.getElementById('subCount');
+const catRow = document.getElementById('catRow');
+const sendBtn = document.getElementById('sendBtn');
+const feedback = document.getElementById('feedback');
+
+let selectedCategory = 'genel';
+
+catRow.addEventListener('click', (e) => {
+  const btn = e.target.closest('.cat-btn');
+  if (!btn) return;
+  [...catRow.children].forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedCategory = btn.dataset.cat;
+});
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
+
+async function refreshCount() {
+  try {
+    const res = await fetch('/api/subscriber-count');
+    const data = await res.json();
+    subCountEl.textContent = data.total + ' abone';
+  } catch {
+    subCountEl.textContent = '';
+  }
+}
+
+async function subscribeToPush() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    alert('Bu tarayıcı push bildirimi desteklemiyor. Chrome (Android) veya Safari (iOS 16.4+, ana ekrana eklenmiş olmalı) kullanın.');
+    return;
+  }
+
+  const permission = await Notification.requestPermission();
+  if (permission !== 'granted') {
+    feedback.textContent = 'Bildirim izni verilmedi.';
+    feedback.className = 'feedback err';
+    return;
+  }
+
+  const reg = await navigator.serviceWorker.register('/sw.js');
+  const { publicKey } = await (await fetch('/api/vapid-public-key')).json();
+
+  const subscription = await reg.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(publicKey),
+  });
+
+  await fetch('/api/subscribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(subscription),
+  });
+
+  subscribeCard.querySelector('h2').textContent = 'Bildirimler Açık ✓';
+  subscribeCard.querySelector('p').textContent = 'Artık ofis duyurularını telefonunda anında alacaksın.';
+  subscribeBtn.remove();
+  refreshCount();
+}
+
+subscribeBtn.addEventListener('click', subscribeToPush);
+
+sendBtn.addEventListener('click', async () => {
+  const title = document.getElementById('title').value.trim();
+  const body = document.getElementById('body').value.trim();
+  const password = document.getElementById('adminPassword').value;
+
+  if (!title || !body || !password) {
+    feedback.textContent = 'Başlık, mesaj ve şifre gerekli.';
+    feedback.className = 'feedback err';
+    return;
+  }
+
+  sendBtn.disabled = true;
+  feedback.textContent = 'Gönderiliyor...';
+  feedback.className = 'feedback';
+
+  try {
+    const res = await fetch('/api/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password, category: selectedCategory, title, body }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || 'Gönderilemedi');
+
+    feedback.textContent = `Gönderildi: ${data.sent} kişiye ulaştı.`;
+    feedback.className = 'feedback ok';
+    document.getElementById('title').value = '';
+    document.getElementById('body').value = '';
+    refreshCount();
+  } catch (err) {
+    feedback.textContent = err.message;
+    feedback.className = 'feedback err';
+  } finally {
+    sendBtn.disabled = false;
+  }
+});
+
+refreshCount();
+</script>
+</body>
+</html>
