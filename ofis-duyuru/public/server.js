@@ -184,6 +184,7 @@ app.post('/api/devices/name', (req, res) => {
   res.json({ ok: true });
 });
 
+// Yüksek Öncelikli Push Bildirimi (Urgency: high)
 app.post('/api/send', upload.single('attachment'), async (req, res) => {
   const { password, category, title, body } = req.body;
   const result = checkPassword(password, req);
@@ -199,16 +200,24 @@ app.post('/api/send', upload.single('attachment'), async (req, res) => {
     title: `${categoryEmoji(category)} ${title}`,
     body,
     category: category || 'genel',
-    urgent: category === 'acil',
+    urgent: true,
     image: attachment && attachment.type === 'image' ? attachment.url : undefined,
   });
 
   let sent = 0;
   const stillValid = [];
 
+  const requestOptions = {
+    headers: {
+      'Urgency': 'high',
+      'Topic': category || 'genel'
+    },
+    TTL: 86400
+  };
+
   for (const sub of subs) {
     try {
-      await webpush.sendNotification(sub, payload);
+      await webpush.sendNotification(sub, payload, requestOptions);
       sent++;
       stillValid.push(sub);
     } catch (err) {
