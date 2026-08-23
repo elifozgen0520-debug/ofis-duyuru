@@ -206,7 +206,15 @@
   .list-item.vefat { border-left-color: var(--clay); }
   .list-item.dogum { border-left-color: var(--gold); }
   .list-item .li-main { flex: 1; min-width: 0; }
-  .list-item .li-top { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 3px; }
+  .list-item .li-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 3px; }
+  .li-toggle {
+    background: none; border: none; color: #999; font-size: 15px; cursor: pointer;
+    padding: 2px 6px; border-radius: 4px; transition: transform 0.2s ease, background 0.15s ease; flex-shrink: 0;
+  }
+  .li-toggle:hover { background: rgba(0,0,0,0.06); color: var(--ink); }
+  .li-toggle.open { transform: rotate(180deg); }
+  .attach-wrap { overflow: hidden; max-height: 0; transition: max-height 0.25s ease; }
+  .attach-wrap.open { max-height: 2000px; }
   .list-item .li-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #888; }
   .list-item .li-time { font-size: 10.5px; color: #999; }
   .list-item .li-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 14.5px; margin: 0 0 2px; }
@@ -903,14 +911,27 @@ async function loadHistory() {
     listEl.innerHTML = data.messages.map(m => `
       <div class="list-item ${m.category || 'genel'}">
         <div class="li-main">
-          <div class="li-top"><span class="li-tag">${catNames[m.category] || 'Genel'}</span><span class="li-time">${formatTime(m.time)}</span></div>
-          <div class="li-title">${esc(m.title)}</div>
+          <div class="li-top">
+            <span class="li-tag">${catNames[m.category] || 'Genel'}</span>
+            <span style="display:flex; align-items:center; gap:6px;">
+              <span class="li-time">${formatTime(m.time)}</span>
+              ${m.attachment ? `<button type="button" class="li-toggle" data-toggle-attach="${m.id}" aria-label="Detayı göster">▾</button>` : ''}
+            </span>
+          </div>
+          <div class="li-title" ${m.attachment ? `style="cursor:pointer;" data-toggle-attach="${m.id}"` : ''}>${esc(m.title)}</div>
           <div class="li-body">${esc(m.body)}</div>
-          ${renderAttachment(m.attachment)}
+          <div class="attach-wrap" id="attach-${m.id}">${renderAttachment(m.attachment)}</div>
           ${activeAdminPassword ? `<div style="margin-top:8px;"><span class="reads-badge" onclick="showReads('${m.id}')">👁 Okundu Bilgisi</span> <button class="btn-danger" onclick="deleteMessage('${m.id}')">Sil</button></div>` : ''}
         </div>
       </div>
     `).join('');
+    listEl.querySelectorAll('[data-toggle-attach]').forEach(el => {
+      el.addEventListener('click', () => {
+        const id = el.dataset.toggleAttach;
+        document.getElementById('attach-' + id).classList.toggle('open');
+        listEl.querySelectorAll(`[data-toggle-attach="${id}"].li-toggle`).forEach(btn => btn.classList.toggle('open'));
+      });
+    });
   } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
 }
 loadHistory();
