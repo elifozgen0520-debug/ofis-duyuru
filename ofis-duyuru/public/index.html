@@ -670,6 +670,13 @@ if (isIOS) {
   document.getElementById('iosPwaNotice').style.display = 'block';
 }
 
+// Uygulama, kurulu APK (TWA) içinden mi açıldı? (tarayıcıdan mı yoksa yüklü uygulamadan mı)
+const isInstalledApp = document.referrer.startsWith('android-app://') || window.matchMedia('(display-mode: standalone)').matches;
+if (isInstalledApp) {
+  document.getElementById('step1').style.display = 'none';
+  document.getElementById('dot1').style.display = 'none';
+}
+
 function showWizardStep(stepNum) {
   for (let i = 1; i <= 4; i++) {
     document.getElementById('step' + i).classList.remove('active');
@@ -684,13 +691,14 @@ function checkFirstRunWizard() {
   const hasName = localStorage.getItem('selfName');
   if (perm !== 'granted' || !hasName) {
     document.getElementById('wizardModal').style.display = 'flex';
+    showWizardStep(isInstalledApp ? 2 : 1);
   }
 }
 
 document.getElementById('subscribeBtn').addEventListener('click', () => {
   unlockAudioEngine();
   document.getElementById('wizardModal').style.display = 'flex';
-  showWizardStep(1);
+  showWizardStep(isInstalledApp ? 2 : 1);
 });
 
 document.getElementById('btnPwaInstall').addEventListener('click', async () => {
