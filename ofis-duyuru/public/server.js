@@ -40,9 +40,34 @@ function makeFilename(originalname, prefix) {
 }
 
 // Dosyayı kalıcı depoya (Redis) kaydeder, dosya adını döner.
+// Resimleri Upstash'in 10 MB istek sınırının altında kalması için küçültüp sıkıştırır.
+// PDF'lere dokunmaz (sharp resim işleyemez), sadece resim dosyalarında devreye girer.
+async function compressIfImage(file) {
+  const isImage = file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/webp';
+  if (!isImage) return file;
+  try {
+    const compressed = await sharp(file.buffer)
+      .resize({ width: 1600, height: 1600, fit: 'inside', withoutEnlargement: true })
+      .jpeg({ quality: 78 })
+      .toBuffer();
+    return { ...file, buffer: compressed, mimetype: 'image/jpeg' };
+  } catch (err) {
+    console.error('Resim sıkıştırılamadı, orijinal kullanılıyor:', err.message);
+    return file;
+  }
+}
+
 async function saveFileToStore(file, prefix) {
   if (!file) return null;
+  file = await compressIfImage(file);
   const filename = makeFilename(file.originalname, prefix);
+
+  // Upstash'in 10 MB istek sınırını base64 + JSON zarfıyla birlikte aşmayalım (güvenli pay için 9 MB'ta kes).
+  const approxBase64Size = Math.ceil(file.buffer.length * 4 / 3);
+  if (redis && approxBase64Size > 9 * 1024 * 1024) {
+    throw new Error('Dosya çok büyük (sıkıştırma sonrası bile). Lütfen daha küçük bir dosya deneyin.');
+  }
+
   if (redis) {
     await redis.set('file:' + filename, JSON.stringify({
       mimetype: file.mimetype,
@@ -335,12 +360,16 @@ app.post('/api/self-profile/avatar', avatarUpload.single('avatar'), async (req, 
   const { deviceId } = req.body;
   if (!deviceId) return res.status(400).json({ ok: false, error: 'Cihaz kimliği eksik.' });
   if (!req.file) return res.status(400).json({ ok: false, error: 'Görsel yüklenemedi.' });
-  const filename = await saveFileToStore(req.file, 'avatar-');
-  const profiles = await loadJson(PROFILES_KEY, {});
-  const existing = profiles[deviceId] || {};
-  profiles[deviceId] = { ...existing, avatar: '/uploads/' + filename, updatedAt: new Date().toISOString() };
-  await saveJson(PROFILES_KEY, profiles);
-  res.json({ ok: true, avatar: profiles[deviceId].avatar });
+  try {
+    const filename = await saveFileToStore(req.file, 'avatar-');
+    const profiles = await loadJson(PROFILES_KEY, {});
+    const existing = profiles[deviceId] || {};
+    profiles[deviceId] = { ...existing, avatar: '/uploads/' + filename, updatedAt: new Date().toISOString() };
+    await saveJson(PROFILES_KEY, profiles);
+    res.json({ ok: true, avatar: profiles[deviceId].avatar });
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message || 'Fotoğraf kaydedilemedi.' });
+  }
 });
 
 app.get('/api/self-profile/:deviceId', async (req, res) => {
@@ -380,7 +409,12 @@ app.post('/api/send', upload.single('attachment'), async (req, res) => {
   if (passwordCheckResponse(res, result)) return;
   if (!title || !body) return res.status(400).json({ ok: false, error: 'Başlık ve mesaj zorunlu.' });
 
-  const attachment = await attachmentFromFile(req.file);
+  let attachment;
+  try {
+    attachment = await attachmentFromFile(req.file);
+  } catch (err) {
+    return res.status(400).json({ ok: false, error: err.message || 'Dosya yüklenemedi.' });
+  }
   const messageId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   const subs = await loadJson(SUBS_KEY);
 
@@ -442,7 +476,12 @@ app.post('/api/send-to', upload.single('attachment'), async (req, res) => {
   const targetSubs = subs.filter(s => s.deviceId === deviceId);
   if (targetSubs.length === 0) return res.status(404).json({ ok: false, error: 'Bu kişiye ait aktif bildirim aboneliği bulunamadı.' });
 
-  const attachment = await attachmentFromFile(req.file);
+  let attachment;
+  try {
+    attachment = await attachmentFromFile(req.file);
+  } catch (err) {
+    return res.status(400).json({ ok: false, error: err.message || 'Dosya yüklenemedi.' });
+  }
   const messageId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
   const payload = JSON.stringify({
@@ -838,7 +877,12 @@ function makeListApi(name, key) {
     const { password, ...fields } = req.body;
     const result = checkPassword(password, req);
     if (passwordCheckResponse(res, result)) return;
-    const attachment = await attachmentFromFile(req.file);
+    let attachment;
+    try {
+      attachment = await attachmentFromFile(req.file);
+    } catch (err) {
+      return res.status(400).json({ ok: false, error: err.message || 'Dosya yüklenemedi.' });
+    }
     const items = await loadJson(key);
     const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), time: new Date().toISOString(), done: false, attachment, ...fields };
     items.push(item);
@@ -868,6 +912,19 @@ function makeListApi(name, key) {
 makeListApi('notes', 'notes');
 makeListApi('phones', 'phones');
 makeListApi('tasks', 'tasks');
+
+// Multer/genel hataları çirkin bir stack trace sayfası yerine düzgün JSON olarak dön.
+app.use((err, req, res, next) => {
+  if (err && err.name === 'MulterError') {
+    const msg = err.code === 'LIMIT_FILE_SIZE' ? 'Dosya çok büyük.' : 'Dosya yüklenemedi.';
+    return res.status(400).json({ ok: false, error: msg });
+  }
+  if (err) {
+    console.error('Beklenmeyen hata:', err.message);
+    return res.status(500).json({ ok: false, error: 'Sunucu hatası oluştu.' });
+  }
+  next();
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Ofis Duyuru Sistemi aktif: http://localhost:${PORT}`));
