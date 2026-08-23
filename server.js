@@ -43,6 +43,8 @@ function attachmentFromFile(file) {
 
 const SUBS_FILE = path.join(__dirname, 'subscriptions.json');
 const MESSAGES_FILE = path.join(__dirname, 'messages.json');
+const PROFILES_FILE = path.join(__dirname, 'profiles.json');
+const FEEDBACK_FILE = path.join(__dirname, 'feedback.json');
 const ADMIN_PASSWORD = (process.env.ADMIN_PASSWORD || 'degistir-bu-sifreyi').trim();
 
 // ---- Brute-force koruması ----
@@ -180,12 +182,58 @@ app.post('/api/subscribe', (req, res) => {
 // Yönetici: bilinen cihazları listele (isim ataması yapmak için)
 app.get('/api/devices', (req, res) => {
   const subs = loadSubs();
+  const profiles = loadProfiles();
   const byDevice = new Map();
   for (const s of subs) {
     if (!s.deviceId) continue;
-    byDevice.set(s.deviceId, { deviceId: s.deviceId, name: s.name || null, subscribedAt: s.subscribedAt || null });
+    const profile = profiles[s.deviceId];
+    byDevice.set(s.deviceId, {
+      deviceId: s.deviceId,
+      name: s.name || null,
+      subscribedAt: s.subscribedAt || null,
+      suggestedName: profile ? profile.name : null,
+      suggestedPhone: profile ? profile.phone : null,
+    });
   }
   res.json({ devices: Array.from(byDevice.values()).sort((a, b) => (b.subscribedAt || '').localeCompare(a.subscribedAt || '')) });
+});
+
+// Herkes: kendi ismini/telefonunu isteğe bağlı olarak bildirebilir (öneri niteliğinde,
+// okundu bilgisinde otomatik geçerli olmaz — yönetici Cihazları Yönet'ten onaylamalı)
+function loadProfiles() {
+  try { return JSON.parse(fs.readFileSync(PROFILES_FILE, 'utf8')); } catch { return {}; }
+}
+function saveProfiles(p) { fs.writeFileSync(PROFILES_FILE, JSON.stringify(p, null, 2)); }
+
+app.post('/api/self-profile', (req, res) => {
+  const { deviceId, name, phone } = req.body;
+  if (!deviceId) return res.status(400).json({ ok: false, error: 'Cihaz kimliği eksik.' });
+  const profiles = loadProfiles();
+  profiles[deviceId] = { name: (name || '').trim() || null, phone: (phone || '').trim() || null, updatedAt: new Date().toISOString() };
+  saveProfiles(profiles);
+  res.json({ ok: true });
+});
+
+// ---- Görüş & Öneri (herkes gönderebilir, sadece yönetici okuyabilir) ----
+function loadFeedback() {
+  try { return JSON.parse(fs.readFileSync(FEEDBACK_FILE, 'utf8')); } catch { return []; }
+}
+function saveFeedback(f) { fs.writeFileSync(FEEDBACK_FILE, JSON.stringify(f, null, 2)); }
+
+app.post('/api/feedback', (req, res) => {
+  const text = (req.body.text || '').trim();
+  const name = (req.body.name || '').trim();
+  if (!text) return res.status(400).json({ ok: false, error: 'Boş gönderilemez.' });
+  const list = loadFeedback();
+  list.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), text, name: name || null, time: new Date().toISOString() });
+  saveFeedback(list.slice(-200));
+  res.json({ ok: true });
+});
+
+app.get('/api/feedback', (req, res) => {
+  const result = checkPassword(req.query.password, req);
+  if (passwordCheckResponse(res, result)) return;
+  res.json({ items: loadFeedback().slice().reverse() });
 });
 
 // Yönetici: bir cihaza gerçek isim ata (sadece bu, kullanıcı kendi giremez)
@@ -304,9 +352,14 @@ app.get('/api/messages/:id/reads', (req, res) => {
   const msg = messages.find(m => m.id === req.params.id);
   if (!msg) return res.status(404).json({ ok: false });
   const subs = loadSubs();
+  const profiles = loadProfiles();
   const reads = (msg.reads || []).map(r => {
     const sub = subs.find(s => s.deviceId === r.deviceId);
-    const label = (sub && sub.name) || ('Cihaz #' + (r.deviceId || '').slice(-4));
+    const profile = profiles[r.deviceId];
+    let label;
+    if (sub && sub.name) label = sub.name;
+    else if (profile && profile.name) label = profile.name + ' (kendi bildirdi)';
+    else label = 'Cihaz #' + (r.deviceId || '').slice(-4);
     return { name: label, time: r.time };
   });
   res.json({ reads, totalSubscribers: subs.length });
