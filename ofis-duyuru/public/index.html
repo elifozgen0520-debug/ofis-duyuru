@@ -715,14 +715,23 @@ function checkFirstRunWizard() {
   const hasName = localStorage.getItem('selfName');
   if (perm !== 'granted' || !hasName) {
     document.getElementById('wizardModal').style.display = 'flex';
-    showWizardStep(1);
+    // Kurulu APK'da ve izin daha hiç sorulmadıysa: direkt izin adımına atla, isim/adım1'i bekletme.
+    if (isInstalledApp && perm === 'default') {
+      showWizardStep(3);
+    } else {
+      showWizardStep(1);
+    }
   }
 }
 
 document.getElementById('subscribeBtn').addEventListener('click', () => {
   unlockAudioEngine();
   document.getElementById('wizardModal').style.display = 'flex';
-  showWizardStep(1);
+  if (isInstalledApp && Notification.permission === 'default') {
+    showWizardStep(3);
+  } else {
+    showWizardStep(1);
+  }
 });
 
 document.getElementById('btnPwaInstall').addEventListener('click', async () => {
@@ -753,14 +762,16 @@ document.getElementById('btnNext2').addEventListener('click', async () => {
     });
   } catch(e){}
 
-  showWizardStep(3);
+  // İzin bu adımdan önce (kurulu APK akışında) zaten verilmiş olabilir, o zaman direkt bitir.
+  showWizardStep(Notification.permission === 'granted' ? 4 : 3);
 });
 
 document.getElementById('btnGrantPush').addEventListener('click', async () => {
   unlockAudioEngine();
   const ok = await doSubscribe(false);
   if (ok) {
-    showWizardStep(4);
+    // Kurulu APK akışında izin adımı isimden ÖNCE geldiyse, şimdi ismi soralım.
+    showWizardStep(localStorage.getItem('selfName') ? 4 : 2);
   } else {
     alert('Bildirim izni verilmedi. Ayarlardan izin verip tekrar deneyin.');
   }
