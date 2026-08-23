@@ -1,1 +1,521 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yönetim Paneli</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#1F2430">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
+  :root {
+    --ink: #1F2430; --paper: #F7F5F0; --paper-shadow: rgba(0,0,0,0.18);
+    --amber: #E0972C; --sage: #6B8F71; --clay: #B5674A; --gold: #C9A24B;
+    --line: rgba(255,255,255,0.12); --muted: #9AA0AE;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: 'Inter', sans-serif; background: var(--ink);
+    background-image: radial-gradient(circle at 20% 10%, rgba(224,151,44,0.06), transparent 40%), radial-gradient(circle at 80% 80%, rgba(107,143,113,0.06), transparent 40%);
+    color: var(--paper); min-height: 100vh; padding: 32px 16px 60px;
+  }
+  .wrap { max-width: 680px; margin: 0 auto; }
+  h1 { font-family: 'Fraunces', serif; font-weight: 700; font-size: 24px; margin: 0; }
+  h2 { font-family: 'Fraunces', serif; font-size: 18px; margin: 0 0 4px; }
+  .muted { color: var(--muted); font-size: 12.5px; }
 
+  /* Giriş ekranı */
+  #loginScreen { display: flex; align-items: center; justify-content: center; min-height: 80vh; }
+  .login-box {
+    background: var(--paper); color: var(--ink); border-radius: 6px; padding: 32px 28px;
+    max-width: 340px; width: 100%; box-shadow: 0 16px 40px rgba(0,0,0,0.35); text-align: center;
+  }
+  .login-box img { width: 56px; height: 56px; border-radius: 50%; margin-bottom: 14px; }
+  .login-box h1 { font-size: 20px; margin-bottom: 4px; }
+  .login-box p { font-size: 13px; color: #666; margin: 0 0 18px; }
+
+  /* Dashboard */
+  #dashboard { display: none; }
+  header {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    margin-bottom: 26px; border-bottom: 1px solid var(--line); padding-bottom: 18px; flex-wrap: wrap;
+  }
+  header .htitle { display: flex; align-items: center; gap: 10px; }
+  header img { width: 30px; height: 30px; border-radius: 50%; }
+  .logout-link { font-size: 12px; color: var(--muted); text-decoration: underline dotted; cursor: pointer; }
+  .logout-link:hover { color: var(--paper); }
+  a.back-link { display: inline-block; font-size: 12.5px; color: var(--muted); text-decoration: none; margin-bottom: 18px; cursor: pointer; }
+  a.back-link:hover { color: var(--paper); }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  .dash-card {
+    background: var(--paper); color: var(--ink); border-radius: 6px; padding: 20px 16px;
+    box-shadow: 0 8px 20px var(--paper-shadow); cursor: pointer; text-align: center;
+    transition: transform 0.12s ease;
+  }
+  .dash-card:hover { transform: translateY(-2px); }
+  .dash-card .icon { font-size: 30px; margin-bottom: 8px; }
+  .dash-card .label { font-family: 'Fraunces', serif; font-weight: 700; font-size: 14.5px; }
+  .dash-card .count { font-size: 11px; color: #888; margin-top: 3px; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .card {
+    background: var(--paper); color: var(--ink); border-radius: 6px; padding: 22px;
+    box-shadow: 0 12px 28px var(--paper-shadow); margin-bottom: 18px;
+  }
+  .card .sub { font-size: 12.5px; color: #6b6b6b; margin-bottom: 16px; }
+
+  label { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: #777; margin-bottom: 6px; margin-top: 14px; }
+  label:first-of-type { margin-top: 0; }
+  .cat-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .cat-btn { background: #fff; border: 1.5px solid #ddd; color: #555; font-size: 13px; font-weight: 500; padding: 8px 14px; border-radius: 20px; }
+  .cat-btn.active[data-cat="acil"] { background: var(--amber); border-color: var(--amber); color: #fff; }
+  .cat-btn.active[data-cat="yemek"] { background: var(--sage); border-color: var(--sage); color: #fff; }
+  .cat-btn.active[data-cat="vefat"] { background: var(--clay); border-color: var(--clay); color: #fff; }
+  .cat-btn.active[data-cat="dogum"] { background: var(--gold); border-color: var(--gold); color: #fff; }
+  .cat-btn.active[data-cat="genel"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+  input[type="text"], input[type="password"], input[type="tel"], textarea, select {
+    width: 100%; font-family: 'Inter', sans-serif; font-size: 14.5px; padding: 10px 12px;
+    border: 1.5px solid #ddd; border-radius: 3px; background: #fff; color: var(--ink);
+  }
+  textarea { resize: vertical; min-height: 70px; }
+  input:focus, textarea:focus, select:focus { outline: 2px solid var(--ink); outline-offset: 1px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  button { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px; border: none; border-radius: 3px; padding: 10px 16px; cursor: pointer; }
+  button:disabled { opacity: 0.5; cursor: default; }
+  .btn-primary { background: var(--ink); color: var(--paper); }
+  .btn-primary:hover:not(:disabled) { opacity: 0.85; }
+  .btn-danger { background: transparent; color: var(--clay); border: 1px solid var(--clay); padding: 5px 10px; font-size: 12px; }
+  .send-row { margin-top: 18px; }
+  .feedback-msg { font-size: 13px; margin-top: 10px; min-height: 18px; }
+  .feedback-msg.ok { color: var(--sage); }
+  .feedback-msg.err { color: var(--clay); }
+
+  .list-section { margin-top: 8px; }
+  .list-section h3 { font-family: 'Fraunces', serif; font-size: 16px; margin: 0 0 12px; color: var(--paper); }
+  .list-item {
+    background: var(--paper); color: var(--ink); border-radius: 4px; padding: 13px 15px; margin-bottom: 9px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-left: 4px solid var(--ink);
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
+  }
+  .list-item.acil { border-left-color: var(--amber); }
+  .list-item.yemek { border-left-color: var(--sage); }
+  .list-item.vefat { border-left-color: var(--clay); }
+  .list-item.dogum { border-left-color: var(--gold); }
+  .list-item .li-main { flex: 1; min-width: 0; }
+  .list-item .li-top { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 3px; }
+  .list-item .li-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #888; }
+  .list-item .li-time { font-size: 10.5px; color: #999; white-space: nowrap; }
+  .list-item .li-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 14.5px; margin: 0 0 2px; }
+  .list-item .li-body { font-size: 12.5px; color: #555; line-height: 1.45; margin: 0; }
+  .list-item .li-phone { font-family: 'Fraunces', serif; font-weight: 700; font-size: 16px; color: var(--clay); text-decoration: none; }
+  .list-item.done .li-title { text-decoration: line-through; opacity: 0.5; }
+  .list-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 18px; }
+  .reads-link { margin-top: 8px; font-size: 11.5px; color: #999; cursor: pointer; }
+  .reads-detail { display: none; font-size: 12px; color: #666; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-box">
+    <img src="/icon-192.png" alt="">
+    <h1>Yönetim Paneli</h1>
+    <p>Devam etmek için şifreni gir.</p>
+    <input type="password" id="loginPassword" placeholder="Şifre" style="margin-bottom:12px;">
+    <button class="btn-primary" id="loginBtn" style="width:100%;">Giriş Yap</button>
+    <div class="feedback-msg" id="loginFeedback"></div>
+  </div>
+</div>
+
+<div class="wrap" id="dashboard">
+  <header>
+    <div class="htitle"><img src="/icon-192.png" alt=""><h1>Yönetim Paneli</h1></div>
+    <span class="logout-link" id="logoutLink">🔓 Çıkış Yap</span>
+  </header>
+
+  <div class="view active" id="view-dashboard">
+    <div class="card-grid">
+      <div class="dash-card" data-view="duyuru"><div class="icon">📢</div><div class="label">Duyuru Gönder</div><div class="count" id="countDuyuru"></div></div>
+      <div class="dash-card" data-view="notlar"><div class="icon">🗒️</div><div class="label">Notlar</div><div class="count" id="countNotlar"></div></div>
+      <div class="dash-card" data-view="telefonlar"><div class="icon">☎️</div><div class="label">Telefonlar</div><div class="count" id="countTelefonlar"></div></div>
+      <div class="dash-card" data-view="isler"><div class="icon">✅</div><div class="label">İşler</div><div class="count" id="countIsler"></div></div>
+      <div class="dash-card" data-view="cihazlar"><div class="icon">📱</div><div class="label">Cihazlar</div><div class="count" id="countCihazlar"></div></div>
+      <div class="dash-card" data-view="gorusler"><div class="icon">💬</div><div class="label">Görüşler</div><div class="count" id="countGorusler"></div></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-duyuru">
+    <a class="back-link" data-back>← Panele Dön</a>
+    <div class="card">
+      <h2>Duyuru Yaz</h2>
+      <div class="sub">Tüm abonelere anında bildirim gider.</div>
+      <label>Kategori</label>
+      <select id="catSelect">
+        <option value="genel">📢 Genel</option>
+        <option value="acil">🚨 Acil</option>
+        <option value="yemek">🍽️ Yemek Listesi</option>
+        <option value="vefat">🕯️ Vefat</option>
+        <option value="dogum">🎉 Doğum</option>
+      </select>
+      <label>Başlık</label>
+      <input type="text" id="title" placeholder="Örn: Bugünün Menüsü">
+      <label>Mesaj</label>
+      <textarea id="body" placeholder="Mesajınızı yazın..."></textarea>
+      <label>Görsel / PDF Ekle (opsiyonel)</label>
+      <input type="file" id="attachment" accept="image/jpeg,image/png,application/pdf">
+      <div class="send-row"><button class="btn-primary" id="sendBtn">Gönder</button></div>
+      <div class="feedback-msg" id="feedback"></div>
+    </div>
+    <div class="list-section">
+      <h3>Son Duyurular</h3>
+      <div id="historyList" class="list-empty">Yükleniyor...</div>
+    </div>
+  </div>
+
+  <div class="view" id="view-notlar">
+    <a class="back-link" data-back>← Panele Dön</a>
+    <div class="card">
+      <h2>Not Ekle</h2>
+      <label>Not</label>
+      <textarea id="noteText" placeholder="Notunuzu yazın..."></textarea>
+      <label>Görsel / PDF Ekle (opsiyonel)</label>
+      <input type="file" id="noteAttachment" accept="image/jpeg,image/png,application/pdf">
+      <div class="send-row"><button class="btn-primary" id="noteSendBtn">Ekle</button></div>
+      <div class="feedback-msg" id="noteFeedback"></div>
+    </div>
+    <div class="list-section"><h3>Notlar</h3><div id="notesList" class="list-empty">Yükleniyor...</div></div>
+  </div>
+
+  <div class="view" id="view-telefonlar">
+    <a class="back-link" data-back>← Panele Dön</a>
+    <div class="card">
+      <h2>Acil Durum Telefonu Ekle</h2>
+      <div class="two-col">
+        <div><label>İsim</label><input type="text" id="phoneName" placeholder="Örn: İtfaiye"></div>
+        <div><label>Numara</label><input type="tel" id="phoneNumber" placeholder="Örn: 110"></div>
+      </div>
+      <label>Görsel / PDF Ekle (opsiyonel)</label>
+      <input type="file" id="phoneAttachment" accept="image/jpeg,image/png,application/pdf">
+      <div class="send-row"><button class="btn-primary" id="phoneSendBtn">Ekle</button></div>
+      <div class="feedback-msg" id="phoneFeedback"></div>
+    </div>
+    <div class="list-section"><h3>Acil Durum Telefonları</h3><div id="phonesList" class="list-empty">Yükleniyor...</div></div>
+  </div>
+
+  <div class="view" id="view-isler">
+    <a class="back-link" data-back>← Panele Dön</a>
+    <div class="card">
+      <h2>Görev Ekle</h2>
+      <label>Görev</label>
+      <input type="text" id="taskText" placeholder="Örn: Yangın tüplerini kontrol et">
+      <label>Görsel / PDF Ekle (opsiyonel)</label>
+      <input type="file" id="taskAttachment" accept="image/jpeg,image/png,application/pdf">
+      <div class="send-row"><button class="btn-primary" id="taskSendBtn">Ekle</button></div>
+      <div class="feedback-msg" id="taskFeedback"></div>
+    </div>
+    <div class="list-section"><h3>Aylık Yapılacak İşler</h3><div id="tasksList" class="list-empty">Yükleniyor...</div></div>
+  </div>
+
+  <div class="view" id="view-cihazlar">
+    <a class="back-link" data-back>← Panele Dön</a>
+    <div class="card">
+      <h2>Cihazları Yönet</h2>
+      <div class="sub">"Kim okudu" bilgisinde doğru isimlerin görünmesi için her cihazı gerçek sahibiyle eşleştir. "Öneri" olarak görünen isim kişinin kendi bildirdiği isimdir — onaylamak için Kaydet'e bas.</div>
+      <div id="devicesList" style="margin-top:14px;"></div>
+      <div class="feedback-msg" id="devicesFeedback"></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-gorusler">
+    <a class="back-link" data-back>← Panele Dön</a>
+    <div class="card">
+      <h2>Görüş &amp; Öneriler</h2>
+      <div class="sub">Personelin gönderdiği görüş ve öneriler.</div>
+      <div id="feedbackList" style="margin-top:14px;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------- Giriş ----------
+function getAdminPassword() { return sessionStorage.getItem('adminPassword') || ''; }
+
+async function tryLogin(password) {
+  const res = await fetch('/api/admin-check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+  return res.ok;
+}
+
+async function showDashboard() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  loadHistory(); loadNotes(); loadPhones(); loadTasks(); loadDevices(); loadFeedback();
+}
+
+document.getElementById('loginBtn').addEventListener('click', async () => {
+  const password = document.getElementById('loginPassword').value;
+  const fb = document.getElementById('loginFeedback');
+  if (!password) return;
+  fb.textContent = ''; fb.className = 'feedback-msg';
+  try {
+    const ok = await tryLogin(password);
+    if (!ok) { fb.textContent = 'Şifre hatalı.'; fb.className = 'feedback-msg err'; return; }
+    sessionStorage.setItem('adminPassword', password);
+    showDashboard();
+  } catch { fb.textContent = 'Bağlantı hatası.'; fb.className = 'feedback-msg err'; }
+});
+document.getElementById('loginPassword').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('loginBtn').click();
+});
+
+document.getElementById('logoutLink').addEventListener('click', () => {
+  if (!confirm('Çıkış yapmak istediğine emin misin?')) return;
+  sessionStorage.removeItem('adminPassword');
+  location.reload();
+});
+
+(async function initAuth() {
+  const pw = getAdminPassword();
+  if (pw && await tryLogin(pw)) showDashboard();
+})();
+
+// ---------- Dashboard <-> view geçişleri ----------
+document.querySelectorAll('.dash-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.getElementById('view-dashboard').classList.remove('active');
+    document.getElementById('view-' + card.dataset.view).classList.add('active');
+  });
+});
+document.querySelectorAll('[data-back]').forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-dashboard').classList.add('active');
+  });
+});
+
+// ---------- Yardımcılar ----------
+const catNames = { acil: 'Acil', yemek: 'Yemek Listesi', vefat: 'Vefat', dogum: 'Doğum', genel: 'Genel' };
+function formatTime(iso) { return new Date(iso).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); }
+function esc(s) { return (s || '').replace(/</g, '&lt;'); }
+function renderAttachment(att) {
+  if (!att) return '';
+  if (att.type === 'image') return '<a href="' + att.url + '" target="_blank"><img src="' + att.url + '" style="max-width:100%;border-radius:4px;margin-top:8px;display:block;"></a>';
+  return '<a href="' + att.url + '" target="_blank" style="display:inline-block;margin-top:8px;font-size:12.5px;color:var(--clay);font-weight:600;">📄 ' + esc(att.name || 'Dosyayı Aç') + '</a>';
+}
+
+// ---------- Duyuru ----------
+let selectedCategory = 'genel';
+document.getElementById('catSelect').addEventListener('change', (e) => { selectedCategory = e.target.value; });
+
+document.getElementById('sendBtn').addEventListener('click', async () => {
+  const title = document.getElementById('title').value.trim();
+  const body = document.getElementById('body').value.trim();
+  const fileInput = document.getElementById('attachment');
+  const fb = document.getElementById('feedback');
+  if (!title || !body) { fb.textContent = 'Başlık ve mesaj gerekli.'; fb.className = 'feedback-msg err'; return; }
+  const btn = document.getElementById('sendBtn');
+  btn.disabled = true; fb.textContent = 'Gönderiliyor...'; fb.className = 'feedback-msg';
+  try {
+    const formData = new FormData();
+    formData.append('password', getAdminPassword());
+    formData.append('category', document.getElementById('catSelect').value);
+    formData.append('title', title);
+    formData.append('body', body);
+    if (fileInput.files[0]) formData.append('attachment', fileInput.files[0]);
+    const res = await fetch('/api/send', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Gönderilemedi');
+    fb.textContent = 'Gönderildi: ' + data.sent + ' kişiye ulaştı.'; fb.className = 'feedback-msg ok';
+    document.getElementById('title').value = ''; document.getElementById('body').value = ''; fileInput.value = '';
+    loadHistory();
+  } catch (err) { fb.textContent = err.message; fb.className = 'feedback-msg err'; }
+  finally { btn.disabled = false; }
+});
+
+async function loadHistory() {
+  const listEl = document.getElementById('historyList');
+  try {
+    const res = await fetch('/api/messages');
+    const data = await res.json();
+    document.getElementById('countDuyuru').textContent = (data.messages || []).length + ' duyuru';
+    if (!data.messages || data.messages.length === 0) { listEl.className = 'list-empty'; listEl.textContent = 'Henüz duyuru gönderilmedi.'; return; }
+    listEl.className = '';
+    listEl.innerHTML = data.messages.map(m =>
+      '<div class="list-item ' + (m.category || 'genel') + '">' +
+        '<div class="li-main">' +
+          '<div class="li-top"><span class="li-tag">' + (catNames[m.category] || 'Genel') + '</span><span class="li-time">' + formatTime(m.time) + '</span></div>' +
+          '<div class="li-title">' + esc(m.title) + '</div>' +
+          '<div class="li-body">' + esc(m.body) + '</div>' +
+          renderAttachment(m.attachment) +
+          '<div class="reads-link" data-reads-id="' + m.id + '">👁 ' + ((m.reads && m.reads.length) || 0) + ' kişi okudu — kimler?</div>' +
+          '<div class="reads-detail" id="reads-' + m.id + '"></div>' +
+        '</div>' +
+        '<button class="btn-danger" data-del-msg-id="' + m.id + '">Sil</button>' +
+      '</div>'
+    ).join('');
+    listEl.querySelectorAll('[data-del-msg-id]').forEach(b => b.addEventListener('click', () => deleteMessage(b.dataset.delMsgId)));
+    listEl.querySelectorAll('[data-reads-id]').forEach(el => el.addEventListener('click', () => toggleReads(el.dataset.readsId)));
+  } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
+}
+
+async function deleteMessage(id) {
+  if (!confirm('Bu duyuruyu silmek istediğine emin misin?')) return;
+  try {
+    const res = await fetch('/api/messages/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: getAdminPassword() }) });
+    if (!res.ok) { const d = await res.json(); alert(d.error || 'Silinemedi'); return; }
+    loadHistory();
+  } catch { alert('Silinemedi.'); }
+}
+
+async function toggleReads(id) {
+  const el = document.getElementById('reads-' + id);
+  if (!el) return;
+  if (el.style.display === 'block') { el.style.display = 'none'; return; }
+  el.style.display = 'block'; el.textContent = 'Yükleniyor...';
+  try {
+    const res = await fetch('/api/messages/' + id + '/reads');
+    const data = await res.json();
+    if (!data.reads || data.reads.length === 0) { el.textContent = 'Henüz kimse okumadı.'; return; }
+    el.textContent = data.reads.map(r => r.name).join(', ') + ' okudu (' + data.reads.length + '/' + data.totalSubscribers + ' abone).';
+  } catch { el.textContent = 'Yüklenemedi.'; }
+}
+
+// ---------- Genel liste yardımcı fonksiyonu ----------
+function setupSimpleList(opts) {
+  const { endpoint, sendBtnId, feedbackId, listId, buildPayload, validate, renderItem, emptyText, attachmentId, countId } = opts;
+  document.getElementById(sendBtnId).addEventListener('click', async () => {
+    const fb = document.getElementById(feedbackId);
+    const payload = buildPayload();
+    const err = validate(payload);
+    if (err) { fb.textContent = err; fb.className = 'feedback-msg err'; return; }
+    const btn = document.getElementById(sendBtnId);
+    btn.disabled = true; fb.textContent = 'Ekleniyor...'; fb.className = 'feedback-msg';
+    try {
+      const formData = new FormData();
+      formData.append('password', getAdminPassword());
+      Object.keys(payload).forEach(k => formData.append(k, payload[k]));
+      const fileInput = attachmentId && document.getElementById(attachmentId);
+      if (fileInput && fileInput.files[0]) formData.append('attachment', fileInput.files[0]);
+      const res = await fetch(endpoint, { method: 'POST', body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Eklenemedi');
+      fb.textContent = 'Eklendi.'; fb.className = 'feedback-msg ok';
+      if (fileInput) fileInput.value = '';
+      opts.onSuccess && opts.onSuccess();
+      load();
+    } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
+    finally { btn.disabled = false; }
+  });
+
+  async function load() {
+    const listEl = document.getElementById(listId);
+    try {
+      const res = await fetch(endpoint);
+      const data = await res.json();
+      if (countId) document.getElementById(countId).textContent = (data.items || []).length + ' kayıt';
+      if (!data.items || data.items.length === 0) { listEl.className = 'list-empty'; listEl.textContent = emptyText; return; }
+      listEl.className = '';
+      listEl.innerHTML = data.items.map(renderItem).join('');
+      listEl.querySelectorAll('[data-del-id]').forEach(b => b.addEventListener('click', () => deleteItem(b.dataset.delId)));
+      listEl.querySelectorAll('[data-toggle-id]').forEach(c => c.addEventListener('change', () => toggleItem(c.dataset.toggleId)));
+    } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
+  }
+
+  async function deleteItem(id) {
+    if (!confirm('Silmek istediğine emin misin?')) return;
+    try {
+      const res = await fetch(endpoint + '/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: getAdminPassword() }) });
+      if (!res.ok) { const d = await res.json(); alert(d.error || 'Silinemedi'); return; }
+      load();
+    } catch { alert('Silinemedi.'); }
+  }
+  async function toggleItem(id) {
+    try { await fetch(endpoint + '/' + id + '/toggle', { method: 'POST' }); load(); } catch {}
+  }
+
+  load();
+  return { load };
+}
+
+const loadNotes = () => setupSimpleList({
+  endpoint: '/api/notes', sendBtnId: 'noteSendBtn', feedbackId: 'noteFeedback', listId: 'notesList', attachmentId: 'noteAttachment', countId: 'countNotlar',
+  buildPayload: () => ({ text: document.getElementById('noteText').value.trim() }),
+  validate: (p) => (!p.text) ? 'Not gerekli.' : null,
+  onSuccess: () => { document.getElementById('noteText').value = ''; },
+  emptyText: 'Henüz not eklenmedi.',
+  renderItem: (n) => '<div class="list-item"><div class="li-main"><div class="li-top"><span class="li-time">' + formatTime(n.time) + '</span></div><div class="li-body">' + esc(n.text) + '</div>' + renderAttachment(n.attachment) + '</div><button class="btn-danger" data-del-id="' + n.id + '">Sil</button></div>',
+}).load;
+
+const loadPhones = () => setupSimpleList({
+  endpoint: '/api/phones', sendBtnId: 'phoneSendBtn', feedbackId: 'phoneFeedback', listId: 'phonesList', attachmentId: 'phoneAttachment', countId: 'countTelefonlar',
+  buildPayload: () => ({ name: document.getElementById('phoneName').value.trim(), number: document.getElementById('phoneNumber').value.trim() }),
+  validate: (p) => (!p.name || !p.number) ? 'İsim ve numara gerekli.' : null,
+  onSuccess: () => { document.getElementById('phoneName').value = ''; document.getElementById('phoneNumber').value = ''; },
+  emptyText: 'Henüz telefon eklenmedi.',
+  renderItem: (p) => '<div class="list-item"><div class="li-main"><div class="li-title">' + esc(p.name) + '</div><a class="li-phone" href="tel:' + esc(p.number) + '">' + esc(p.number) + '</a>' + renderAttachment(p.attachment) + '</div><button class="btn-danger" data-del-id="' + p.id + '">Sil</button></div>',
+}).load;
+
+const loadTasks = () => setupSimpleList({
+  endpoint: '/api/tasks', sendBtnId: 'taskSendBtn', feedbackId: 'taskFeedback', listId: 'tasksList', attachmentId: 'taskAttachment', countId: 'countIsler',
+  buildPayload: () => ({ text: document.getElementById('taskText').value.trim() }),
+  validate: (p) => (!p.text) ? 'Görev gerekli.' : null,
+  onSuccess: () => { document.getElementById('taskText').value = ''; },
+  emptyText: 'Henüz görev eklenmedi.',
+  renderItem: (t) => '<div class="list-item ' + (t.done ? 'done' : '') + '"><input type="checkbox" class="checkbox" data-toggle-id="' + t.id + '" ' + (t.done ? 'checked' : '') + '><div class="li-main"><div class="li-title">' + esc(t.text) + '</div>' + renderAttachment(t.attachment) + '</div><button class="btn-danger" data-del-id="' + t.id + '">Sil</button></div>',
+}).load;
+
+// ---------- Cihazlar ----------
+async function loadDevices() {
+  const listEl = document.getElementById('devicesList');
+  listEl.innerHTML = 'Yükleniyor...';
+  try {
+    const res = await fetch('/api/devices');
+    const data = await res.json();
+    document.getElementById('countCihazlar').textContent = (data.devices || []).length + ' cihaz';
+    if (!data.devices || data.devices.length === 0) { listEl.innerHTML = '<div class="list-empty">Henüz abone olan cihaz yok.</div>'; return; }
+    listEl.innerHTML = data.devices.map(d => {
+      const hint = d.suggestedName ? ('Öneri: ' + esc(d.suggestedName) + (d.suggestedPhone ? ' (' + esc(d.suggestedPhone) + ')' : '')) : 'İsim yaz...';
+      return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">' +
+        '<span style="font-size:11px;color:#999;min-width:70px;">#' + esc(d.deviceId.slice(-4)) + '</span>' +
+        '<input type="text" value="' + esc(d.name || '') + '" placeholder="' + hint + '" data-device-id="' + esc(d.deviceId) + '" style="flex:1;padding:7px 10px;border:1.5px solid #ddd;border-radius:3px;font-size:13px;">' +
+        '<button class="btn-primary" style="padding:7px 12px;font-size:12px;" data-save-device="' + esc(d.deviceId) + '">Kaydet</button>' +
+      '</div>';
+    }).join('');
+    listEl.querySelectorAll('[data-save-device]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const deviceId = btn.dataset.saveDevice;
+        const input = listEl.querySelector('input[data-device-id="' + deviceId + '"]');
+        const fb = document.getElementById('devicesFeedback');
+        try {
+          const res = await fetch('/api/devices/name', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: getAdminPassword(), deviceId, name: input.value.trim() }) });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Kaydedilemedi');
+          fb.textContent = 'Kaydedildi.'; fb.className = 'feedback-msg ok';
+        } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
+      });
+    });
+  } catch { listEl.innerHTML = '<div class="list-empty">Yüklenemedi.</div>'; }
+}
+
+// ---------- Görüşler ----------
+async function loadFeedback() {
+  const listEl = document.getElementById('feedbackList');
+  listEl.innerHTML = 'Yükleniyor...';
+  try {
+    const res = await fetch('/api/feedback?password=' + encodeURIComponent(getAdminPassword()));
+    const data = await res.json();
+    document.getElementById('countGorusler').textContent = (data.items || []).length + ' görüş';
+    if (!data.items || data.items.length === 0) { listEl.innerHTML = '<div class="list-empty">Henüz görüş gönderilmedi.</div>'; return; }
+    listEl.innerHTML = data.items.map(f =>
+      '<div class="list-item"><div class="li-main"><div class="li-top"><span class="li-tag">' + esc(f.name || 'İsimsiz') + '</span><span class="li-time">' + formatTime(f.time) + '</span></div><div class="li-body">' + esc(f.text) + '</div></div></div>'
+    ).join('');
+  } catch { listEl.innerHTML = '<div class="list-empty">Yüklenemedi.</div>'; }
+}
+</script>
+</body>
+</html>
