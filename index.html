@@ -28,71 +28,60 @@
   * { box-sizing: border-box; }
 
   body {
-    margin: 0;
-    font-family: 'Inter', sans-serif;
-    background: var(--ink);
+    margin: 0; font-family: 'Inter', sans-serif; background: var(--ink);
     background-image:
       radial-gradient(circle at 20% 10%, rgba(224,151,44,0.06), transparent 40%),
       radial-gradient(circle at 80% 80%, rgba(107,143,113,0.06), transparent 40%);
-    color: var(--paper);
-    min-height: 100vh;
-    padding: 32px 16px 90px;
+    color: var(--paper); min-height: 100vh; padding: 32px 16px 90px;
   }
 
   .wrap { max-width: 640px; margin: 0 auto; }
 
   header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 22px;
-    border-bottom: 1px solid var(--line);
-    padding-bottom: 18px;
-    flex-wrap: wrap;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; margin-bottom: 22px; border-bottom: 1px solid var(--line);
+    padding-bottom: 18px; flex-wrap: wrap;
   }
-  h1 {
-    font-family: 'Fraunces', serif;
-    font-weight: 700;
-    font-size: clamp(20px, 6vw, 26px);
-    margin: 0;
-    letter-spacing: -0.01em;
+  h1 { font-family: 'Fraunces', serif; font-weight: 700; font-size: clamp(20px, 6vw, 26px); margin: 0; }
+  .pin-count { font-size: 12px; color: var(--muted); }
+
+  /* SALLANAN LOGO VE ZİL ANİMASYONU */
+  .sway-logo {
+    display: inline-block;
+    animation: logo-sway 1.8s ease-in-out infinite alternate;
+    transform-origin: center center;
   }
-  .pin-count { font-size: 12px; color: var(--muted); letter-spacing: 0.04em; white-space: nowrap; }
+  @keyframes logo-sway {
+    0% { transform: rotate(-14deg) scale(0.96); }
+    50% { transform: rotate(0deg) scale(1.08); }
+    100% { transform: rotate(14deg) scale(0.96); }
+  }
 
   .status-card {
-    background: var(--paper);
-    color: var(--ink);
-    border-radius: 4px;
-    padding: 16px 18px;
-    margin-bottom: 20px;
-    box-shadow: 0 8px 24px var(--paper-shadow);
-    position: relative;
+    background: var(--paper); color: var(--ink); border-radius: 4px; padding: 16px 18px;
+    margin-bottom: 20px; box-shadow: 0 8px 24px var(--paper-shadow); position: relative;
   }
   .status-card::before {
-    content: ''; position: absolute; top: -6px; left: 24px;
-    width: 12px; height: 12px; border-radius: 50%;
-    background: var(--clay); box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    content: ''; position: absolute; top: -6px; left: 24px; width: 12px; height: 12px;
+    border-radius: 50%; background: var(--clay);
   }
-  .status-card h2 { font-family: 'Fraunces', serif; font-size: 15px; margin: 0 0 5px; }
-  .status-card p { margin: 0 0 10px; font-size: 13px; line-height: 1.5; color: #444; }
 
   .bell-status {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: var(--paper); color: var(--sage);
-    font-size: 12px; font-weight: 600; padding: 6px 12px;
+    display: inline-flex; align-items: center; gap: 6px; background: var(--paper);
+    color: var(--sage); font-size: 12px; font-weight: 600; padding: 6px 12px;
     border-radius: 20px; margin-bottom: 20px;
   }
 
   button {
     font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px;
-    border: none; border-radius: 3px; padding: 10px 16px; cursor: pointer;
+    border: none; border-radius: 4px; padding: 10px 16px; cursor: pointer;
     transition: transform 0.1s ease, opacity 0.15s ease;
   }
   button:active { transform: scale(0.97); }
-  button:disabled { opacity: 0.5; cursor: default; }
   .btn-primary { background: var(--ink); color: var(--paper); }
-  .btn-primary:hover:not(:disabled) { opacity: 0.85; }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-success { background: var(--sage); color: #fff; }
+  .btn-warning { background: var(--amber); color: #fff; }
   .btn-danger { background: var(--clay); color: #fff; padding: 5px 9px; font-size: 11px; }
 
   .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--line); }
@@ -102,13 +91,11 @@
     border-bottom: 2px solid transparent; flex: 1;
   }
   .tab-btn.active { color: var(--paper); border-bottom-color: var(--amber); }
-  .tab-panel { display: none; animation: fade-in 0.3s ease; }
+  .tab-panel { display: none; }
   .tab-panel.active { display: block; }
-  @keyframes fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
   .card {
-    background: var(--paper); color: var(--ink);
-    border-radius: 4px; padding: 20px;
+    background: var(--paper); color: var(--ink); border-radius: 4px; padding: 20px;
     box-shadow: 0 12px 28px var(--paper-shadow); margin-bottom: 18px;
   }
   .card h2 { font-family: 'Fraunces', serif; font-size: 17px; margin: 0 0 4px; }
@@ -118,26 +105,20 @@
     display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.05em;
     text-transform: uppercase; color: #777; margin-bottom: 6px; margin-top: 14px;
   }
-  label:first-of-type { margin-top: 0; }
 
   input[type="text"], input[type="tel"], input[type="password"], textarea, select {
     width: 100%; font-family: 'Inter', sans-serif; font-size: 14px;
-    padding: 9px 11px; border: 1.5px solid #ddd; border-radius: 3px;
-    background: #fff; color: var(--ink);
+    padding: 9px 11px; border: 1.5px solid #ddd; border-radius: 3px; background: #fff; color: var(--ink);
   }
   textarea { resize: vertical; min-height: 70px; }
-  input:focus, textarea:focus, select:focus { outline: 2px solid var(--ink); outline-offset: 1px; }
 
   .cat-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-  .cat-btn {
-    background: #fff; border: 1.5px solid #ddd; color: #555;
-    font-size: 12px; font-weight: 500; padding: 6px 12px; border-radius: 20px;
-  }
-  .cat-btn.active[data-cat="genel"] { background: var(--ink); border-color: var(--ink); color: #fff; }
-  .cat-btn.active[data-cat="acil"] { background: var(--amber); border-color: var(--amber); color: #fff; }
-  .cat-btn.active[data-cat="yemek"] { background: var(--sage); border-color: var(--sage); color: #fff; }
-  .cat-btn.active[data-cat="vefat"] { background: var(--clay); border-color: var(--clay); color: #fff; }
-  .cat-btn.active[data-cat="dogum"] { background: var(--gold); border-color: var(--gold); color: #fff; }
+  .cat-btn { background: #fff; border: 1.5px solid #ddd; color: #555; font-size: 12px; padding: 6px 12px; border-radius: 20px; }
+  .cat-btn.active[data-cat="genel"] { background: var(--ink); color: #fff; }
+  .cat-btn.active[data-cat="acil"] { background: var(--amber); color: #fff; }
+  .cat-btn.active[data-cat="yemek"] { background: var(--sage); color: #fff; }
+  .cat-btn.active[data-cat="vefat"] { background: var(--clay); color: #fff; }
+  .cat-btn.active[data-cat="dogum"] { background: var(--gold); color: #fff; }
 
   .send-row { margin-top: 18px; display: flex; align-items: center; gap: 12px; }
   .feedback-msg { font-size: 13px; margin-top: 10px; min-height: 18px; }
@@ -148,8 +129,7 @@
   .list-item {
     background: var(--paper); color: var(--ink); border-radius: 4px;
     padding: 13px 15px; margin-bottom: 9px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    border-left: 4px solid var(--ink); display: flex; justify-content: space-between;
-    align-items: flex-start; gap: 10px;
+    border-left: 4px solid var(--ink); display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
   }
   .list-item.acil { border-left-color: var(--amber); }
   .list-item.yemek { border-left-color: var(--sage); }
@@ -157,19 +137,16 @@
   .list-item.dogum { border-left-color: var(--gold); }
   .list-item .li-main { flex: 1; min-width: 0; }
   .list-item .li-top { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 3px; }
-  .list-item .li-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #888; }
-  .list-item .li-time { font-size: 10.5px; color: #999; white-space: nowrap; }
+  .list-item .li-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #888; }
+  .list-item .li-time { font-size: 10.5px; color: #999; }
   .list-item .li-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 14.5px; margin: 0 0 2px; }
   .list-item .li-body { font-size: 12.5px; color: #555; line-height: 1.45; margin: 0; }
   .list-item .li-phone { font-family: 'Fraunces', serif; font-weight: 700; font-size: 16px; color: var(--clay); text-decoration: none; }
-  .list-item.done .li-title { text-decoration: line-through; opacity: 0.5; }
   .list-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 18px; }
-  .checkbox { width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0; cursor: pointer; }
 
   #splash {
-    position: fixed; inset: 0; background: var(--ink);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 999; transition: opacity 0.6s ease;
+    position: fixed; inset: 0; background: var(--ink); display: flex;
+    align-items: center; justify-content: center; z-index: 999; transition: opacity 0.6s ease;
   }
   #splash img { width: 110px; height: 110px; animation: splash-blink 1.4s ease-in-out infinite; border-radius: 50%; }
   @keyframes splash-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
@@ -178,69 +155,155 @@
   #notifBanner {
     display: none; max-width: 640px; margin: 0 auto 20px; padding: 16px 18px;
     border-radius: 4px; font-family: 'Inter', sans-serif; color: #fff;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.25); animation: fade-in 0.4s ease;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
   }
   #notifBanner.show { display: block; }
-  #notifBanner .tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(255,255,255,0.25); padding: 3px 8px; border-radius: 20px; margin-bottom: 6px; }
+  #notifBanner .tag { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; background: rgba(255,255,255,0.25); padding: 3px 8px; border-radius: 20px; margin-bottom: 6px; }
   #notifBanner .btitle { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 700; margin: 0 0 4px; }
-  #notifBanner .bbody { font-size: 13px; line-height: 1.45; opacity: 0.95; margin: 0; }
+  #notifBanner .bbody { font-size: 13px; line-height: 1.45; margin: 0; }
   #notifBanner.acil { background: linear-gradient(135deg, #E0972C, #B5674A); }
-  #notifBanner.vefat { background: linear-gradient(135deg, #6b4a45, #3d2b28); }
-  #notifBanner.dogum { background: linear-gradient(135deg, #C9A24B, #8f7332); }
-  #notifBanner.yemek { background: linear-gradient(135deg, #6B8F71, #4a6650); }
-  #notifBanner.genel { background: linear-gradient(135deg, #3a4152, #1F2430); }
 
   .site-footer {
     position: fixed; left: 0; right: 0; bottom: 0; background: var(--ink);
     border-top: 1px solid var(--line); text-align: center; padding: 10px 12px;
     font-size: 11.5px; z-index: 50;
   }
-  .site-footer a { color: var(--muted); text-decoration: none; cursor: pointer; }
+  .site-footer a { color: var(--muted); text-decoration: none; }
   .site-footer a:hover { color: var(--paper); }
-  .site-footer .fdot { color: var(--line); margin: 0 8px; }
+  .site-footer .fdot { color: var(--line); margin: 0 6px; }
 
-  .admin-box { background: #fff; border-radius: 4px; padding: 12px; margin-top: 10px; border: 1px solid #ddd; }
-  .admin-box h4 { margin: 0 0 8px; font-size: 13px; color: var(--ink); }
-  .reads-badge { display: inline-block; font-size: 11px; background: #eee; color: #333; padding: 2px 6px; border-radius: 10px; margin-top: 6px; cursor: pointer; }
+  /* ONBOARDING WIZARD STYLES */
+  .wizard-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 1000;
+    display: flex; align-items: center; justify-content: center; padding: 16px;
+  }
+  .wizard-card {
+    background: var(--paper); color: var(--ink); max-width: 500px; width: 100%;
+    border-radius: 6px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border: 2px solid var(--amber);
+  }
+  .wizard-step { display: none; }
+  .wizard-step.active { display: block; }
+  .step-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #ccc; }
+  .dot.active { background: var(--amber); width: 24px; border-radius: 10px; }
+  .guide-box { background: #FAF5E9; border: 1px solid #E6D7B8; padding: 12px; border-radius: 4px; font-size: 12.5px; color: #555; margin: 12px 0; text-align: left; line-height: 1.5; }
 </style>
 </head>
 <body>
 
-<div id="splash"><img src="/icon-192.png" alt="Amasya İl Müdürlüğü"></div>
+<div id="splash"><img src="/icon-192.png" alt="Amasya İl Müdürlüğü" class="sway-logo"></div>
 <div id="notifBanner"></div>
 
-<!-- ZORUNLU BİLDİRİM İZNİ VE KURULUM MODALI -->
-<div id="permModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; align-items:center; justify-content:center; padding:16px;">
-  <div class="card" style="max-width:480px; width:100%; margin:0; text-align:center; border:2px solid var(--amber);">
-    <div style="font-size:36px; margin-bottom:8px;">🔔</div>
-    <h2 style="margin-bottom:8px;">Bildirim İzni Zorunludur!</h2>
-    <p style="font-size:13px; color:#555; line-height:1.5; margin-bottom:16px;" id="permModalText">
-      Anlık duyuru, acil durum ve notları zamanında alabilmek için bildirimlere mutlaka izin vermeniz gerekmektedir.
-    </p>
-
-    <!-- iOS (iPhone) Rehber Kutusu -->
-    <div id="iosNotice" style="display:none; background:#FFF3CD; color:#856404; padding:12px; border-radius:4px; font-size:12px; text-align:left; margin-bottom:16px; border:1px solid #FFEBAA;">
-      <b>iPhone Kullanıcıları İçin Mutlaka Yapılmalı:</b><br>
-      1. Safari alt menüsündeki <b>Paylaş (⬆️)</b> butonuna basın.<br>
-      2. <b>"Ana Ekrana Ekle"</b> seçeneğine tıklayın.<br>
-      3. Uygulamayı ana ekrandan açıp bildirim iznini verin.
+<!-- ADIM ADIM KURULUM VE GÖRSEL MARKA AYAR SİHİRBAZI -->
+<div class="wizard-overlay" id="wizardModal" style="display:none;">
+  <div class="wizard-card">
+    <div class="step-dots">
+      <div class="dot active" id="dot1"></div>
+      <div class="dot" id="dot2"></div>
+      <div class="dot" id="dot3"></div>
+      <div class="dot" id="dot4"></div>
     </div>
 
-    <!-- Android / Chrome İpucu Kutusu -->
-    <div id="androidNotice" style="display:none; background:#E2F0D9; color:#276A3C; padding:10px; border-radius:4px; font-size:12.5px; text-align:left; margin-bottom:16px;">
-      💡 <b>Ses Çıkmıyorsa:</b> İzin verdikten sonra telefonun <i>Ayarlar > Uygulamalar > Chrome > Bildirimler</i> menüsünden sesin <b>"Sessiz"</b> olmadığından emin olun.
+    <!-- ADIM 1: UYGULAMA İNDİR / EKLE -->
+    <div class="wizard-step active" id="step1">
+      <div style="font-size:36px; text-align:center; margin-bottom:8px;">📱</div>
+      <h2 style="text-align:center; margin:0 0 8px;">Adım 1: Uygulamayı İndir</h2>
+      <p style="font-size:13px; color:#555; text-align:center;">Duyuruların cebinize anında düşmesi için uygulamayı telefonunuza ekleyin.</p>
+      
+      <div id="pwaInstallContainer" style="display:none; text-align:center; margin:16px 0;">
+        <button class="btn-primary" id="btnPwaInstall" style="width:100%; padding:12px; font-size:15px; background:var(--sage);">
+          📥 Uygulamayı Telefona Yükle
+        </button>
+      </div>
+
+      <div class="guide-box" id="iosPwaNotice" style="display:none;">
+        <b>iPhone (Safari) Kullanıcıları:</b><br>
+        1. Alt menüdeki <b>Paylaş (⬆️)</b> simgesine dokunun.<br>
+        2. Açılan listeden <b>"Ana Ekrana Ekle"</b> seçeneğini seçin.<br>
+        3. Ardından uygulamayı ana ekrandan açın.
+      </div>
+
+      <button class="btn-primary" id="btnNext1" style="width:100%; margin-top:12px;">Devam Et (2/4) ➔</button>
     </div>
 
-    <button class="btn-primary" id="grantPermBtn" style="width:100%; padding:12px; font-size:15px; background:var(--amber);">
-      🔔 Bildirimlere Şimdi İzin Ver
-    </button>
+    <!-- ADIM 2: PROFİL BİLGİSİ -->
+    <div class="wizard-step" id="step2">
+      <div style="font-size:36px; text-align:center; margin-bottom:8px;">👤</div>
+      <h2 style="text-align:center; margin:0 0 8px;">Adım 2: Profilinizi Yazın</h2>
+      <p style="font-size:13px; color:#555; text-align:center;">Duyuruları okuduğunuzda yöneticinin sizi isimle görebilmesi için adınızı girin.</p>
+      
+      <label>Adınız Soyadınız *</label>
+      <input type="text" id="wizName" placeholder="Örn: Salih Özgen">
+      <label>Telefon Numarası (Opsiyonel)</label>
+      <input type="tel" id="wizPhone" placeholder="Örn: 0555 xxx xx xx">
+
+      <button class="btn-primary" id="btnNext2" style="width:100%; margin-top:16px;">Kaydet ve Devam Et ➔</button>
+    </div>
+
+    <!-- ADIM 3: BİLDİRİM VE MARKA BAZLI SES REHBERİ -->
+    <div class="wizard-step" id="step3">
+      <div style="font-size:36px; text-align:center; margin-bottom:8px;"><span class="sway-logo">🔔</span></div>
+      <h2 style="text-align:center; margin:0 0 8px;">Adım 3: Bildirim & Ses İzni</h2>
+      <p style="font-size:13px; color:#555; text-align:center;">Acil duyuru ve toplantı haberlerini kaçırmamak için bildirim izni verin.</p>
+
+      <label>Telefon Markanızı Seçip Ayarı İnceleyin:</label>
+      <div style="display:flex; gap:6px; margin:8px 0 12px;">
+        <button type="button" class="btn-primary" onclick="showBrand('samsung')" style="flex:1; font-size:12px; padding:6px;">Samsung</button>
+        <button type="button" class="btn-primary" onclick="showBrand('xiaomi')" style="flex:1; font-size:12px; padding:6px;">Xiaomi/Redmi</button>
+        <button type="button" class="btn-primary" onclick="showBrand('iphone')" style="flex:1; font-size:12px; padding:6px;">iPhone</button>
+      </div>
+
+      <div id="brand-samsung" class="brand-guide guide-box">
+        <b>Samsung Ayarı:</b><br>
+        1. Bildirime basılı tutun > ⚙️ <b>Ayarlar</b>'a basın.<br>
+        2. <b>"Sesli ve Ekranda Göster"</b> seçeneğini seçin.<br>
+        3. Kilit Ekranı Bildirimleri'ni <b>"İçeriği Göster"</b> yapın.
+      </div>
+
+      <div id="brand-xiaomi" class="brand-guide guide-box" style="display:none;">
+        <b>Xiaomi / Redmi Ayarı:</b><br>
+        1. <i>Ayarlar > Uygulamalar > Chrome</i> yoluna gidin.<br>
+        2. <b>Bildirimler</b> kısmından <i>"Kilit Ekranı"</i> ve <i>"Sesi Çal"</i> izinlerini açın.<br>
+        3. Pil Tasarrufu'nu <b>"Kısıtlama Yok"</b> yapın.
+      </div>
+
+      <div id="brand-iphone" class="brand-guide guide-box" style="display:none;">
+        <b>iPhone (iOS) Ayarı:</b><br>
+        1. Safari alt menüsünden <b>Paylaş (⬆️) > Ana Ekrana Ekle</b> deyin.<br>
+        2. Ana ekrandan uygulamayı açıp izin verin.<br>
+        3. <i>Ayarlar > Bildirimler > Müdürlük Duyuru</i> altından Sesler'i açın.
+      </div>
+
+      <button class="btn-primary" id="btnGrantPush" style="width:100%; padding:12px; font-size:15px; background:var(--amber);">
+        🔔 Bildirimlere Şimdi İzin Ver
+      </button>
+    </div>
+
+    <!-- ADIM 4: SES VE KİLİT EKRANI TESTİ -->
+    <div class="wizard-step" id="step4">
+      <div style="font-size:36px; text-align:center; margin-bottom:8px;">🧪</div>
+      <h2 style="text-align:center; margin:0 0 8px;">Adım 4: Sesi ve Bildirimi Test Et</h2>
+      <p style="font-size:13px; color:#555; text-align:center;">Kurulum tamamlandı! Sesi ve kilit ekranı davranışını şimdi test edin.</p>
+
+      <button class="btn-success" id="wizTestSound" style="width:100%; margin-bottom:10px; padding:10px;">
+        🔊 Sesi Test Et (3 Defa Çalar)
+      </button>
+      
+      <button class="btn-warning" id="wizTestLock" style="width:100%; margin-bottom:16px; padding:10px;">
+        🧪 3 Sn Sonra Test Bildirimi At (Ekranı Kilitle)
+      </button>
+
+      <button class="btn-primary" id="btnFinishWizard" style="width:100%; background:var(--ink);">
+        ✅ Kurulumu Tamamla ve Giriş Yap
+      </button>
+    </div>
   </div>
 </div>
 
 <div class="wrap">
   <header>
     <div style="display:flex; align-items:center; gap:10px;">
-      <img src="/icon-192.png" alt="" style="width:32px; height:32px; border-radius:50%;">
+      <img src="/icon-192.png" alt="" class="sway-logo" style="width:34px; height:34px; border-radius:50%;">
       <h1>Duyurular</h1>
     </div>
     <div style="display:flex; align-items:center; gap:10px;">
@@ -257,9 +320,9 @@
   <div class="status-card" id="subscribeCard">
     <h2>Bildirimleri Aç</h2>
     <p>Duyuruları telefonunuza anında anlık bildirim olarak almak için izin verin.</p>
-    <button class="btn-primary" id="subscribeBtn">Bildirimleri Aç</button>
+    <button class="btn-primary" id="subscribeBtn">Bildirim Kurulumunu Başlat</button>
   </div>
-  <div class="bell-status" id="bellStatus" style="display:none;">🔔 <span>Bildirimler açık</span></div>
+  <div class="bell-status" id="bellStatus" style="display:none;"><span class="sway-logo">🔔</span> <span>Bildirimler ve Ses Aktif</span></div>
 
   <div class="tabs">
     <button class="tab-btn active" data-tab="duyurular">Duyurular</button>
@@ -296,10 +359,18 @@
     </div>
   </div>
 
-  <!-- Profil Modalı -->
+  <!-- AYARLAR & TEST MODALI -->
+  <div class="card" id="settingsModal" style="display:none;">
+    <h2>⚙️ Bildirim &amp; Ses Test Paneli</h2>
+    <div class="sub">Bildirim sesinizi ve kilit ekranı davranışınızı buradan test edebilirsiniz.</div>
+    <button class="btn-success" id="testSoundBtn" style="width:100%; margin-bottom:10px;">🔊 Sesi Çal (3 Defa)</button>
+    <button class="btn-warning" id="testLockBtn" style="width:100%;">🧪 Kilit Ekranı Bildirim Testi (3 Sn)</button>
+  </div>
+
+  <!-- PROFİL MODALI -->
   <div class="card" id="profileModal" style="display:none;">
     <h2>Profilim</h2>
-    <div class="sub">Adınızı girerek okunma kayıtlarında adınızın görünmesini sağlayabilirsiniz.</div>
+    <div class="sub">Adınızı girerek okundu kayıtlarında görünmesini sağlayabilirsiniz.</div>
     <label>Adınız Soyadınız</label>
     <input type="text" id="profileName" placeholder="Örn: Salih Özgen">
     <label>Telefon (opsiyonel)</label>
@@ -308,10 +379,10 @@
     <div class="feedback-msg" id="profileFeedback"></div>
   </div>
 
-  <!-- Görüş & Öneri Modalı -->
+  <!-- GÖRÜŞ MODALI -->
   <div class="card" id="feedbackModal" style="display:none;">
     <h2>Görüş &amp; Öneri Gönder</h2>
-    <div class="sub">Yönetime iletmek istediğiniz not, öneri veya talebiniz:</div>
+    <div class="sub">Yönetime iletmek istediğiniz not veya talebiniz:</div>
     <label>Adınız (opsiyonel)</label>
     <input type="text" id="feedbackName" placeholder="İsimsiz bırakabilirsiniz">
     <label>Mesajınız</label>
@@ -320,7 +391,7 @@
     <div class="feedback-msg" id="feedbackModalFeedback"></div>
   </div>
 
-  <!-- Yönetici Paneli Modalı -->
+  <!-- YÖNETİCİ MODALI -->
   <div class="card" id="adminModal" style="display:none;">
     <h2>Yönetici Paneli</h2>
     <div id="adminAuthSection">
@@ -338,7 +409,6 @@
         <button class="tab-btn" id="admTabDevices">Cihazlar</button>
       </div>
 
-      <!-- Admin Duyuru Gönder Formu -->
       <div id="admPanelSend">
         <label>Kategori</label>
         <div class="cat-row" id="catRow">
@@ -358,7 +428,6 @@
         <div class="feedback-msg" id="sendFeedback"></div>
       </div>
 
-      <!-- Admin Not/Tel/İş Ekleme -->
       <div id="admPanelItems" style="display:none;">
         <label>Eklenilecek Tür</label>
         <select id="itemTypeSelect">
@@ -378,13 +447,11 @@
         <div class="feedback-msg" id="itemFeedback"></div>
       </div>
 
-      <!-- Admin Gelen Mesajlar (Görüşler) -->
       <div id="admPanelInbox" style="display:none;">
         <h4>Gelen Görüş & Öneriler</h4>
         <div id="adminFeedbackList" class="list-empty">Yükleniyor...</div>
       </div>
 
-      <!-- Admin Cihaz İsimlendirme -->
       <div id="admPanelDevices" style="display:none;">
         <h4>Kayıtlı Cihazlar & İsim Verme</h4>
         <div id="adminDeviceList" class="list-empty">Yükleniyor...</div>
@@ -394,6 +461,8 @@
 </div>
 
 <footer class="site-footer">
+  <a href="#" id="settingsLink">⚙️ Bildirim &amp; Ses</a>
+  <span class="fdot">·</span>
   <a href="#" id="profileLink">👤 Profilim</a>
   <span class="fdot">·</span>
   <a href="#" id="feedbackLink">💬 Görüş &amp; Öneri</a>
@@ -402,6 +471,31 @@
 </footer>
 
 <script>
+// --- OTOMATİK SES KİLİDİ AÇICI (AUTOPLAY UNLOCKER) ---
+let audioUnlocked = false;
+function unlockAudioEngine() {
+  if (audioUnlocked) return;
+  try {
+    const dummy = new Audio('/notify.wav');
+    dummy.volume = 0.01;
+    dummy.play().then(() => {
+      dummy.pause();
+      audioUnlocked = true;
+      console.log('Ses motoru başarısıyla açıldı.');
+    }).catch(e => console.log('Ses motoru açılamadı:', e));
+  } catch(e) {}
+}
+
+document.addEventListener('click', unlockAudioEngine, { once: true });
+document.addEventListener('touchstart', unlockAudioEngine, { once: true });
+
+// --- MARKA AYAR SEÇİMİ ---
+function showBrand(brand) {
+  document.querySelectorAll('.brand-guide').forEach(el => el.style.display = 'none');
+  const b = document.getElementById('brand-' + brand);
+  if (b) b.style.display = 'block';
+}
+
 // --- SEKMELER & TEMA ---
 document.querySelectorAll('.tabs .tab-btn').forEach(btn => {
   if (btn.dataset.tab) {
@@ -441,7 +535,90 @@ function getDeviceId() {
   return id;
 }
 
-// --- PUSH BİLDİRİM AĞI ---
+// --- PWA İNDİR / İZİN SİHİRBAZI MANTIĞI ---
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('pwaInstallContainer').style.display = 'block';
+});
+
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+if (isIOS) {
+  document.getElementById('iosPwaNotice').style.display = 'block';
+}
+
+function showWizardStep(stepNum) {
+  for (let i = 1; i <= 4; i++) {
+    document.getElementById('step' + i).classList.remove('active');
+    document.getElementById('dot' + i).classList.remove('active');
+  }
+  document.getElementById('step' + stepNum).classList.add('active');
+  document.getElementById('dot' + stepNum).classList.add('active');
+}
+
+function checkFirstRunWizard() {
+  const perm = Notification.permission;
+  const hasName = localStorage.getItem('selfName');
+  if (perm !== 'granted' || !hasName) {
+    document.getElementById('wizardModal').style.display = 'flex';
+  }
+}
+
+document.getElementById('subscribeBtn').addEventListener('click', () => {
+  unlockAudioEngine();
+  document.getElementById('wizardModal').style.display = 'flex';
+  showWizardStep(1);
+});
+
+document.getElementById('btnPwaInstall').addEventListener('click', async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      document.getElementById('pwaInstallContainer').style.display = 'none';
+    }
+    deferredPrompt = null;
+  }
+});
+
+document.getElementById('btnNext1').addEventListener('click', () => showWizardStep(2));
+
+document.getElementById('btnNext2').addEventListener('click', async () => {
+  const name = document.getElementById('wizName').value.trim();
+  const phone = document.getElementById('wizPhone').value.trim();
+  if (!name) { alert('Lütfen adınızı soyadınızı girin.'); return; }
+  
+  localStorage.setItem('selfName', name);
+  localStorage.setItem('selfPhone', phone);
+  
+  try {
+    await fetch('/api/self-profile', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deviceId: getDeviceId(), name, phone })
+    });
+  } catch(e){}
+
+  showWizardStep(3);
+});
+
+document.getElementById('btnGrantPush').addEventListener('click', async () => {
+  unlockAudioEngine();
+  const ok = await doSubscribe(false);
+  if (ok) {
+    showWizardStep(4);
+  } else {
+    alert('Bildirim izni verilmedi. Ayarlardan izin verip tekrar deneyin.');
+  }
+});
+
+document.getElementById('wizTestSound').addEventListener('click', () => playNotifSound());
+document.getElementById('wizTestLock').addEventListener('click', () => triggerLockTest());
+document.getElementById('btnFinishWizard').addEventListener('click', () => {
+  document.getElementById('wizardModal').style.display = 'none';
+});
+
+// --- PUSH VE DÜĞMELER ---
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -478,55 +655,10 @@ async function doSubscribe(silent) {
 }
 
 if ('Notification' in window && Notification.permission === 'granted') doSubscribe(true);
-document.getElementById('subscribeBtn').addEventListener('click', () => doSubscribe(false));
+setTimeout(checkFirstRunWizard, 1600);
 refreshCount();
 
-// --- ZORUNLU İZİN KONTROLÜ (MODAL) ---
-const permModal = document.getElementById('permModal');
-const permModalText = document.getElementById('permModalText');
-const iosNotice = document.getElementById('iosNotice');
-const androidNotice = document.getElementById('androidNotice');
-const grantPermBtn = document.getElementById('grantPermBtn');
-
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-
-async function checkAndPromptPermission() {
-  if ('Notification' in window && Notification.permission === 'granted') {
-    permModal.style.display = 'none';
-    return;
-  }
-
-  permModal.style.display = 'flex';
-
-  if (isIOS) {
-    if (!isStandalone) {
-      iosNotice.style.display = 'block';
-      grantPermBtn.style.display = 'none';
-      permModalText.textContent = 'iPhone cihazlarda anlık bildirim alabilmek için uygulamayı önce ana ekrana eklemelisiniz.';
-    } else {
-      iosNotice.style.display = 'none';
-      grantPermBtn.style.display = 'block';
-    }
-  } else {
-    androidNotice.style.display = 'block';
-    grantPermBtn.style.display = 'block';
-  }
-}
-
-grantPermBtn.addEventListener('click', async () => {
-  const success = await doSubscribe(false);
-  if (success) {
-    permModal.style.display = 'none';
-    alert('✅ Bildirim izni başarıyla verildi!');
-  } else {
-    alert('⚠️ Bildirim izni verilmedi. Duyuruları kaçırmamak için tarayıcı ayarlarınızdan izin verin.');
-  }
-});
-
-setTimeout(checkAndPromptPermission, 1500);
-
-// --- SES VE AFİŞ (SES TAM 3 KERE ÇALAR) ---
+// --- SES DÖNGÜSÜ (TAM 3 DEFA ÇALAR) ---
 function playNotifSound() {
   try {
     let count = 0;
@@ -536,19 +668,17 @@ function playNotifSound() {
     const playOnce = () => {
       count++;
       audio.currentTime = 0;
-      audio.play().catch(e => console.log('Ses çalma engellendi:', e));
+      audio.play().then(() => {
+        console.log('Ses çalıyor:', count);
+      }).catch(e => console.log('Ses çalma engellendi:', e));
     };
 
     audio.addEventListener('ended', () => {
-      if (count < 3) {
-        playOnce();
-      }
+      if (count < 3) playOnce();
     });
 
     playOnce();
-  } catch (e) {
-    console.log('Audio hatası:', e);
-  }
+  } catch (e) { console.log('Ses hatası:', e); }
 }
 
 function showNotifBanner(category, title, body) {
@@ -569,7 +699,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// --- İÇERİK YÜKLEME VE KONTROLLER ---
+// --- İÇERİK YÜKLEME ---
 const catNames = { acil: 'Acil', yemek: 'Yemek Listesi', vefat: 'Vefat', dogum: 'Doğum', genel: 'Genel' };
 function formatTime(iso) { return new Date(iso).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); }
 function esc(s) { return (s || '').replace(/</g, '&lt;'); }
@@ -631,9 +761,9 @@ loadReadOnlyList('/api/tasks', 'tasksList', 'Henüz görev eklenmedi.', t => `
   <div class="list-item ${t.done ? 'done' : ''}"><input type="checkbox" class="checkbox" data-toggle-id="${t.id}" ${t.done ? 'checked' : ''}><div class="li-main"><div class="li-title">${esc(t.text)}</div>${renderAttachment(t.attachment)}${activeAdminPassword ? `<div style="margin-top:6px;"><button class="btn-danger" onclick="deleteGeneric('tasks','${t.id}')">Sil</button></div>`:''}</div></div>
 `, true);
 
-// --- MODAL AÇMA / KAPAMA ---
+// --- MODALLAR VE TEST ---
 function toggleModal(modalId) {
-  ['profileModal', 'feedbackModal', 'adminModal'].forEach(id => {
+  ['settingsModal', 'profileModal', 'feedbackModal', 'adminModal'].forEach(id => {
     if (id !== modalId) document.getElementById(id).style.display = 'none';
   });
   const m = document.getElementById(modalId);
@@ -641,6 +771,26 @@ function toggleModal(modalId) {
   m.style.display = show ? 'block' : 'none';
   if (show) m.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
+
+document.getElementById('settingsLink').addEventListener('click', (e) => { e.preventDefault(); toggleModal('settingsModal'); });
+document.getElementById('testSoundBtn').addEventListener('click', () => { unlockAudioEngine(); playNotifSound(); });
+
+async function triggerLockTest() {
+  unlockAudioEngine();
+  if (!('serviceWorker' in navigator)) return;
+  const reg = await navigator.serviceWorker.ready;
+  alert('3 saniye içinde test bildirimi gönderilecek. Lütfen hemen ekranınızı kilitleyin!');
+  setTimeout(() => {
+    reg.showNotification('🚨 TEST BİLDİRİMİ', {
+      body: 'Bu kilit ekranı ve ses test mesajıdır.',
+      icon: '/icon-192.png',
+      vibrate: [800, 100, 800, 100, 800, 100, 800],
+      requireInteraction: true,
+      silent: false
+    });
+  }, 3000);
+}
+document.getElementById('testLockBtn').addEventListener('click', triggerLockTest);
 
 document.getElementById('profileLink').addEventListener('click', (e) => {
   e.preventDefault();
@@ -660,12 +810,7 @@ document.getElementById('profileSaveBtn').addEventListener('click', async () => 
   } catch { fb.textContent = 'Hata oluştu.'; fb.className = 'feedback-msg err'; }
 });
 
-document.getElementById('feedbackLink').addEventListener('click', (e) => {
-  e.preventDefault();
-  toggleModal('feedbackModal');
-  document.getElementById('feedbackName').value = localStorage.getItem('selfName') || '';
-});
-
+document.getElementById('feedbackLink').addEventListener('click', (e) => { e.preventDefault(); toggleModal('feedbackModal'); });
 document.getElementById('feedbackSendBtn').addEventListener('click', async () => {
   const text = document.getElementById('feedbackText').value.trim();
   const name = document.getElementById('feedbackName').value.trim();
@@ -679,7 +824,7 @@ document.getElementById('feedbackSendBtn').addEventListener('click', async () =>
   } catch { fb.textContent = 'Gönderilemedi.'; fb.className = 'feedback-msg err'; }
 });
 
-// --- YÖNETİCİ MÜDÜRLÜK KONTROLLERİ ---
+// --- YÖNETİCİ KONTROLLERİ ---
 let selectedCategory = 'genel';
 document.getElementById('catRow').addEventListener('click', (e) => {
   const btn = e.target.closest('.cat-btn'); if (!btn) return;
@@ -687,11 +832,7 @@ document.getElementById('catRow').addEventListener('click', (e) => {
   btn.classList.add('active'); selectedCategory = btn.dataset.cat;
 });
 
-document.getElementById('adminLink').addEventListener('click', (e) => {
-  e.preventDefault();
-  toggleModal('adminModal');
-});
-
+document.getElementById('adminLink').addEventListener('click', (e) => { e.preventDefault(); toggleModal('adminModal'); });
 document.getElementById('adminLoginBtn').addEventListener('click', async () => {
   const pass = document.getElementById('adminGlobalPassword').value.trim();
   const fb = document.getElementById('adminAuthFeedback');
@@ -715,7 +856,6 @@ Object.keys(admTabs).forEach(key => {
     });
     document.getElementById('admTab' + key.charAt(0).toUpperCase() + key.slice(1)).classList.add('active');
     document.getElementById(admTabs[key]).style.display = 'block';
-
     if (key === 'inbox') loadAdminInbox();
     if (key === 'devices') loadAdminDevices();
   });
