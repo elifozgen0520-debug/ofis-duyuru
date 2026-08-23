@@ -60,6 +60,16 @@
     border-radius: 20px; margin-bottom: 20px;
   }
 
+  /* SALLANAN HAREKETLİ ZİL ANİMASYONU */
+  .ring-bell {
+    display: inline-block;
+    animation: bell-shake 0.6s ease-in-out infinite alternate;
+  }
+  @keyframes bell-shake {
+    0% { transform: rotate(-18deg); }
+    100% { transform: rotate(18deg); }
+  }
+
   button {
     font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px;
     border: none; border-radius: 4px; padding: 10px 16px; cursor: pointer;
@@ -174,7 +184,7 @@
   .step-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
   .dot { width: 10px; height: 10px; border-radius: 50%; background: #ccc; }
   .dot.active { background: var(--amber); width: 24px; border-radius: 10px; }
-  .guide-box { background: #FAF5E9; border: 1px solid #E6D7B8; padding: 12px; border-radius: 4px; font-size: 12.5px; color: #555; margin: 12px 0; text-align: left; }
+  .guide-box { background: #FAF5E9; border: 1px solid #E6D7B8; padding: 12px; border-radius: 4px; font-size: 12.5px; color: #555; margin: 12px 0; text-align: left; line-height: 1.5; }
 </style>
 </head>
 <body>
@@ -182,7 +192,7 @@
 <div id="splash"><img src="/icon-192.png" alt="Amasya İl Müdürlüğü"></div>
 <div id="notifBanner"></div>
 
-<!-- ADIM ADIM OTOMATİK KURULUM VE SES İZİN SİHİRBAZI -->
+<!-- ADIM ADIM KURULUM VE GÖRSEL MARKA AYAR SİHİRBAZI -->
 <div class="wizard-overlay" id="wizardModal" style="display:none;">
   <div class="wizard-card">
     <div class="step-dots">
@@ -228,15 +238,38 @@
       <button class="btn-primary" id="btnNext2" style="width:100%; margin-top:16px;">Kaydet ve Devam Et ➔</button>
     </div>
 
-    <!-- ADIM 3: BİLDİRİM VE HARD SES İZNİ -->
+    <!-- ADIM 3: BİLDİRİM VE MARKA BAZLI SES REHBERİ -->
     <div class="wizard-step" id="step3">
-      <div style="font-size:36px; text-align:center; margin-bottom:8px;">🔔</div>
+      <div style="font-size:36px; text-align:center; margin-bottom:8px;"><span class="ring-bell">🔔</span></div>
       <h2 style="text-align:center; margin:0 0 8px;">Adım 3: Bildirim & Ses İzni</h2>
-      <p style="font-size:13px; color:#555; text-align:center;">Acil duyuru, vefat ve toplantı haberlerini kaçırmamak için bildirim izni verin.</p>
+      <p style="font-size:13px; color:#555; text-align:center;">Acil duyuru ve toplantı haberlerini kaçırmamak için bildirim izni verin.</p>
 
-      <div class="guide-box">
-        <b>🚨 MUTLAKA YAPILMALI (Ses için):</b><br>
-        İzin verdikten sonra telefonunuzun <i>Ayarlar > Uygulamalar > Chrome (veya Müdürlük Uygulaması) > Bildirimler</i> kısmından sesin <b>"Sesli ve Ekranda Göster"</b> olarak seçildiğinden emin olun.
+      <label>Telefon Markanızı Seçip Ayarı İnceleyin:</label>
+      <div style="display:flex; gap:6px; margin:8px 0 12px;">
+        <button type="button" class="btn-primary" onclick="showBrand('samsung')" style="flex:1; font-size:12px; padding:6px;">Samsung</button>
+        <button type="button" class="btn-primary" onclick="showBrand('xiaomi')" style="flex:1; font-size:12px; padding:6px;">Xiaomi/Redmi</button>
+        <button type="button" class="btn-primary" onclick="showBrand('iphone')" style="flex:1; font-size:12px; padding:6px;">iPhone</button>
+      </div>
+
+      <div id="brand-samsung" class="brand-guide guide-box">
+        <b>Samsung Ayarı:</b><br>
+        1. Bildirime basılı tutun > ⚙️ <b>Ayarlar</b>'a basın.<br>
+        2. <b>"Sesli ve Ekranda Göster"</b> seçeneğini seçin.<br>
+        3. Kilit Ekranı Bildirimleri'ni <b>"İçeriği Göster"</b> yapın.
+      </div>
+
+      <div id="brand-xiaomi" class="brand-guide guide-box" style="display:none;">
+        <b>Xiaomi / Redmi Ayarı:</b><br>
+        1. <i>Ayarlar > Uygulamalar > Chrome</i> yoluna gidin.<br>
+        2. <b>Bildirimler</b> kısmından <i>"Kilit Ekranı"</i> ve <i>"Sesi Çal"</i> izinlerini açın.<br>
+        3. Pil Tasarrufu'nu <b>"Kısıtlama Yok"</b> yapın.
+      </div>
+
+      <div id="brand-iphone" class="brand-guide guide-box" style="display:none;">
+        <b>iPhone (iOS) Ayarı:</b><br>
+        1. Safari alt menüsünden <b>Paylaş (⬆️) > Ana Ekrana Ekle</b> deyin.<br>
+        2. Ana ekrandan uygulamayı açıp izin verin.<br>
+        3. <i>Ayarlar > Bildirimler > Müdürlük Duyuru</i> altından Sesler'i açın.
       </div>
 
       <button class="btn-primary" id="btnGrantPush" style="width:100%; padding:12px; font-size:15px; background:var(--amber);">
@@ -287,7 +320,7 @@
     <p>Duyuruları telefonunuza anında anlık bildirim olarak almak için izin verin.</p>
     <button class="btn-primary" id="subscribeBtn">Bildirim Kurulumunu Başlat</button>
   </div>
-  <div class="bell-status" id="bellStatus" style="display:none;">🔔 <span>Bildirimler ve Ses Aktif</span></div>
+  <div class="bell-status" id="bellStatus" style="display:none;"><span class="ring-bell">🔔</span> <span>Bildirimler ve Ses Aktif</span></div>
 
   <div class="tabs">
     <button class="tab-btn active" data-tab="duyurular">Duyurular</button>
@@ -436,6 +469,13 @@
 </footer>
 
 <script>
+// --- MARKA AYAR SEÇİMİ ---
+function showBrand(brand) {
+  document.querySelectorAll('.brand-guide').forEach(el => el.style.display = 'none');
+  const b = document.getElementById('brand-' + brand);
+  if (b) b.style.display = 'block';
+}
+
 // --- SEKMELER & TEMA ---
 document.querySelectorAll('.tabs .tab-btn').forEach(btn => {
   if (btn.dataset.tab) {
@@ -497,7 +537,6 @@ function showWizardStep(stepNum) {
   document.getElementById('dot' + stepNum).classList.add('active');
 }
 
-// Otomatik Başlatma Kontrolü
 function checkFirstRunWizard() {
   const perm = Notification.permission;
   const hasName = localStorage.getItem('selfName');
@@ -511,7 +550,6 @@ document.getElementById('subscribeBtn').addEventListener('click', () => {
   showWizardStep(1);
 });
 
-// PWA Yükleme Butonu
 document.getElementById('btnPwaInstall').addEventListener('click', async () => {
   if (deferredPrompt) {
     deferredPrompt.prompt();
@@ -525,7 +563,6 @@ document.getElementById('btnPwaInstall').addEventListener('click', async () => {
 
 document.getElementById('btnNext1').addEventListener('click', () => showWizardStep(2));
 
-// Adım 2: İsim Kaydı
 document.getElementById('btnNext2').addEventListener('click', async () => {
   const name = document.getElementById('wizName').value.trim();
   const phone = document.getElementById('wizPhone').value.trim();
@@ -544,7 +581,6 @@ document.getElementById('btnNext2').addEventListener('click', async () => {
   showWizardStep(3);
 });
 
-// Adım 3: Push İzni
 document.getElementById('btnGrantPush').addEventListener('click', async () => {
   const ok = await doSubscribe(false);
   if (ok) {
@@ -554,7 +590,6 @@ document.getElementById('btnGrantPush').addEventListener('click', async () => {
   }
 });
 
-// Adım 4: Ses & Kilit Testleri
 document.getElementById('wizTestSound').addEventListener('click', () => playNotifSound());
 document.getElementById('wizTestLock').addEventListener('click', () => triggerLockTest());
 document.getElementById('btnFinishWizard').addEventListener('click', () => {
@@ -724,7 +759,7 @@ async function triggerLockTest() {
     reg.showNotification('🚨 TEST BİLDİRİMİ', {
       body: 'Bu kilit ekranı ve ses test mesajıdır.',
       icon: '/icon-192.png',
-      vibrate: [1000, 200, 1000, 200, 1000],
+      vibrate: [800, 100, 800, 100, 800, 100, 800],
       requireInteraction: true,
       silent: false
     });
