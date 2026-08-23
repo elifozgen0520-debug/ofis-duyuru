@@ -393,7 +393,7 @@ document.getElementById('sendBtn').addEventListener('click', async () => {
 async function loadHistory() {
   const listEl = document.getElementById('historyList');
   try {
-    const res = await fetch('/api/messages');
+    const res = await fetch('/api/messages?pageSize=100');
     const data = await res.json();
     document.getElementById('countDuyuru').textContent = (data.messages || []).length + ' duyuru';
     if (!data.messages || data.messages.length === 0) { listEl.className = 'list-empty'; listEl.textContent = 'Henüz duyuru gönderilmedi.'; return; }
