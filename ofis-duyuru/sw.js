@@ -6,13 +6,15 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: data.body,
+    // Renkli logomuz burada net görünür
     icon: '/icon-192.png',
-    badge: '/icon-192.png',
     image: data.image || undefined,
-    vibrate: data.urgent ? [200, 100, 200, 100, 200] : [100],
-    tag: data.category || 'genel',
+    silent: false, // Sessiz modu engelle
+    // Uzun ve güçlü titreşim (Cebinde hissetmesi için)
+    vibrate: data.urgent ? [500, 100, 500, 100, 500, 100, 500] : [300, 100, 300, 100, 300],
+    tag: data.id || 'duyuru-pwa',
     renotify: true,
-    requireInteraction: !!data.urgent,
+    requireInteraction: true, // Tıklayana kadar kilit ekranında kalsın
     data: { category: data.category || 'genel', urgent: !!data.urgent, id: data.id },
   };
 
@@ -24,7 +26,7 @@ self.addEventListener('notificationclick', (event) => {
   const data = event.notification.data || {};
 
   event.waitUntil(
-    clients.matchAll({ type: 'window' }).then((clientList) => {
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
         if ('focus' in client) {
           client.postMessage({ type: 'NOTIF_OPENED', ...data, title: event.notification.title, body: event.notification.body });
