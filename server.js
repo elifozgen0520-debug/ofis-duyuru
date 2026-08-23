@@ -337,6 +337,64 @@ app.get('/api/devices', async (req, res) => {
   res.json({ devices: Array.from(byDevice.values()).sort((a, b) => (b.subscribedAt || '').localeCompare(a.subscribedAt || '')) });
 });
 
+// --- TOPLU PERSONEL EKLEME (elle, uygulama kurmamış kişiler için — sadece e-posta ile ulaşılabilir) ---
+app.post('/api/personnel/bulk-add', async (req, res) => {
+  const { password, entries } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  if (!Array.isArray(entries) || entries.length === 0) {
+    return res.status(400).json({ ok: false, error: 'Eklenecek kişi listesi boş.' });
+  }
+
+  const profiles = await loadJson(PROFILES_KEY, {});
+  let added = 0;
+  const errors = [];
+
+  for (const entry of entries) {
+    const name = (entry.name || '').trim();
+    const phone = (entry.phone || '').trim();
+    const email = (entry.email || '').trim();
+    if (!name) { errors.push('İsimsiz satır atlandı.'); continue; }
+    if (!phone && !email) { errors.push(`"${name}" için telefon veya e-posta yok, atlandı.`); continue; }
+
+    const deviceId = 'manual-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    profiles[deviceId] = {
+      name,
+      phone: phone || null,
+      email: email || null,
+      bloodType: null,
+      manual: true,
+      addedAt: new Date().toISOString(),
+    };
+    added++;
+  }
+
+  await saveJson(PROFILES_KEY, profiles);
+  res.json({ ok: true, added, errors });
+});
+
+// --- ELLE EKLENEN (henüz uygulama kurmamış) PERSONEL LİSTESİ ---
+app.get('/api/personnel/manual', async (req, res) => {
+  const result = checkPassword(req.query.password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const profiles = await loadJson(PROFILES_KEY, {});
+  const manual = Object.entries(profiles)
+    .filter(([, p]) => p.manual)
+    .map(([deviceId, p]) => ({ deviceId, name: p.name, phone: p.phone, email: p.email, addedAt: p.addedAt }))
+    .sort((a, b) => (b.addedAt || '').localeCompare(a.addedAt || ''));
+  res.json({ personnel: manual });
+});
+
+app.delete('/api/personnel/manual/:deviceId', async (req, res) => {
+  const { password } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const profiles = await loadJson(PROFILES_KEY, {});
+  delete profiles[req.params.deviceId];
+  await saveJson(PROFILES_KEY, profiles);
+  res.json({ ok: true });
+});
+
 app.post('/api/self-profile', async (req, res) => {
   const { deviceId, name, phone, email, bloodType, kvkkConsent, kvkkConsentAt } = req.body;
   if (!deviceId) return res.status(400).json({ ok: false, error: 'Cihaz kimliği eksik.' });
