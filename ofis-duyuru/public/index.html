@@ -209,6 +209,34 @@
 <div id="splash"><img src="/icon-192.png" alt="Amasya İl Müdürlüğü"></div>
 <div id="notifBanner"></div>
 
+<!-- ZORUNLU BİLDİRİM İZNİ VE KURULUM MODALI -->
+<div id="permModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; align-items:center; justify-content:center; padding:16px;">
+  <div class="card" style="max-width:480px; width:100%; margin:0; text-align:center; border:2px solid var(--amber);">
+    <div style="font-size:36px; margin-bottom:8px;">🔔</div>
+    <h2 style="margin-bottom:8px;">Bildirim İzni Zorunludur!</h2>
+    <p style="font-size:13px; color:#555; line-height:1.5; margin-bottom:16px;" id="permModalText">
+      Anlık duyuru, acil durum ve notları zamanında alabilmek için bildirimlere mutlaka izin vermeniz gerekmektedir.
+    </p>
+
+    <!-- iOS (iPhone) Rehber Kutusu -->
+    <div id="iosNotice" style="display:none; background:#FFF3CD; color:#856404; padding:12px; border-radius:4px; font-size:12px; text-align:left; margin-bottom:16px; border:1px solid #FFEBAA;">
+      <b>iPhone Kullanıcıları İçin Mutlaka Yapılmalı:</b><br>
+      1. Safari alt menüsündeki <b>Paylaş (⬆️)</b> butonuna basın.<br>
+      2. <b>"Ana Ekrana Ekle"</b> seçeneğine tıklayın.<br>
+      3. Uygulamayı ana ekrandan açıp bildirim iznini verin.
+    </div>
+
+    <!-- Android / Chrome İpucu Kutusu -->
+    <div id="androidNotice" style="display:none; background:#E2F0D9; color:#276A3C; padding:10px; border-radius:4px; font-size:12.5px; text-align:left; margin-bottom:16px;">
+      💡 <b>Ses Çıkmıyorsa:</b> İzin verdikten sonra telefonun <i>Ayarlar > Uygulamalar > Chrome > Bildirimler</i> menüsünden sesin <b>"Sessiz"</b> olmadığından emin olun.
+    </div>
+
+    <button class="btn-primary" id="grantPermBtn" style="width:100%; padding:12px; font-size:15px; background:var(--amber);">
+      🔔 Bildirimlere Şimdi İzin Ver
+    </button>
+  </div>
+</div>
+
 <div class="wrap">
   <header>
     <div style="display:flex; align-items:center; gap:10px;">
@@ -413,7 +441,7 @@ function getDeviceId() {
   return id;
 }
 
-// --- PUSH BİLDİRİM ---
+// --- PUSH BİLDİRİM AĞI ---
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -453,15 +481,85 @@ if ('Notification' in window && Notification.permission === 'granted') doSubscri
 document.getElementById('subscribeBtn').addEventListener('click', () => doSubscribe(false));
 refreshCount();
 
-// --- BİLDİRİM SESİ & AFİŞİ ---
+// --- ZORUNLU İZİN KONTROLÜ (MODAL) ---
+const permModal = document.getElementById('permModal');
+const permModalText = document.getElementById('permModalText');
+const iosNotice = document.getElementById('iosNotice');
+const androidNotice = document.getElementById('androidNotice');
+const grantPermBtn = document.getElementById('grantPermBtn');
+
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+async function checkAndPromptPermission() {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    permModal.style.display = 'none';
+    return;
+  }
+
+  permModal.style.display = 'flex';
+
+  if (isIOS) {
+    if (!isStandalone) {
+      iosNotice.style.display = 'block';
+      grantPermBtn.style.display = 'none';
+      permModalText.textContent = 'iPhone cihazlarda anlık bildirim alabilmek için uygulamayı önce ana ekrana eklemelisiniz.';
+    } else {
+      iosNotice.style.display = 'none';
+      grantPermBtn.style.display = 'block';
+    }
+  } else {
+    androidNotice.style.display = 'block';
+    grantPermBtn.style.display = 'block';
+  }
+}
+
+grantPermBtn.addEventListener('click', async () => {
+  const success = await doSubscribe(false);
+  if (success) {
+    permModal.style.display = 'none';
+    alert('✅ Bildirim izni başarıyla verildi!');
+  } else {
+    alert('⚠️ Bildirim izni verilmedi. Duyuruları kaçırmamak için tarayıcı ayarlarınızdan izin verin.');
+  }
+});
+
+setTimeout(checkAndPromptPermission, 1500);
+
+// --- SES VE AFİŞ (SES TAM 3 KERE ÇALAR) ---
+function playNotifSound() {
+  try {
+    let count = 0;
+    const audio = new Audio('/notify.wav');
+    audio.volume = 1.0;
+
+    const playOnce = () => {
+      count++;
+      audio.currentTime = 0;
+      audio.play().catch(e => console.log('Ses çalma engellendi:', e));
+    };
+
+    audio.addEventListener('ended', () => {
+      if (count < 3) {
+        playOnce();
+      }
+    });
+
+    playOnce();
+  } catch (e) {
+    console.log('Audio hatası:', e);
+  }
+}
+
 function showNotifBanner(category, title, body) {
   const el = document.getElementById('notifBanner');
   if (!el) return;
   el.className = 'show ' + (category || 'genel');
   const tagNames = { acil: '🚨 ACİL DUYURU', yemek: '🍽️ Yemek Listesi', vefat: '🕯️ Vefat', dogum: '🎉 Doğum', genel: '📢 Duyuru' };
   el.innerHTML = `<div class="tag">${tagNames[category] || tagNames.genel}</div><div class="btitle">${title || ''}</div><div class="bbody">${body || ''}</div>`;
-  try { new Audio('/notify.wav').play().catch(()=>{}); } catch(e){}
+  playNotifSound();
 }
+
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'NOTIF_OPENED') {
@@ -471,7 +569,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// --- LİSTE VE İÇERİK RENDERING ---
+// --- İÇERİK YÜKLEME VE KONTROLLER ---
 const catNames = { acil: 'Acil', yemek: 'Yemek Listesi', vefat: 'Vefat', dogum: 'Doğum', genel: 'Genel' };
 function formatTime(iso) { return new Date(iso).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); }
 function esc(s) { return (s || '').replace(/</g, '&lt;'); }
@@ -533,7 +631,7 @@ loadReadOnlyList('/api/tasks', 'tasksList', 'Henüz görev eklenmedi.', t => `
   <div class="list-item ${t.done ? 'done' : ''}"><input type="checkbox" class="checkbox" data-toggle-id="${t.id}" ${t.done ? 'checked' : ''}><div class="li-main"><div class="li-title">${esc(t.text)}</div>${renderAttachment(t.attachment)}${activeAdminPassword ? `<div style="margin-top:6px;"><button class="btn-danger" onclick="deleteGeneric('tasks','${t.id}')">Sil</button></div>`:''}</div></div>
 `, true);
 
-// --- MODALLAR ---
+// --- MODAL AÇMA / KAPAMA ---
 function toggleModal(modalId) {
   ['profileModal', 'feedbackModal', 'adminModal'].forEach(id => {
     if (id !== modalId) document.getElementById(id).style.display = 'none';
