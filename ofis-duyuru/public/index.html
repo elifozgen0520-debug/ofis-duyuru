@@ -195,6 +195,28 @@
   .feedback-msg.ok { color: var(--sage); }
   .feedback-msg.err { color: var(--clay); }
 
+  /* TOAST BİLDİRİMİ */
+  #toastContainer { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 3000; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+  .toast {
+    background: var(--ink); color: var(--paper); font-size: 13.5px; font-weight: 600;
+    padding: 12px 20px; border-radius: 30px; box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    display: flex; align-items: center; gap: 8px;
+    animation: toast-in 0.3s cubic-bezier(0.22,1,0.36,1), toast-out 0.3s ease 2.4s forwards;
+  }
+  .toast.ok { background: var(--sage); }
+  .toast.err { background: var(--clay); }
+  @keyframes toast-in { from { opacity: 0; transform: translateY(-14px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes toast-out { to { opacity: 0; transform: translateY(-10px) scale(0.95); } }
+
+  /* OKUNDU İŞARETLEME */
+  .li-read-btn {
+    display: inline-flex; align-items: center; gap: 4px; background: none; border: 1.5px solid #ccc;
+    color: #888; font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 20px; cursor: pointer;
+    transition: all 0.15s ease; flex-shrink: 0;
+  }
+  .li-read-btn:hover { border-color: var(--sage); color: var(--sage); }
+  .li-read-btn.done { background: var(--sage); border-color: var(--sage); color: #fff; cursor: default; }
+
   .list-section h3 { font-family: 'Fraunces', serif; font-size: 16px; margin: 0 0 12px; color: var(--paper); }
   .list-item {
     background: var(--paper); color: var(--ink); border-radius: 4px;
@@ -208,13 +230,26 @@
   .list-item .li-main { flex: 1; min-width: 0; }
   .list-item .li-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 3px; }
   .li-toggle {
-    background: none; border: none; color: #999; font-size: 15px; cursor: pointer;
+    background: none; border: none; color: var(--amber); font-size: 17px; cursor: pointer;
     padding: 2px 6px; border-radius: 4px; transition: transform 0.2s ease, background 0.15s ease; flex-shrink: 0;
+    animation: chevron-bounce 1.6s ease-in-out infinite;
   }
-  .li-toggle:hover { background: rgba(0,0,0,0.06); color: var(--ink); }
-  .li-toggle.open { transform: rotate(180deg); }
+  .li-toggle:hover { background: rgba(224,151,44,0.15); }
+  .li-toggle.open { transform: rotate(180deg); animation: none; }
+  @keyframes chevron-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
   .attach-wrap { overflow: hidden; max-height: 0; transition: max-height 0.25s ease; }
   .attach-wrap.open { max-height: 2000px; }
+
+  /* SAYFALAMA */
+  .pagination-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 14px 0; flex-wrap: wrap; }
+  .page-size-select { width: auto; padding: 6px 10px; font-size: 12.5px; }
+  .page-nav { display: flex; align-items: center; gap: 8px; }
+  .page-nav button {
+    background: var(--paper); color: var(--ink); border: none; padding: 6px 12px;
+    border-radius: 20px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+  }
+  .page-nav button:disabled { opacity: 0.35; cursor: default; }
+  .page-nav .page-info { font-size: 12.5px; color: var(--muted); }
   .list-item .li-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #888; }
   .list-item .li-time { font-size: 10.5px; color: #999; }
   .list-item .li-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 14.5px; margin: 0 0 2px; }
@@ -268,6 +303,7 @@
 </style>
 </head>
 <body>
+<div id="toastContainer"></div>
 
 <div id="splash"><img src="/icon-192.png" alt="Amasya İl Müdürlüğü" class="sway-logo"></div>
 <div id="notifBanner"></div>
@@ -436,6 +472,20 @@
     <div class="list-section">
       <h3>Son Duyurular</h3>
       <div id="historyList" class="list-empty">Yükleniyor...</div>
+      <div class="pagination-row" id="historyPagination" style="display:none;">
+        <select class="page-size-select" id="historyPageSize">
+          <option value="10">10 / sayfa</option>
+          <option value="20">20 / sayfa</option>
+          <option value="30">30 / sayfa</option>
+          <option value="40">40 / sayfa</option>
+          <option value="50">50 / sayfa</option>
+        </select>
+        <div class="page-nav">
+          <button type="button" id="historyPrevBtn">← Önceki</button>
+          <span class="page-info" id="historyPageInfo"></span>
+          <button type="button" id="historyNextBtn">Sonraki →</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -636,7 +686,7 @@
   <span class="fdot">·</span>
   <a href="#" id="chatLink">🗨️ Sohbet</a>
   <span class="fdot">·</span>
-  <a href="#" id="adminSecretBtn" title="" style="color:var(--line); text-decoration:none; padding:0 4px; font-size:14px;">•</a>
+  <a href="/admin/" id="adminSecretBtn" title="" style="color:var(--line); text-decoration:none; padding:0 4px; font-size:14px;">•</a>
 </footer>
 
 <script>
@@ -702,6 +752,37 @@ function getDeviceId() {
     localStorage.setItem('deviceId', id);
   }
   return id;
+}
+
+// --- ŞIK TOAST BİLDİRİMİ ---
+function showToast(message, type) {
+  const container = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast ' + (type || '');
+  t.innerHTML = (type === 'ok' ? '✓ ' : type === 'err' ? '✕ ' : '') + message;
+  container.appendChild(t);
+  setTimeout(() => t.remove(), 2700);
+}
+
+// --- OKUNDU İŞARETLEME ---
+function getReadIds() {
+  try { return JSON.parse(localStorage.getItem('readMsgIds') || '[]'); } catch { return []; }
+}
+function markReadLocally(id) {
+  const ids = getReadIds();
+  if (!ids.includes(id)) { ids.push(id); localStorage.setItem('readMsgIds', JSON.stringify(ids)); }
+}
+async function markAsRead(id, btn) {
+  if (btn && btn.classList.contains('done')) return;
+  markReadLocally(id);
+  if (btn) { btn.classList.add('done'); btn.innerHTML = '✓ Okundu'; }
+  try {
+    await fetch('/api/messages/' + id + '/read', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deviceId: getDeviceId() })
+    });
+    showToast('Okundu olarak kaydedildi.', 'ok');
+  } catch {}
 }
 
 // --- PWA İNDİR / İZİN SİHİRBAZI MANTIĞI ---
@@ -901,39 +982,74 @@ function renderAttachment(att) {
 
 let activeAdminPassword = '';
 
+let historyPage = 1;
+let historyPageSize = parseInt(localStorage.getItem('historyPageSize') || '10', 10);
+
 async function loadHistory() {
   const listEl = document.getElementById('historyList');
+  const pagRow = document.getElementById('historyPagination');
+  const pageSizeSelect = document.getElementById('historyPageSize');
+  pageSizeSelect.value = String(historyPageSize);
   try {
-    const res = await fetch('/api/messages');
+    const res = await fetch(`/api/messages?page=${historyPage}&pageSize=${historyPageSize}`);
     const data = await res.json();
-    if (!data.messages || data.messages.length === 0) { listEl.className = 'list-empty'; listEl.textContent = 'Henüz duyuru gönderilmedi.'; return; }
-    listEl.className = '';
-    listEl.innerHTML = data.messages.map(m => `
-      <div class="list-item ${m.category || 'genel'}">
-        <div class="li-main">
-          <div class="li-top">
-            <span class="li-tag">${catNames[m.category] || 'Genel'}</span>
-            <span style="display:flex; align-items:center; gap:6px;">
-              <span class="li-time">${formatTime(m.time)}</span>
-              ${m.attachment ? `<button type="button" class="li-toggle" data-toggle-attach="${m.id}" aria-label="Detayı göster">▾</button>` : ''}
-            </span>
+    const total = data.total || 0;
+    if (!data.messages || data.messages.length === 0) {
+      listEl.className = 'list-empty';
+      listEl.textContent = total === 0 ? 'Henüz duyuru gönderilmedi.' : 'Bu sayfada duyuru yok.';
+      pagRow.style.display = total > historyPageSize ? 'flex' : 'none';
+    } else {
+      listEl.className = '';
+      const readIds = getReadIds();
+      listEl.innerHTML = data.messages.map(m => {
+        const isRead = readIds.includes(m.id);
+        return `
+        <div class="list-item ${m.category || 'genel'}">
+          <div class="li-main">
+            <div class="li-top">
+              <span class="li-tag">${catNames[m.category] || 'Genel'}</span>
+              <span style="display:flex; align-items:center; gap:8px;">
+                <span class="li-time">${formatTime(m.time)}</span>
+                <button type="button" class="li-read-btn ${isRead ? 'done' : ''}" data-read-id="${m.id}">${isRead ? '✓ Okundu' : '👁 Okudum'}</button>
+                ${m.attachment ? `<button type="button" class="li-toggle" data-toggle-attach="${m.id}" aria-label="Detayı göster">▾</button>` : ''}
+              </span>
+            </div>
+            <div class="li-title" ${m.attachment ? `style="cursor:pointer;" data-toggle-attach="${m.id}"` : ''}>${esc(m.title)}</div>
+            <div class="li-body">${esc(m.body)}</div>
+            <div class="attach-wrap" id="attach-${m.id}">${renderAttachment(m.attachment)}</div>
+            ${activeAdminPassword ? `<div style="margin-top:8px;"><span class="reads-badge" onclick="showReads('${m.id}')">👁 Okundu Bilgisi</span> <button class="btn-danger" onclick="deleteMessage('${m.id}')">Sil</button></div>` : ''}
           </div>
-          <div class="li-title" ${m.attachment ? `style="cursor:pointer;" data-toggle-attach="${m.id}"` : ''}>${esc(m.title)}</div>
-          <div class="li-body">${esc(m.body)}</div>
-          <div class="attach-wrap" id="attach-${m.id}">${renderAttachment(m.attachment)}</div>
-          ${activeAdminPassword ? `<div style="margin-top:8px;"><span class="reads-badge" onclick="showReads('${m.id}')">👁 Okundu Bilgisi</span> <button class="btn-danger" onclick="deleteMessage('${m.id}')">Sil</button></div>` : ''}
         </div>
-      </div>
-    `).join('');
-    listEl.querySelectorAll('[data-toggle-attach]').forEach(el => {
-      el.addEventListener('click', () => {
-        const id = el.dataset.toggleAttach;
-        document.getElementById('attach-' + id).classList.toggle('open');
-        listEl.querySelectorAll(`[data-toggle-attach="${id}"].li-toggle`).forEach(btn => btn.classList.toggle('open'));
+      `;
+      }).join('');
+      listEl.querySelectorAll('[data-toggle-attach]').forEach(el => {
+        el.addEventListener('click', () => {
+          const id = el.dataset.toggleAttach;
+          document.getElementById('attach-' + id).classList.toggle('open');
+          listEl.querySelectorAll(`[data-toggle-attach="${id}"].li-toggle`).forEach(btn => btn.classList.toggle('open'));
+        });
       });
-    });
+      listEl.querySelectorAll('[data-read-id]').forEach(btn => {
+        btn.addEventListener('click', () => markAsRead(btn.dataset.readId, btn));
+      });
+
+      const totalPages = Math.max(1, Math.ceil(total / historyPageSize));
+      pagRow.style.display = total > historyPageSize ? 'flex' : 'none';
+      document.getElementById('historyPageInfo').textContent = `Sayfa ${historyPage} / ${totalPages}`;
+      document.getElementById('historyPrevBtn').disabled = historyPage <= 1;
+      document.getElementById('historyNextBtn').disabled = historyPage >= totalPages;
+    }
   } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
 }
+
+document.getElementById('historyPageSize').addEventListener('change', (e) => {
+  historyPageSize = parseInt(e.target.value, 10);
+  localStorage.setItem('historyPageSize', String(historyPageSize));
+  historyPage = 1;
+  loadHistory();
+});
+document.getElementById('historyPrevBtn').addEventListener('click', () => { if (historyPage > 1) { historyPage--; loadHistory(); } });
+document.getElementById('historyNextBtn').addEventListener('click', () => { historyPage++; loadHistory(); });
 loadHistory();
 
 async function loadReadOnlyList(endpoint, listId, emptyText, renderItem, allowToggle) {
@@ -1072,8 +1188,8 @@ document.getElementById('profileSaveBtn').addEventListener('click', async () => 
     await fetch('/api/self-profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), name, phone, email, bloodType }) });
     localStorage.setItem('selfName', name); localStorage.setItem('selfPhone', phone);
     localStorage.setItem('selfEmail', email); localStorage.setItem('selfBloodType', bloodType);
-    fb.textContent = 'Kaydedildi.'; fb.className = 'feedback-msg ok';
-  } catch { fb.textContent = 'Hata oluştu.'; fb.className = 'feedback-msg err'; }
+    fb.textContent = ''; showToast('Profil kaydedildi.', 'ok');
+  } catch { fb.textContent = ''; showToast('Hata oluştu.', 'err'); }
 });
 
 document.getElementById('feedbackLink').addEventListener('click', (e) => { e.preventDefault(); toggleModal('feedbackModal'); });
@@ -1081,13 +1197,13 @@ document.getElementById('feedbackSendBtn').addEventListener('click', async () =>
   const text = document.getElementById('feedbackText').value.trim();
   const name = document.getElementById('feedbackName').value.trim();
   const fb = document.getElementById('feedbackModalFeedback');
-  if (!text) { fb.textContent = 'Mesaj boş bırakılamaz.'; fb.className = 'feedback-msg err'; return; }
+  if (!text) { showToast('Mesaj boş bırakılamaz.', 'err'); return; }
   try {
     const res = await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, name }) });
     if (!res.ok) throw new Error();
     document.getElementById('feedbackText').value = '';
-    fb.textContent = 'İletildi, teşekkürler.'; fb.className = 'feedback-msg ok';
-  } catch { fb.textContent = 'Gönderilemedi.'; fb.className = 'feedback-msg err'; }
+    fb.textContent = ''; showToast('İletildi, teşekkürler.', 'ok');
+  } catch { showToast('Gönderilemedi.', 'err'); }
 });
 
 // --- SOHBET ---
@@ -1279,7 +1395,7 @@ document.getElementById('catRow').addEventListener('click', (e) => {
   btn.classList.add('active'); selectedCategory = btn.dataset.cat;
 });
 
-document.getElementById('adminSecretBtn').addEventListener('click', (e) => { e.preventDefault(); toggleModal('adminModal'); });
+
 document.getElementById('adminLoginBtn').addEventListener('click', async () => {
   const pass = document.getElementById('adminGlobalPassword').value.trim();
   const fb = document.getElementById('adminAuthFeedback');
