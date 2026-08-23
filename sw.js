@@ -9,10 +9,13 @@ self.addEventListener('push', (event) => {
     icon: '/icon-192.png',
     badge: '/icon-192.png',
     image: data.image || undefined,
-    vibrate: data.urgent ? [200, 100, 200, 100, 200] : [100],
-    tag: data.category || 'genel',
+    // Sessiz modda kalmasını engeller, sistem sesini zorlar
+    silent: false,
+    // Güçlü titreşim deseni (Ses kapalıysa bile telefonu titretir)
+    vibrate: data.urgent ? [500, 100, 500, 100, 500, 100, 500] : [300, 100, 300],
+    tag: data.id || 'genel-duyuru',
     renotify: true,
-    requireInteraction: !!data.urgent,
+    requireInteraction: true, // Kullanıcı tıklayana kadar ekranda tutar
     data: { category: data.category || 'genel', urgent: !!data.urgent, id: data.id },
   };
 
@@ -24,7 +27,7 @@ self.addEventListener('notificationclick', (event) => {
   const data = event.notification.data || {};
 
   event.waitUntil(
-    clients.matchAll({ type: 'window' }).then((clientList) => {
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
         if ('focus' in client) {
           client.postMessage({ type: 'NOTIF_OPENED', ...data, title: event.notification.title, body: event.notification.body });
