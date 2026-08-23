@@ -13,14 +13,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 const UPLOADS_DIR = path.join(__dirname, 'public', 'uploads');
 fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
+// Yüklenen dosyalar artık diske değil, belleğe alınıp Redis'e kaydediliyor
+// (aynı JSON verileri gibi kalıcı olsun diye — disk her deploy'da siliniyordu).
 const upload = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => cb(null, UPLOADS_DIR),
-    filename: (req, file, cb) => {
-      const ext = path.extname(file.originalname).toLowerCase();
-      cb(null, Date.now().toString(36) + Math.random().toString(36).slice(2, 8) + ext);
-    },
-  }),
+  storage: multer.memoryStorage(),
   limits: { fileSize: 8 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const ok = ['image/jpeg', 'image/png', 'application/pdf'].includes(file.mimetype);
@@ -29,13 +25,7 @@ const upload = multer({
 });
 
 const avatarUpload = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => cb(null, UPLOADS_DIR),
-    filename: (req, file, cb) => {
-      const ext = path.extname(file.originalname).toLowerCase();
-      cb(null, 'avatar-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8) + ext);
-    },
-  }),
+  storage: multer.memoryStorage(),
   limits: { fileSize: 3 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const ok = ['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype);
@@ -43,14 +33,54 @@ const avatarUpload = multer({
   },
 });
 
-function attachmentFromFile(file) {
+function makeFilename(originalname, prefix) {
+  const ext = path.extname(originalname || '').toLowerCase();
+  return (prefix || '') + Date.now().toString(36) + Math.random().toString(36).slice(2, 8) + ext;
+}
+
+// Dosyayı kalıcı depoya (Redis) kaydeder, dosya adını döner.
+async function saveFileToStore(file, prefix) {
   if (!file) return null;
+  const filename = makeFilename(file.originalname, prefix);
+  if (redis) {
+    await redis.set('file:' + filename, JSON.stringify({
+      mimetype: file.mimetype,
+      data: file.buffer.toString('base64'),
+      originalname: file.originalname,
+    }));
+  } else {
+    // Fallback: Upstash yoksa yerel diske yaz (kalıcı olmaz)
+    fs.writeFileSync(path.join(UPLOADS_DIR, filename), file.buffer);
+  }
+  return filename;
+}
+
+async function attachmentFromFile(file) {
+  if (!file) return null;
+  const filename = await saveFileToStore(file);
   return {
-    url: '/uploads/' + file.filename,
+    url: '/uploads/' + filename,
     type: file.mimetype === 'application/pdf' ? 'pdf' : 'image',
     name: file.originalname,
   };
 }
+
+// Kalıcı depodaki (Redis) dosyaları servis eder. Yerel fallback modunda
+// express.static zaten public/uploads'ı karşılıyor, buraya hiç düşmez.
+app.get('/uploads/:filename', async (req, res) => {
+  if (!redis) return res.status(404).end();
+  try {
+    const raw = await redis.get('file:' + req.params.filename);
+    if (!raw) return res.status(404).end();
+    const obj = (typeof raw === 'string') ? JSON.parse(raw) : raw;
+    const buf = Buffer.from(obj.data, 'base64');
+    res.set('Content-Type', obj.mimetype || 'application/octet-stream');
+    res.set('Cache-Control', 'public, max-age=31536000, immutable');
+    res.send(buf);
+  } catch (err) {
+    res.status(500).end();
+  }
+});
 
 // ============================================================================
 // KALICI DEPOLAMA: Upstash Redis (ücretsiz, ömür boyu kalıcı)
@@ -232,7 +262,7 @@ app.get('/api/devices', async (req, res) => {
 });
 
 app.post('/api/self-profile', async (req, res) => {
-  const { deviceId, name, phone, email, bloodType } = req.body;
+  const { deviceId, name, phone, email, bloodType, kvkkConsent, kvkkConsentAt } = req.body;
   if (!deviceId) return res.status(400).json({ ok: false, error: 'Cihaz kimliği eksik.' });
   const profiles = await loadJson(PROFILES_KEY, {});
   const existing = profiles[deviceId] || {};
@@ -242,6 +272,8 @@ app.post('/api/self-profile', async (req, res) => {
     phone: (phone || '').trim() || null,
     email: (email !== undefined ? (email || '').trim() || null : existing.email || null),
     bloodType: (bloodType !== undefined ? (bloodType || '').trim() || null : existing.bloodType || null),
+    kvkkConsent: (kvkkConsent !== undefined ? !!kvkkConsent : existing.kvkkConsent || false),
+    kvkkConsentAt: (kvkkConsentAt !== undefined ? kvkkConsentAt : existing.kvkkConsentAt || null),
     updatedAt: new Date().toISOString(),
   };
   await saveJson(PROFILES_KEY, profiles);
@@ -252,9 +284,10 @@ app.post('/api/self-profile/avatar', avatarUpload.single('avatar'), async (req, 
   const { deviceId } = req.body;
   if (!deviceId) return res.status(400).json({ ok: false, error: 'Cihaz kimliği eksik.' });
   if (!req.file) return res.status(400).json({ ok: false, error: 'Görsel yüklenemedi.' });
+  const filename = await saveFileToStore(req.file, 'avatar-');
   const profiles = await loadJson(PROFILES_KEY, {});
   const existing = profiles[deviceId] || {};
-  profiles[deviceId] = { ...existing, avatar: '/uploads/' + req.file.filename, updatedAt: new Date().toISOString() };
+  profiles[deviceId] = { ...existing, avatar: '/uploads/' + filename, updatedAt: new Date().toISOString() };
   await saveJson(PROFILES_KEY, profiles);
   res.json({ ok: true, avatar: profiles[deviceId].avatar });
 });
@@ -296,7 +329,7 @@ app.post('/api/send', upload.single('attachment'), async (req, res) => {
   if (passwordCheckResponse(res, result)) return;
   if (!title || !body) return res.status(400).json({ ok: false, error: 'Başlık ve mesaj zorunlu.' });
 
-  const attachment = attachmentFromFile(req.file);
+  const attachment = await attachmentFromFile(req.file);
   const messageId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   const subs = await loadJson(SUBS_KEY);
 
@@ -353,7 +386,7 @@ app.post('/api/send-to', upload.single('attachment'), async (req, res) => {
   const targetSubs = subs.filter(s => s.deviceId === deviceId);
   if (targetSubs.length === 0) return res.status(404).json({ ok: false, error: 'Bu kişiye ait aktif bildirim aboneliği bulunamadı.' });
 
-  const attachment = attachmentFromFile(req.file);
+  const attachment = await attachmentFromFile(req.file);
   const messageId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
   const payload = JSON.stringify({
@@ -729,7 +762,7 @@ function makeListApi(name, key) {
     const { password, ...fields } = req.body;
     const result = checkPassword(password, req);
     if (passwordCheckResponse(res, result)) return;
-    const attachment = attachmentFromFile(req.file);
+    const attachment = await attachmentFromFile(req.file);
     const items = await loadJson(key);
     const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), time: new Date().toISOString(), done: false, attachment, ...fields };
     items.push(item);
