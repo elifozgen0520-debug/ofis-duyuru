@@ -232,7 +232,7 @@ app.get('/api/devices', async (req, res) => {
 });
 
 app.post('/api/self-profile', async (req, res) => {
-  const { deviceId, name, phone, email, bloodType } = req.body;
+  const { deviceId, name, phone, email, bloodType, kvkkConsent, kvkkConsentAt } = req.body;
   if (!deviceId) return res.status(400).json({ ok: false, error: 'Cihaz kimliği eksik.' });
   const profiles = await loadJson(PROFILES_KEY, {});
   const existing = profiles[deviceId] || {};
@@ -242,6 +242,8 @@ app.post('/api/self-profile', async (req, res) => {
     phone: (phone || '').trim() || null,
     email: (email !== undefined ? (email || '').trim() || null : existing.email || null),
     bloodType: (bloodType !== undefined ? (bloodType || '').trim() || null : existing.bloodType || null),
+    kvkkConsent: (kvkkConsent !== undefined ? !!kvkkConsent : existing.kvkkConsent || false),
+    kvkkConsentAt: (kvkkConsentAt !== undefined ? kvkkConsentAt : existing.kvkkConsentAt || null),
     updatedAt: new Date().toISOString(),
   };
   await saveJson(PROFILES_KEY, profiles);
