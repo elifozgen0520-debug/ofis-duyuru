@@ -57,7 +57,6 @@
     font-size: clamp(20px, 6vw, 26px);
     margin: 0;
     letter-spacing: -0.01em;
-    white-space: nowrap;
   }
   .pin-count { font-size: 12px; color: var(--muted); letter-spacing: 0.04em; white-space: nowrap; }
 
@@ -71,146 +70,86 @@
     position: relative;
   }
   .status-card::before {
-    content: '';
-    position: absolute;
-    top: -6px; left: 24px;
-    width: 12px; height: 12px;
-    border-radius: 50%;
-    background: var(--clay);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    content: ''; position: absolute; top: -6px; left: 24px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--clay); box-shadow: 0 2px 4px rgba(0,0,0,0.3);
   }
   .status-card h2 { font-family: 'Fraunces', serif; font-size: 15px; margin: 0 0 5px; }
   .status-card p { margin: 0 0 10px; font-size: 13px; line-height: 1.5; color: #444; }
 
   .bell-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--paper);
-    color: var(--sage);
-    font-size: 12px;
-    font-weight: 600;
-    padding: 6px 12px;
-    border-radius: 20px;
-    margin-bottom: 20px;
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--paper); color: var(--sage);
+    font-size: 12px; font-weight: 600; padding: 6px 12px;
+    border-radius: 20px; margin-bottom: 20px;
   }
-  .bell-status.off { color: var(--clay); }
 
   button {
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    font-size: 14px;
-    border: none;
-    border-radius: 3px;
-    padding: 10px 16px;
-    cursor: pointer;
+    font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px;
+    border: none; border-radius: 3px; padding: 10px 16px; cursor: pointer;
     transition: transform 0.1s ease, opacity 0.15s ease;
   }
   button:active { transform: scale(0.97); }
   button:disabled { opacity: 0.5; cursor: default; }
   .btn-primary { background: var(--ink); color: var(--paper); }
   .btn-primary:hover:not(:disabled) { opacity: 0.85; }
+  .btn-danger { background: var(--clay); color: #fff; padding: 5px 9px; font-size: 11px; }
 
-  .tabs {
-    display: flex;
-    gap: 4px;
-    margin-bottom: 20px;
-    border-bottom: 1px solid var(--line);
-  }
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--line); }
   .tab-btn {
-    background: transparent;
-    color: var(--muted);
-    border-radius: 0;
-    padding: 10px 14px;
-    font-size: 13.5px;
-    font-weight: 600;
-    border-bottom: 2px solid transparent;
-    flex: 1;
+    background: transparent; color: var(--muted); border-radius: 0;
+    padding: 10px 12px; font-size: 13px; font-weight: 600;
+    border-bottom: 2px solid transparent; flex: 1;
   }
   .tab-btn.active { color: var(--paper); border-bottom-color: var(--amber); }
-  .tab-panel { display: none; animation: fade-in 0.35s ease; }
+  .tab-panel { display: none; animation: fade-in 0.3s ease; }
   .tab-panel.active { display: block; }
   @keyframes fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
   .card {
-    background: var(--paper);
-    color: var(--ink);
-    border-radius: 4px;
-    padding: 20px;
-    box-shadow: 0 12px 28px var(--paper-shadow);
-    margin-bottom: 18px;
+    background: var(--paper); color: var(--ink);
+    border-radius: 4px; padding: 20px;
+    box-shadow: 0 12px 28px var(--paper-shadow); margin-bottom: 18px;
   }
-  .card h2 { font-family: 'Fraunces', serif; font-size: 17px; margin: 0; }
+  .card h2 { font-family: 'Fraunces', serif; font-size: 17px; margin: 0 0 4px; }
   .card .sub { font-size: 12.5px; color: #6b6b6b; margin-bottom: 16px; }
-  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-  .card-close {
-    background: none;
-    border: none;
-    color: #999;
-    font-size: 20px;
-    line-height: 1;
-    cursor: pointer;
-    padding: 2px 6px;
-    border-radius: 4px;
-    transition: color 0.15s ease, background 0.15s ease;
-  }
-  .card-close:hover { color: var(--ink); background: rgba(0,0,0,0.06); }
-
-  .card.anim-open { animation: card-in 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
-  .card.anim-close { animation: card-out 0.2s ease forwards; }
-  @keyframes card-in {
-    from { opacity: 0; transform: translateY(10px) scale(0.98); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-  }
-  @keyframes card-out {
-    from { opacity: 1; transform: translateY(0) scale(1); }
-    to { opacity: 0; transform: translateY(8px) scale(0.98); }
-  }
 
   label {
-    display: block;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: #777;
-    margin-bottom: 6px;
-    margin-top: 14px;
+    display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.05em;
+    text-transform: uppercase; color: #777; margin-bottom: 6px; margin-top: 14px;
   }
   label:first-of-type { margin-top: 0; }
 
-  input[type="text"], input[type="tel"], textarea {
-    width: 100%;
-    font-family: 'Inter', sans-serif;
-    font-size: 14.5px;
-    padding: 10px 12px;
-    border: 1.5px solid #ddd;
-    border-radius: 3px;
-    background: #fff;
-    color: var(--ink);
+  input[type="text"], input[type="tel"], input[type="password"], textarea, select {
+    width: 100%; font-family: 'Inter', sans-serif; font-size: 14px;
+    padding: 9px 11px; border: 1.5px solid #ddd; border-radius: 3px;
+    background: #fff; color: var(--ink);
   }
   textarea { resize: vertical; min-height: 70px; }
-  input:focus, textarea:focus { outline: 2px solid var(--ink); outline-offset: 1px; }
+  input:focus, textarea:focus, select:focus { outline: 2px solid var(--ink); outline-offset: 1px; }
+
+  .cat-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .cat-btn {
+    background: #fff; border: 1.5px solid #ddd; color: #555;
+    font-size: 12px; font-weight: 500; padding: 6px 12px; border-radius: 20px;
+  }
+  .cat-btn.active[data-cat="genel"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .cat-btn.active[data-cat="acil"] { background: var(--amber); border-color: var(--amber); color: #fff; }
+  .cat-btn.active[data-cat="yemek"] { background: var(--sage); border-color: var(--sage); color: #fff; }
+  .cat-btn.active[data-cat="vefat"] { background: var(--clay); border-color: var(--clay); color: #fff; }
+  .cat-btn.active[data-cat="dogum"] { background: var(--gold); border-color: var(--gold); color: #fff; }
 
   .send-row { margin-top: 18px; display: flex; align-items: center; gap: 12px; }
   .feedback-msg { font-size: 13px; margin-top: 10px; min-height: 18px; }
   .feedback-msg.ok { color: var(--sage); }
   .feedback-msg.err { color: var(--clay); }
 
-  .list-section { margin-top: 8px; }
   .list-section h3 { font-family: 'Fraunces', serif; font-size: 16px; margin: 0 0 12px; color: var(--paper); }
   .list-item {
-    background: var(--paper);
-    color: var(--ink);
-    border-radius: 4px;
-    padding: 13px 15px;
-    margin-bottom: 9px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    border-left: 4px solid var(--ink);
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 10px;
+    background: var(--paper); color: var(--ink); border-radius: 4px;
+    padding: 13px 15px; margin-bottom: 9px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-left: 4px solid var(--ink); display: flex; justify-content: space-between;
+    align-items: flex-start; gap: 10px;
   }
   .list-item.acil { border-left-color: var(--amber); }
   .list-item.yemek { border-left-color: var(--sage); }
@@ -225,18 +164,16 @@
   .list-item .li-phone { font-family: 'Fraunces', serif; font-weight: 700; font-size: 16px; color: var(--clay); text-decoration: none; }
   .list-item.done .li-title { text-decoration: line-through; opacity: 0.5; }
   .list-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 18px; }
-  .checkbox { width: 20px; height: 20px; margin-top: 2px; flex-shrink: 0; cursor: pointer; }
+  .checkbox { width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0; cursor: pointer; }
 
   #splash {
     position: fixed; inset: 0; background: var(--ink);
     display: flex; align-items: center; justify-content: center;
     z-index: 999; transition: opacity 0.6s ease;
   }
-  #splash img { width: 120px; height: 120px; animation: splash-spin 2.2s linear infinite, splash-blink 1.4s ease-in-out infinite; border-radius: 50%; }
-  @keyframes splash-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  #splash img { width: 110px; height: 110px; animation: splash-blink 1.4s ease-in-out infinite; border-radius: 50%; }
   @keyframes splash-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
   #splash.hide { opacity: 0; pointer-events: none; }
-  @media (prefers-reduced-motion: reduce) { #splash img { animation: none; } }
 
   #notifBanner {
     display: none; max-width: 640px; margin: 0 auto 20px; padding: 16px 18px;
@@ -244,29 +181,27 @@
     box-shadow: 0 8px 20px rgba(0,0,0,0.25); animation: fade-in 0.4s ease;
   }
   #notifBanner.show { display: block; }
-  #notifBanner .tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(255,255,255,0.25); padding: 3px 9px; border-radius: 20px; margin-bottom: 8px; }
-  #notifBanner .btitle { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 700; margin: 0 0 4px; }
-  #notifBanner .bbody { font-size: 13.5px; line-height: 1.5; opacity: 0.95; margin: 0; }
-  #notifBanner.acil { background: linear-gradient(135deg, #E0972C, #B5674A); animation: fade-in 0.4s ease, banner-pulse 1.4s ease-in-out 2; }
+  #notifBanner .tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(255,255,255,0.25); padding: 3px 8px; border-radius: 20px; margin-bottom: 6px; }
+  #notifBanner .btitle { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 700; margin: 0 0 4px; }
+  #notifBanner .bbody { font-size: 13px; line-height: 1.45; opacity: 0.95; margin: 0; }
+  #notifBanner.acil { background: linear-gradient(135deg, #E0972C, #B5674A); }
   #notifBanner.vefat { background: linear-gradient(135deg, #6b4a45, #3d2b28); }
   #notifBanner.dogum { background: linear-gradient(135deg, #C9A24B, #8f7332); }
   #notifBanner.yemek { background: linear-gradient(135deg, #6B8F71, #4a6650); }
   #notifBanner.genel { background: linear-gradient(135deg, #3a4152, #1F2430); }
-  @keyframes banner-pulse { 0%, 100% { box-shadow: 0 8px 20px rgba(224,151,44,0.25); } 50% { box-shadow: 0 8px 30px rgba(224,151,44,0.6); } }
 
   .site-footer {
-    position: fixed;
-    left: 0; right: 0; bottom: 0;
-    background: var(--ink);
-    border-top: 1px solid var(--line);
-    text-align: center;
-    padding: 10px 12px;
-    font-size: 11.5px;
-    z-index: 50;
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--ink);
+    border-top: 1px solid var(--line); text-align: center; padding: 10px 12px;
+    font-size: 11.5px; z-index: 50;
   }
   .site-footer a { color: var(--muted); text-decoration: none; cursor: pointer; }
   .site-footer a:hover { color: var(--paper); }
   .site-footer .fdot { color: var(--line); margin: 0 8px; }
+
+  .admin-box { background: #fff; border-radius: 4px; padding: 12px; margin-top: 10px; border: 1px solid #ddd; }
+  .admin-box h4 { margin: 0 0 8px; font-size: 13px; color: var(--ink); }
+  .reads-badge { display: inline-block; font-size: 11px; background: #eee; color: #333; padding: 2px 6px; border-radius: 10px; margin-top: 6px; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -276,8 +211,8 @@
 
 <div class="wrap">
   <header>
-    <div style="display:flex; align-items:center; gap:10px; min-width:0;">
-      <img src="/icon-192.png" alt="" style="width:32px; height:32px; border-radius:50%; flex-shrink:0;">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <img src="/icon-192.png" alt="" style="width:32px; height:32px; border-radius:50%;">
       <h1>Duyurular</h1>
     </div>
     <div style="display:flex; align-items:center; gap:10px;">
@@ -293,7 +228,7 @@
 
   <div class="status-card" id="subscribeCard">
     <h2>Bildirimleri Aç</h2>
-    <p>Duyuru, acil bilgi, not ve hatırlatmaları telefonuna anında almak için bir kere izin ver.</p>
+    <p>Duyuruları telefonunuza anında anlık bildirim olarak almak için izin verin.</p>
     <button class="btn-primary" id="subscribeBtn">Bildirimleri Aç</button>
   </div>
   <div class="bell-status" id="bellStatus" style="display:none;">🔔 <span>Bildirimler açık</span></div>
@@ -333,30 +268,100 @@
     </div>
   </div>
 
+  <!-- Profil Modalı -->
   <div class="card" id="profileModal" style="display:none;">
-    <div class="card-header">
-      <h2>Profilim</h2>
-      <button class="card-close" id="profileCloseBtn" aria-label="Kapat">✕</button>
-    </div>
-    <label>Adın</label>
-    <input type="text" id="profileName" placeholder="Örn: Ali Yılmaz">
+    <h2>Profilim</h2>
+    <div class="sub">Adınızı girerek okunma kayıtlarında adınızın görünmesini sağlayabilirsiniz.</div>
+    <label>Adınız Soyadınız</label>
+    <input type="text" id="profileName" placeholder="Örn: Salih Özgen">
     <label>Telefon (opsiyonel)</label>
     <input type="tel" id="profilePhone" placeholder="Örn: 0555 xxx xx xx">
     <div class="send-row"><button class="btn-primary" id="profileSaveBtn">Kaydet</button></div>
     <div class="feedback-msg" id="profileFeedback"></div>
   </div>
 
+  <!-- Görüş & Öneri Modalı -->
   <div class="card" id="feedbackModal" style="display:none;">
-    <div class="card-header">
-      <h2>Görüş &amp; Öneri Gönder</h2>
-      <button class="card-close" id="feedbackCloseBtn" aria-label="Kapat">✕</button>
-    </div>
-    <label>Adın (opsiyonel)</label>
-    <input type="text" id="feedbackName" placeholder="Örn: Ali Yılmaz">
-    <label>Mesajın</label>
-    <textarea id="feedbackText" placeholder="Görüş, öneri veya şikayetini yaz..."></textarea>
+    <h2>Görüş &amp; Öneri Gönder</h2>
+    <div class="sub">Yönetime iletmek istediğiniz not, öneri veya talebiniz:</div>
+    <label>Adınız (opsiyonel)</label>
+    <input type="text" id="feedbackName" placeholder="İsimsiz bırakabilirsiniz">
+    <label>Mesajınız</label>
+    <textarea id="feedbackText" placeholder="Mesajınızı yazın..."></textarea>
     <div class="send-row"><button class="btn-primary" id="feedbackSendBtn">Gönder</button></div>
     <div class="feedback-msg" id="feedbackModalFeedback"></div>
+  </div>
+
+  <!-- Yönetici Paneli Modalı -->
+  <div class="card" id="adminModal" style="display:none;">
+    <h2>Yönetici Paneli</h2>
+    <div id="adminAuthSection">
+      <label>Yönetici Şifresi</label>
+      <input type="password" id="adminGlobalPassword" placeholder="Şifrenizi girin">
+      <div class="send-row"><button class="btn-primary" id="adminLoginBtn">Giriş Yap</button></div>
+      <div class="feedback-msg" id="adminAuthFeedback"></div>
+    </div>
+
+    <div id="adminControls" style="display:none;">
+      <div class="tabs" style="margin-top:15px;">
+        <button class="tab-btn active" id="admTabSend">Duyuru Gönder</button>
+        <button class="tab-btn" id="admTabItems">Not/Tel/İş Ekle</button>
+        <button class="tab-btn" id="admTabInbox">Gelen Mesajlar</button>
+        <button class="tab-btn" id="admTabDevices">Cihazlar</button>
+      </div>
+
+      <!-- Admin Duyuru Gönder Formu -->
+      <div id="admPanelSend">
+        <label>Kategori</label>
+        <div class="cat-row" id="catRow">
+          <button type="button" class="cat-btn active" data-cat="genel">Genel</button>
+          <button type="button" class="cat-btn" data-cat="acil">Acil</button>
+          <button type="button" class="cat-btn" data-cat="yemek">Yemek Listesi</button>
+          <button type="button" class="cat-btn" data-cat="vefat">Vefat</button>
+          <button type="button" class="cat-btn" data-cat="dogum">Doğum</button>
+        </div>
+        <label>Başlık</label>
+        <input type="text" id="sendTitle" placeholder="Örn: Yarınki Toplantı Hakkında">
+        <label>Mesaj</label>
+        <textarea id="sendBody" placeholder="Duyuru detayları..."></textarea>
+        <label>Ek Dosya (Görsel / PDF - Opsiyonel)</label>
+        <input type="file" id="sendAttachment" accept="image/jpeg,image/png,application/pdf">
+        <div class="send-row"><button class="btn-primary" id="doSendBtn">Push Bildirimi İle Gönder</button></div>
+        <div class="feedback-msg" id="sendFeedback"></div>
+      </div>
+
+      <!-- Admin Not/Tel/İş Ekleme -->
+      <div id="admPanelItems" style="display:none;">
+        <label>Eklenilecek Tür</label>
+        <select id="itemTypeSelect">
+          <option value="notes">Not Ekle</option>
+          <option value="phones">Telefon Ekle</option>
+          <option value="tasks">Aylık İş Ekle</option>
+        </select>
+        <label id="itemField1Label">Not Metni</label>
+        <input type="text" id="itemField1" placeholder="Metin girin">
+        <div id="itemField2Wrapper" style="display:none;">
+          <label>Telefon Numarası</label>
+          <input type="text" id="itemField2" placeholder="Örn: 0358 xxx xx xx">
+        </div>
+        <label>Ek Dosya (PDF/Görsel)</label>
+        <input type="file" id="itemAttachment" accept="image/jpeg,image/png,application/pdf">
+        <div class="send-row"><button class="btn-primary" id="doAddItemBtn">Ekle</button></div>
+        <div class="feedback-msg" id="itemFeedback"></div>
+      </div>
+
+      <!-- Admin Gelen Mesajlar (Görüşler) -->
+      <div id="admPanelInbox" style="display:none;">
+        <h4>Gelen Görüş & Öneriler</h4>
+        <div id="adminFeedbackList" class="list-empty">Yükleniyor...</div>
+      </div>
+
+      <!-- Admin Cihaz İsimlendirme -->
+      <div id="admPanelDevices" style="display:none;">
+        <h4>Kayıtlı Cihazlar & İsim Verme</h4>
+        <div id="adminDeviceList" class="list-empty">Yükleniyor...</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -364,23 +369,28 @@
   <a href="#" id="profileLink">👤 Profilim</a>
   <span class="fdot">·</span>
   <a href="#" id="feedbackLink">💬 Görüş &amp; Öneri</a>
+  <span class="fdot">·</span>
+  <a href="#" id="adminLink">🔒 Yönetici</a>
 </footer>
 
 <script>
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
-  });
+// --- SEKMELER & TEMA ---
+document.querySelectorAll('.tabs .tab-btn').forEach(btn => {
+  if (btn.dataset.tab) {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tabs .tab-btn').forEach(b => { if(b.dataset.tab) b.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    });
+  }
 });
 
 window.addEventListener('load', () => {
   setTimeout(() => {
     const s = document.getElementById('splash');
-    if (s) { s.classList.add('hide'); setTimeout(() => s.remove(), 700); }
-  }, 1800);
+    if (s) { s.classList.add('hide'); setTimeout(() => s.remove(), 600); }
+  }, 1200);
 });
 
 const themeSelect = document.getElementById('themeSelect');
@@ -402,75 +412,21 @@ function getDeviceId() {
   }
   return id;
 }
-async function ackRead(messageId) {
-  if (!messageId) return;
-  try {
-    await fetch('/api/messages/' + messageId + '/read', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ deviceId: getDeviceId() }),
-    });
-  } catch (e) {}
-}
 
-function playNotifSound() {
-  try {
-    let count = 0;
-    const audio = new Audio('/notify.wav');
-    audio.volume = 1.0;
-    const playOnce = () => { count++; audio.currentTime = 0; audio.play().catch(() => {}); };
-    audio.addEventListener('ended', () => { if (count < 3) playOnce(); });
-    playOnce();
-  } catch (e) {}
-}
-function showNotifBanner(category, title, body) {
-  const el = document.getElementById('notifBanner');
-  if (!el) return;
-  el.className = 'show ' + (category || 'genel');
-  const tagNames = { acil: '🚨 ACİL DUYURU', yemek: '🍽️ Yemek Listesi', vefat: '🕯️ Vefat', dogum: '🎉 Doğum', genel: '📢 Duyuru' };
-  el.innerHTML = '<div class="tag">' + (tagNames[category] || tagNames.genel) + '</div><div class="btitle">' + (title || '') + '</div><div class="bbody">' + (body || '') + '</div>';
-  playNotifSound();
-}
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'NOTIF_OPENED') {
-      showNotifBanner(event.data.category, (event.data.title || '').replace(/^\S+\s/, ''), event.data.body);
-      ackRead(event.data.id);
-    }
-  });
-}
-(function () {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('notif') === '1') {
-    showNotifBanner(params.get('cat'), params.get('title'), params.get('body'));
-    ackRead(params.get('id'));
-    window.history.replaceState({}, '', window.location.pathname);
-  }
-})();
-
-const subscribeBtn = document.getElementById('subscribeBtn');
-const subscribeCard = document.getElementById('subscribeCard');
-const subCountEl = document.getElementById('subCount');
-
+// --- PUSH BİLDİRİM ---
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
   const rawData = atob(base64);
   return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
 }
+
 async function refreshCount() {
   try {
     const res = await fetch('/api/subscriber-count');
     const data = await res.json();
-    subCountEl.textContent = data.total + ' abone';
-  } catch { subCountEl.textContent = ''; }
-}
-
-function markSubscribed() {
-  subscribeCard.style.display = 'none';
-  const bell = document.getElementById('bellStatus');
-  bell.style.display = 'inline-flex';
-  bell.classList.remove('off');
-  bell.innerHTML = '🔔 <span>Bildirimler açık</span>';
+    document.getElementById('subCount').textContent = data.total + ' abone';
+  } catch { document.getElementById('subCount').textContent = ''; }
 }
 
 async function doSubscribe(silent) {
@@ -486,34 +442,46 @@ async function doSubscribe(silent) {
     const { publicKey } = await (await fetch('/api/vapid-public-key')).json();
     subscription = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicKey) });
   }
-  const deviceId = getDeviceId();
-  await fetch('/api/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...subscription.toJSON(), deviceId }) });
-  markSubscribed();
+  await fetch('/api/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...subscription.toJSON(), deviceId: getDeviceId() }) });
+  document.getElementById('subscribeCard').style.display = 'none';
+  document.getElementById('bellStatus').style.display = 'inline-flex';
   refreshCount();
   return true;
 }
 
-(async function initSubscription() {
-  if ('Notification' in window && Notification.permission === 'granted') {
-    await doSubscribe(true);
-  }
-})();
-
-subscribeBtn.addEventListener('click', () => doSubscribe(false));
+if ('Notification' in window && Notification.permission === 'granted') doSubscribe(true);
+document.getElementById('subscribeBtn').addEventListener('click', () => doSubscribe(false));
 refreshCount();
 
-const catNames = { acil: 'Acil', yemek: 'Yemek Listesi', vefat: 'Vefat', dogum: 'Doğum', genel: 'Genel' };
-function formatTime(iso) {
-  return new Date(iso).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+// --- BİLDİRİM SESİ & AFİŞİ ---
+function showNotifBanner(category, title, body) {
+  const el = document.getElementById('notifBanner');
+  if (!el) return;
+  el.className = 'show ' + (category || 'genel');
+  const tagNames = { acil: '🚨 ACİL DUYURU', yemek: '🍽️ Yemek Listesi', vefat: '🕯️ Vefat', dogum: '🎉 Doğum', genel: '📢 Duyuru' };
+  el.innerHTML = `<div class="tag">${tagNames[category] || tagNames.genel}</div><div class="btitle">${title || ''}</div><div class="bbody">${body || ''}</div>`;
+  try { new Audio('/notify.wav').play().catch(()=>{}); } catch(e){}
 }
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'NOTIF_OPENED') {
+      showNotifBanner(event.data.category, event.data.title, event.data.body);
+      loadHistory();
+    }
+  });
+}
+
+// --- LİSTE VE İÇERİK RENDERING ---
+const catNames = { acil: 'Acil', yemek: 'Yemek Listesi', vefat: 'Vefat', dogum: 'Doğum', genel: 'Genel' };
+function formatTime(iso) { return new Date(iso).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); }
 function esc(s) { return (s || '').replace(/</g, '&lt;'); }
 function renderAttachment(att) {
   if (!att) return '';
-  if (att.type === 'image') {
-    return '<a href="' + att.url + '" target="_blank"><img src="' + att.url + '" style="max-width:100%;border-radius:4px;margin-top:8px;display:block;"></a>';
-  }
-  return '<a href="' + att.url + '" target="_blank" style="display:inline-block;margin-top:8px;font-size:12.5px;color:var(--clay);font-weight:600;">📄 ' + esc(att.name || 'Dosyayı Aç') + '</a>';
+  if (att.type === 'image') return `<a href="${att.url}" target="_blank"><img src="${att.url}" style="max-width:100%;border-radius:4px;margin-top:8px;display:block;"></a>`;
+  return `<a href="${att.url}" target="_blank" style="display:inline-block;margin-top:8px;font-size:12px;color:var(--clay);font-weight:600;">📄 ${esc(att.name || 'Dosyayı Aç')}</a>`;
 }
+
+let activeAdminPassword = '';
 
 async function loadHistory() {
   const listEl = document.getElementById('historyList');
@@ -522,16 +490,17 @@ async function loadHistory() {
     const data = await res.json();
     if (!data.messages || data.messages.length === 0) { listEl.className = 'list-empty'; listEl.textContent = 'Henüz duyuru gönderilmedi.'; return; }
     listEl.className = '';
-    listEl.innerHTML = data.messages.map(m =>
-      '<div class="list-item ' + (m.category || 'genel') + '">' +
-        '<div class="li-main">' +
-          '<div class="li-top"><span class="li-tag">' + (catNames[m.category] || 'Genel') + '</span><span class="li-time">' + formatTime(m.time) + '</span></div>' +
-          '<div class="li-title">' + esc(m.title) + '</div>' +
-          '<div class="li-body">' + esc(m.body) + '</div>' +
-          renderAttachment(m.attachment) +
-        '</div>' +
-      '</div>'
-    ).join('');
+    listEl.innerHTML = data.messages.map(m => `
+      <div class="list-item ${m.category || 'genel'}">
+        <div class="li-main">
+          <div class="li-top"><span class="li-tag">${catNames[m.category] || 'Genel'}</span><span class="li-time">${formatTime(m.time)}</span></div>
+          <div class="li-title">${esc(m.title)}</div>
+          <div class="li-body">${esc(m.body)}</div>
+          ${renderAttachment(m.attachment)}
+          ${activeAdminPassword ? `<div style="margin-top:8px;"><span class="reads-badge" onclick="showReads('${m.id}')">👁 Okundu Bilgisi</span> <button class="btn-danger" onclick="deleteMessage('${m.id}')">Sil</button></div>` : ''}
+        </div>
+      </div>
+    `).join('');
   } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
 }
 loadHistory();
@@ -546,91 +515,242 @@ async function loadReadOnlyList(endpoint, listId, emptyText, renderItem, allowTo
     listEl.innerHTML = data.items.map(renderItem).join('');
     if (allowToggle) {
       listEl.querySelectorAll('[data-toggle-id]').forEach(c => c.addEventListener('change', async () => {
-        try { await fetch(endpoint + '/' + c.dataset.toggleId + '/toggle', { method: 'POST' }); loadReadOnlyList(endpoint, listId, emptyText, renderItem, allowToggle); } catch {}
+        try { await fetch(endpoint + '/' + c.dataset.toggleId + '/toggle', { method: 'POST' }); } catch {}
       }));
     }
   } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
 }
 
-loadReadOnlyList('/api/notes', 'notesList', 'Henüz not eklenmedi.', (n) =>
-  '<div class="list-item"><div class="li-main"><div class="li-top"><span class="li-time">' + formatTime(n.time) + '</span></div><div class="li-body">' + esc(n.text) + '</div>' + renderAttachment(n.attachment) + '</div></div>'
-);
+loadReadOnlyList('/api/notes', 'notesList', 'Henüz not eklenmedi.', n => `
+  <div class="list-item"><div class="li-main"><div class="li-top"><span class="li-time">${formatTime(n.time)}</span></div><div class="li-body">${esc(n.text)}</div>${renderAttachment(n.attachment)}${activeAdminPassword ? `<div style="margin-top:6px;"><button class="btn-danger" onclick="deleteGeneric('notes','${n.id}')">Sil</button></div>`:''}</div></div>
+`);
 
-loadReadOnlyList('/api/phones', 'phonesList', 'Henüz telefon eklenmedi.', (p) =>
-  '<div class="list-item"><div class="li-main"><div class="li-title">' + esc(p.name) + '</div><a class="li-phone" href="tel:' + esc(p.number) + '">' + esc(p.number) + '</a>' + renderAttachment(p.attachment) + '</div></div>'
-);
+loadReadOnlyList('/api/phones', 'phonesList', 'Henüz telefon eklenmedi.', p => `
+  <div class="list-item"><div class="li-main"><div class="li-title">${esc(p.name)}</div><a class="li-phone" href="tel:${esc(p.number)}">${esc(p.number)}</a>${renderAttachment(p.attachment)}${activeAdminPassword ? `<div style="margin-top:6px;"><button class="btn-danger" onclick="deleteGeneric('phones','${p.id}')">Sil</button></div>`:''}</div></div>
+`);
 
-loadReadOnlyList('/api/tasks', 'tasksList', 'Henüz görev eklenmedi.', (t) =>
-  '<div class="list-item ' + (t.done ? 'done' : '') + '"><input type="checkbox" class="checkbox" data-toggle-id="' + t.id + '" ' + (t.done ? 'checked' : '') + '><div class="li-main"><div class="li-title">' + esc(t.text) + '</div>' + renderAttachment(t.attachment) + '</div></div>',
-  true
-);
+loadReadOnlyList('/api/tasks', 'tasksList', 'Henüz görev eklenmedi.', t => `
+  <div class="list-item ${t.done ? 'done' : ''}"><input type="checkbox" class="checkbox" data-toggle-id="${t.id}" ${t.done ? 'checked' : ''}><div class="li-main"><div class="li-title">${esc(t.text)}</div>${renderAttachment(t.attachment)}${activeAdminPassword ? `<div style="margin-top:6px;"><button class="btn-danger" onclick="deleteGeneric('tasks','${t.id}')">Sil</button></div>`:''}</div></div>
+`, true);
 
-function openCard(card) {
-  card.style.display = 'block';
-  card.classList.remove('anim-close');
-  card.classList.add('anim-open');
-  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-function closeCard(card) {
-  card.classList.remove('anim-open');
-  card.classList.add('anim-close');
-  setTimeout(() => {
-    card.style.display = 'none';
-    card.classList.remove('anim-close');
-  }, 200);
+// --- MODALLAR ---
+function toggleModal(modalId) {
+  ['profileModal', 'feedbackModal', 'adminModal'].forEach(id => {
+    if (id !== modalId) document.getElementById(id).style.display = 'none';
+  });
+  const m = document.getElementById(modalId);
+  const show = m.style.display === 'none';
+  m.style.display = show ? 'block' : 'none';
+  if (show) m.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-const profileLink = document.getElementById('profileLink');
-const profileModal = document.getElementById('profileModal');
-profileLink.addEventListener('click', (e) => {
+document.getElementById('profileLink').addEventListener('click', (e) => {
   e.preventDefault();
-  const showing = profileModal.style.display !== 'none';
-  if (showing) {
-    closeCard(profileModal);
-  } else {
-    document.getElementById('profileName').value = localStorage.getItem('selfName') || '';
-    document.getElementById('profilePhone').value = localStorage.getItem('selfPhone') || '';
-    openCard(profileModal);
-  }
+  toggleModal('profileModal');
+  document.getElementById('profileName').value = localStorage.getItem('selfName') || '';
+  document.getElementById('profilePhone').value = localStorage.getItem('selfPhone') || '';
 });
-document.getElementById('profileCloseBtn').addEventListener('click', () => closeCard(profileModal));
+
 document.getElementById('profileSaveBtn').addEventListener('click', async () => {
   const name = document.getElementById('profileName').value.trim();
   const phone = document.getElementById('profilePhone').value.trim();
   const fb = document.getElementById('profileFeedback');
   try {
     await fetch('/api/self-profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), name, phone }) });
-    localStorage.setItem('selfName', name);
-    localStorage.setItem('selfPhone', phone);
-    fb.textContent = 'Kaydedildi. Onaylanırsa "kim okudu" listesinde görünecek.'; fb.className = 'feedback-msg ok';
-  } catch { fb.textContent = 'Kaydedilemedi.'; fb.className = 'feedback-msg err'; }
+    localStorage.setItem('selfName', name); localStorage.setItem('selfPhone', phone);
+    fb.textContent = 'Kaydedildi.'; fb.className = 'feedback-msg ok';
+  } catch { fb.textContent = 'Hata oluştu.'; fb.className = 'feedback-msg err'; }
 });
 
-const feedbackLink = document.getElementById('feedbackLink');
-const feedbackModal = document.getElementById('feedbackModal');
-feedbackLink.addEventListener('click', (e) => {
+document.getElementById('feedbackLink').addEventListener('click', (e) => {
   e.preventDefault();
-  const showing = feedbackModal.style.display !== 'none';
-  if (showing) {
-    closeCard(feedbackModal);
-  } else {
-    document.getElementById('feedbackName').value = localStorage.getItem('selfName') || '';
-    openCard(feedbackModal);
-  }
+  toggleModal('feedbackModal');
+  document.getElementById('feedbackName').value = localStorage.getItem('selfName') || '';
 });
-document.getElementById('feedbackCloseBtn').addEventListener('click', () => closeCard(feedbackModal));
+
 document.getElementById('feedbackSendBtn').addEventListener('click', async () => {
   const text = document.getElementById('feedbackText').value.trim();
   const name = document.getElementById('feedbackName').value.trim();
   const fb = document.getElementById('feedbackModalFeedback');
-  if (!text) { fb.textContent = 'Boş gönderilemez.'; fb.className = 'feedback-msg err'; return; }
+  if (!text) { fb.textContent = 'Mesaj boş bırakılamaz.'; fb.className = 'feedback-msg err'; return; }
   try {
     const res = await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, name }) });
-    if (!res.ok) throw new Error('Gönderilemedi');
+    if (!res.ok) throw new Error();
     document.getElementById('feedbackText').value = '';
-    fb.textContent = 'Gönderildi, teşekkürler!'; fb.className = 'feedback-msg ok';
+    fb.textContent = 'İletildi, teşekkürler.'; fb.className = 'feedback-msg ok';
   } catch { fb.textContent = 'Gönderilemedi.'; fb.className = 'feedback-msg err'; }
 });
+
+// --- YÖNETİCİ MÜDÜRLÜK KONTROLLERİ ---
+let selectedCategory = 'genel';
+document.getElementById('catRow').addEventListener('click', (e) => {
+  const btn = e.target.closest('.cat-btn'); if (!btn) return;
+  document.querySelectorAll('#catRow .cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active'); selectedCategory = btn.dataset.cat;
+});
+
+document.getElementById('adminLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  toggleModal('adminModal');
+});
+
+document.getElementById('adminLoginBtn').addEventListener('click', async () => {
+  const pass = document.getElementById('adminGlobalPassword').value.trim();
+  const fb = document.getElementById('adminAuthFeedback');
+  try {
+    const res = await fetch('/api/admin-check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pass }) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Şifre hatalı');
+    activeAdminPassword = pass;
+    document.getElementById('adminAuthSection').style.display = 'none';
+    document.getElementById('adminControls').style.display = 'block';
+    loadHistory();
+  } catch (err) { fb.textContent = err.message; fb.className = 'feedback-msg err'; }
+});
+
+const admTabs = { send: 'admPanelSend', items: 'admPanelItems', inbox: 'admPanelInbox', devices: 'admPanelDevices' };
+Object.keys(admTabs).forEach(key => {
+  document.getElementById('admTab' + key.charAt(0).toUpperCase() + key.slice(1)).addEventListener('click', () => {
+    Object.keys(admTabs).forEach(k => {
+      document.getElementById('admTab' + k.charAt(0).toUpperCase() + k.slice(1)).classList.remove('active');
+      document.getElementById(admTabs[k]).style.display = 'none';
+    });
+    document.getElementById('admTab' + key.charAt(0).toUpperCase() + key.slice(1)).classList.add('active');
+    document.getElementById(admTabs[key]).style.display = 'block';
+
+    if (key === 'inbox') loadAdminInbox();
+    if (key === 'devices') loadAdminDevices();
+  });
+});
+
+document.getElementById('doSendBtn').addEventListener('click', async () => {
+  const title = document.getElementById('sendTitle').value.trim();
+  const body = document.getElementById('sendBody').value.trim();
+  const fileInput = document.getElementById('sendAttachment');
+  const fb = document.getElementById('sendFeedback');
+
+  if (!title || !body) { fb.textContent = 'Başlık ve mesaj zorunludur.'; fb.className = 'feedback-msg err'; return; }
+
+  const formData = new FormData();
+  formData.append('password', activeAdminPassword);
+  formData.append('category', selectedCategory);
+  formData.append('title', title);
+  formData.append('body', body);
+  if (fileInput.files[0]) formData.append('attachment', fileInput.files[0]);
+
+  fb.textContent = 'Gönderiliyor...'; fb.className = 'feedback-msg';
+  try {
+    const res = await fetch('/api/send', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Gönderilemedi');
+    fb.textContent = `Gönderildi: ${data.sent} kişiye ulaştı.`; fb.className = 'feedback-msg ok';
+    document.getElementById('sendTitle').value = ''; document.getElementById('sendBody').value = ''; fileInput.value = '';
+    loadHistory();
+  } catch (err) { fb.textContent = err.message; fb.className = 'feedback-msg err'; }
+});
+
+document.getElementById('itemTypeSelect').addEventListener('change', (e) => {
+  const val = e.target.value;
+  document.getElementById('itemField1Label').textContent = val === 'phones' ? 'İsim / Birim' : 'Metin / Açıklama';
+  document.getElementById('itemField2Wrapper').style.display = val === 'phones' ? 'block' : 'none';
+});
+
+document.getElementById('doAddItemBtn').addEventListener('click', async () => {
+  const type = document.getElementById('itemTypeSelect').value;
+  const f1 = document.getElementById('itemField1').value.trim();
+  const f2 = document.getElementById('itemField2').value.trim();
+  const fileInput = document.getElementById('itemAttachment');
+  const fb = document.getElementById('itemFeedback');
+
+  if (!f1) { fb.textContent = 'Gerekli alanları doldurun.'; fb.className = 'feedback-msg err'; return; }
+
+  const formData = new FormData();
+  formData.append('password', activeAdminPassword);
+  if (type === 'phones') { formData.append('name', f1); formData.append('number', f2); }
+  else { formData.append('text', f1); }
+  if (fileInput.files[0]) formData.append('attachment', fileInput.files[0]);
+
+  try {
+    const res = await fetch(`/api/${type}`, { method: 'POST', body: formData });
+    if (!res.ok) throw new Error('Eklenemedi');
+    fb.textContent = 'Başarıyla eklendi.'; fb.className = 'feedback-msg ok';
+    document.getElementById('itemField1').value = ''; document.getElementById('itemField2').value = ''; fileInput.value = '';
+    location.reload();
+  } catch (err) { fb.textContent = err.message; fb.className = 'feedback-msg err'; }
+});
+
+async function loadAdminInbox() {
+  const el = document.getElementById('adminFeedbackList');
+  try {
+    const res = await fetch(`/api/feedback?password=${encodeURIComponent(activeAdminPassword)}`);
+    const data = await res.json();
+    if (!data.items || data.items.length === 0) { el.className = 'list-empty'; el.textContent = 'Gelen mesaj yok.'; return; }
+    el.className = '';
+    el.innerHTML = data.items.map(i => `
+      <div class="admin-box">
+        <div style="font-size:11px;color:#888;">${formatTime(i.time)} - <b>${esc(i.name || 'İsimsiz')}</b></div>
+        <div style="font-size:13px;margin-top:4px;color:#222;">${esc(i.text)}</div>
+      </div>
+    `).join('');
+  } catch { el.className = 'list-empty'; el.textContent = 'Yüklenemedi.'; }
+}
+
+async function loadAdminDevices() {
+  const el = document.getElementById('adminDeviceList');
+  try {
+    const res = await fetch('/api/devices');
+    const data = await res.json();
+    if (!data.devices || data.devices.length === 0) { el.className = 'list-empty'; el.textContent = 'Kayıtlı cihaz yok.'; return; }
+    el.className = '';
+    el.innerHTML = data.devices.map(d => `
+      <div class="admin-box">
+        <div style="font-size:11px;color:#888;">Cihaz ID: ...${d.deviceId.slice(-6)}</div>
+        <div style="font-size:12px;margin:4px 0;">Mevcut İsim: <b>${esc(d.name || d.suggestedName || 'Tanımlanmamış')}</b></div>
+        <div style="display:flex;gap:6px;">
+          <input type="text" id="dev_${d.deviceId}" placeholder="Yeni İsim Ata" style="font-size:12px;padding:4px 6px;">
+          <button class="btn-primary" style="padding:4px 8px;font-size:12px;" onclick="assignDevName('${d.deviceId}')">Kaydet</button>
+        </div>
+      </div>
+    `).join('');
+  } catch { el.className = 'list-empty'; el.textContent = 'Yüklenemedi.'; }
+}
+
+async function assignDevName(deviceId) {
+  const val = document.getElementById('dev_' + deviceId).value.trim();
+  if (!val) return;
+  try {
+    await fetch('/api/devices/name', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: activeAdminPassword, deviceId, name: val })
+    });
+    alert('İsim atandı.'); loadAdminDevices();
+  } catch { alert('Atanamadı.'); }
+}
+
+async function showReads(msgId) {
+  try {
+    const res = await fetch(`/api/messages/${msgId}/reads`);
+    const data = await res.json();
+    const names = data.reads.map(r => r.name).join('\n') || 'Henüz kimse okumadı.';
+    alert(`Okuyanlar (${data.reads.length}/${data.totalSubscribers}):\n\n` + names);
+  } catch { alert('Okuma bilgisi alınamadı.'); }
+}
+
+async function deleteMessage(id) {
+  if (!confirm('Bu duyuruyu silmek istediğinize emin misiniz?')) return;
+  try {
+    await fetch('/api/messages/' + id, { method: 'DELETE', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ password: activeAdminPassword }) });
+    loadHistory();
+  } catch { alert('Silinemedi.'); }
+}
+
+async function deleteGeneric(type, id) {
+  if (!confirm('Silmek istediğinize emin misiniz?')) return;
+  try {
+    await fetch(`/api/${type}/${id}`, { method: 'DELETE', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ password: activeAdminPassword }) });
+    location.reload();
+  } catch { alert('Silinemedi.'); }
+}
 </script>
 </body>
 </html>
