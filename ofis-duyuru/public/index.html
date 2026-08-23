@@ -695,7 +695,9 @@ if (isIOS) {
 }
 
 // Uygulama, kurulu APK (TWA) içinden mi açıldı? (tarayıcıdan mı yoksa yüklü uygulamadan mı)
-const isInstalledApp = document.referrer.startsWith('android-app://') || window.matchMedia('(display-mode: standalone)').matches;
+// Uygulama, kurulu APK (TWA) içinden mi açıldı? (Android'e özel — iOS Ana Ekran modunu bu kapsamın dışında tutuyoruz,
+// çünkü Android'e özel "Bilinmeyen uygulama / Play Protect" mesajları iPhone'da anlamsız kalır)
+const isInstalledApp = !isIOS && (document.referrer.startsWith('android-app://') || window.matchMedia('(display-mode: standalone)').matches);
 if (isInstalledApp) {
   document.getElementById('step1-download').style.display = 'none';
   document.getElementById('step1-installed').style.display = 'block';
