@@ -8,7 +8,6 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Dosya yükleme (JPG/PNG/PDF)
 const UPLOADS_DIR = path.join(__dirname, 'public', 'uploads');
 fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
@@ -20,7 +19,7 @@ const upload = multer({
       cb(null, Date.now().toString(36) + Math.random().toString(36).slice(2, 8) + ext);
     },
   }),
-  limits: { fileSize: 8 * 1024 * 1024 }, // 8MB Sınır
+  limits: { fileSize: 8 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const ok = ['image/jpeg', 'image/png', 'application/pdf'].includes(file.mimetype);
     cb(ok ? null : new Error('Sadece JPG, PNG veya PDF yükleyebilirsiniz.'), ok);
@@ -42,7 +41,6 @@ const PROFILES_FILE = path.join(__dirname, 'profiles.json');
 const FEEDBACK_FILE = path.join(__dirname, 'feedback.json');
 const ADMIN_PASSWORD = (process.env.ADMIN_PASSWORD || 'degistir-bu-sifreyi').trim();
 
-// Brute-force koruması
 const loginAttempts = new Map();
 const MAX_ATTEMPTS = 8;
 const WINDOW_MS = 10 * 60 * 1000;
@@ -90,7 +88,6 @@ app.post('/api/admin-check', (req, res) => {
   res.json({ ok: true });
 });
 
-// VAPID Anahtarları
 let VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY;
 let VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
 
@@ -184,7 +181,6 @@ app.post('/api/devices/name', (req, res) => {
   res.json({ ok: true });
 });
 
-// Yüksek Öncelikli Push Bildirimi (Urgency: high)
 app.post('/api/send', upload.single('attachment'), async (req, res) => {
   const { password, category, title, body } = req.body;
   const result = checkPassword(password, req);
@@ -201,6 +197,7 @@ app.post('/api/send', upload.single('attachment'), async (req, res) => {
     body,
     category: category || 'genel',
     urgent: true,
+    sound: '/notify.wav',
     image: attachment && attachment.type === 'image' ? attachment.url : undefined,
   });
 
