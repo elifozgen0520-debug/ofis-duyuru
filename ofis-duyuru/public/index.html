@@ -45,6 +45,18 @@
   h1 { font-family: 'Fraunces', serif; font-weight: 700; font-size: clamp(20px, 6vw, 26px); margin: 0; }
   .pin-count { font-size: 12px; color: var(--muted); }
 
+  /* SALLANAN LOGO VE ZİL ANİMASYONU */
+  .sway-logo {
+    display: inline-block;
+    animation: logo-sway 1.8s ease-in-out infinite alternate;
+    transform-origin: center center;
+  }
+  @keyframes logo-sway {
+    0% { transform: rotate(-14deg) scale(0.96); }
+    50% { transform: rotate(0deg) scale(1.08); }
+    100% { transform: rotate(14deg) scale(0.96); }
+  }
+
   .status-card {
     background: var(--paper); color: var(--ink); border-radius: 4px; padding: 16px 18px;
     margin-bottom: 20px; box-shadow: 0 8px 24px var(--paper-shadow); position: relative;
@@ -58,16 +70,6 @@
     display: inline-flex; align-items: center; gap: 6px; background: var(--paper);
     color: var(--sage); font-size: 12px; font-weight: 600; padding: 6px 12px;
     border-radius: 20px; margin-bottom: 20px;
-  }
-
-  /* SALLANAN HAREKETLİ ZİL ANİMASYONU */
-  .ring-bell {
-    display: inline-block;
-    animation: bell-shake 0.6s ease-in-out infinite alternate;
-  }
-  @keyframes bell-shake {
-    0% { transform: rotate(-18deg); }
-    100% { transform: rotate(18deg); }
   }
 
   button {
@@ -189,7 +191,7 @@
 </head>
 <body>
 
-<div id="splash"><img src="/icon-192.png" alt="Amasya İl Müdürlüğü"></div>
+<div id="splash"><img src="/icon-192.png" alt="Amasya İl Müdürlüğü" class="sway-logo"></div>
 <div id="notifBanner"></div>
 
 <!-- ADIM ADIM KURULUM VE GÖRSEL MARKA AYAR SİHİRBAZI -->
@@ -240,7 +242,7 @@
 
     <!-- ADIM 3: BİLDİRİM VE MARKA BAZLI SES REHBERİ -->
     <div class="wizard-step" id="step3">
-      <div style="font-size:36px; text-align:center; margin-bottom:8px;"><span class="ring-bell">🔔</span></div>
+      <div style="font-size:36px; text-align:center; margin-bottom:8px;"><span class="sway-logo">🔔</span></div>
       <h2 style="text-align:center; margin:0 0 8px;">Adım 3: Bildirim & Ses İzni</h2>
       <p style="font-size:13px; color:#555; text-align:center;">Acil duyuru ve toplantı haberlerini kaçırmamak için bildirim izni verin.</p>
 
@@ -301,7 +303,7 @@
 <div class="wrap">
   <header>
     <div style="display:flex; align-items:center; gap:10px;">
-      <img src="/icon-192.png" alt="" style="width:32px; height:32px; border-radius:50%;">
+      <img src="/icon-192.png" alt="" class="sway-logo" style="width:34px; height:34px; border-radius:50%;">
       <h1>Duyurular</h1>
     </div>
     <div style="display:flex; align-items:center; gap:10px;">
@@ -320,7 +322,7 @@
     <p>Duyuruları telefonunuza anında anlık bildirim olarak almak için izin verin.</p>
     <button class="btn-primary" id="subscribeBtn">Bildirim Kurulumunu Başlat</button>
   </div>
-  <div class="bell-status" id="bellStatus" style="display:none;"><span class="ring-bell">🔔</span> <span>Bildirimler ve Ses Aktif</span></div>
+  <div class="bell-status" id="bellStatus" style="display:none;"><span class="sway-logo">🔔</span> <span>Bildirimler ve Ses Aktif</span></div>
 
   <div class="tabs">
     <button class="tab-btn active" data-tab="duyurular">Duyurular</button>
@@ -469,6 +471,24 @@
 </footer>
 
 <script>
+// --- OTOMATİK SES KİLİDİ AÇICI (AUTOPLAY UNLOCKER) ---
+let audioUnlocked = false;
+function unlockAudioEngine() {
+  if (audioUnlocked) return;
+  try {
+    const dummy = new Audio('/notify.wav');
+    dummy.volume = 0.01;
+    dummy.play().then(() => {
+      dummy.pause();
+      audioUnlocked = true;
+      console.log('Ses motoru başarısıyla açıldı.');
+    }).catch(e => console.log('Ses motoru açılamadı:', e));
+  } catch(e) {}
+}
+
+document.addEventListener('click', unlockAudioEngine, { once: true });
+document.addEventListener('touchstart', unlockAudioEngine, { once: true });
+
 // --- MARKA AYAR SEÇİMİ ---
 function showBrand(brand) {
   document.querySelectorAll('.brand-guide').forEach(el => el.style.display = 'none');
@@ -546,6 +566,7 @@ function checkFirstRunWizard() {
 }
 
 document.getElementById('subscribeBtn').addEventListener('click', () => {
+  unlockAudioEngine();
   document.getElementById('wizardModal').style.display = 'flex';
   showWizardStep(1);
 });
@@ -582,6 +603,7 @@ document.getElementById('btnNext2').addEventListener('click', async () => {
 });
 
 document.getElementById('btnGrantPush').addEventListener('click', async () => {
+  unlockAudioEngine();
   const ok = await doSubscribe(false);
   if (ok) {
     showWizardStep(4);
@@ -646,7 +668,9 @@ function playNotifSound() {
     const playOnce = () => {
       count++;
       audio.currentTime = 0;
-      audio.play().catch(e => console.log('Audio engellendi:', e));
+      audio.play().then(() => {
+        console.log('Ses çalıyor:', count);
+      }).catch(e => console.log('Ses çalma engellendi:', e));
     };
 
     audio.addEventListener('ended', () => {
@@ -654,7 +678,7 @@ function playNotifSound() {
     });
 
     playOnce();
-  } catch (e) { console.log(e); }
+  } catch (e) { console.log('Ses hatası:', e); }
 }
 
 function showNotifBanner(category, title, body) {
@@ -749,9 +773,10 @@ function toggleModal(modalId) {
 }
 
 document.getElementById('settingsLink').addEventListener('click', (e) => { e.preventDefault(); toggleModal('settingsModal'); });
-document.getElementById('testSoundBtn').addEventListener('click', () => playNotifSound());
+document.getElementById('testSoundBtn').addEventListener('click', () => { unlockAudioEngine(); playNotifSound(); });
 
 async function triggerLockTest() {
+  unlockAudioEngine();
   if (!('serviceWorker' in navigator)) return;
   const reg = await navigator.serviceWorker.ready;
   alert('3 saniye içinde test bildirimi gönderilecek. Lütfen hemen ekranınızı kilitleyin!');
