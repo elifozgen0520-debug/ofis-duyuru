@@ -246,18 +246,20 @@
       <h2 style="text-align:center; margin:0 0 8px;">Adım 3: Bildirim & Ses İzni</h2>
       <p style="font-size:13px; color:#555; text-align:center;">Acil duyuru ve toplantı haberlerini kaçırmamak için bildirim izni verin.</p>
 
-      <label>Telefon Markanızı Seçip Ayarı İnceleyin:</label>
+      <label id="brandDetectedLabel">Cihazınız İçin Önerilen Ayar:</label>
       <div style="display:flex; gap:6px; margin:8px 0 12px;">
         <button type="button" class="btn-primary" onclick="showBrand('samsung')" style="flex:1; font-size:12px; padding:6px;">Samsung</button>
         <button type="button" class="btn-primary" onclick="showBrand('xiaomi')" style="flex:1; font-size:12px; padding:6px;">Xiaomi/Redmi</button>
         <button type="button" class="btn-primary" onclick="showBrand('iphone')" style="flex:1; font-size:12px; padding:6px;">iPhone</button>
+        <button type="button" class="btn-primary" onclick="showBrand('android')" style="flex:1; font-size:12px; padding:6px;">Diğer Android</button>
       </div>
 
-      <div id="brand-samsung" class="brand-guide guide-box">
+      <div id="brand-samsung" class="brand-guide guide-box" style="display:none;">
         <b>Samsung Ayarı:</b><br>
         1. Bildirime basılı tutun > ⚙️ <b>Ayarlar</b>'a basın.<br>
         2. <b>"Sesli ve Ekranda Göster"</b> seçeneğini seçin.<br>
         3. Kilit Ekranı Bildirimleri'ni <b>"İçeriği Göster"</b> yapın.
+        <button type="button" class="btn-primary" id="btnOpenSettings-samsung" style="width:100%; margin-top:10px; font-size:12px; padding:8px;">⚙️ Ayarları Açmayı Dene</button>
       </div>
 
       <div id="brand-xiaomi" class="brand-guide guide-box" style="display:none;">
@@ -265,13 +267,22 @@
         1. <i>Ayarlar > Uygulamalar > Chrome</i> yoluna gidin.<br>
         2. <b>Bildirimler</b> kısmından <i>"Kilit Ekranı"</i> ve <i>"Sesi Çal"</i> izinlerini açın.<br>
         3. Pil Tasarrufu'nu <b>"Kısıtlama Yok"</b> yapın.
+        <button type="button" class="btn-primary" id="btnOpenSettings-xiaomi" style="width:100%; margin-top:10px; font-size:12px; padding:8px;">⚙️ Ayarları Açmayı Dene</button>
+      </div>
+
+      <div id="brand-android" class="brand-guide guide-box" style="display:none;">
+        <b>Android (Genel) Ayarı:</b><br>
+        1. <i>Ayarlar > Uygulamalar > Chrome > Bildirimler</i> yoluna gidin.<br>
+        2. Bu site için açılan kategoriye girip <b>Ses</b> ve <b>Titreşim</b>'i açın, önemi <b>Yüksek/Acil</b> yapın.
+        <button type="button" class="btn-primary" id="btnOpenSettings-android" style="width:100%; margin-top:10px; font-size:12px; padding:8px;">⚙️ Ayarları Açmayı Dene</button>
       </div>
 
       <div id="brand-iphone" class="brand-guide guide-box" style="display:none;">
         <b>iPhone (iOS) Ayarı:</b><br>
         1. Safari alt menüsünden <b>Paylaş (⬆️) > Ana Ekrana Ekle</b> deyin.<br>
         2. Ana ekrandan uygulamayı açıp izin verin.<br>
-        3. <i>Ayarlar > Bildirimler > Müdürlük Duyuru</i> altından Sesler'i açın.
+        3. <i>Ayarlar > Bildirimler > Müdürlük Duyuru</i> altından Sesler'i açın.<br>
+        <span style="font-size:11px; color:#888;">iPhone'da Apple, sitelerin doğrudan Ayarlar'ı açmasına izin vermiyor — bu adımı elle yapman gerekiyor.</span>
       </div>
 
       <button class="btn-primary" id="btnGrantPush" style="width:100%; padding:12px; font-size:15px; background:var(--amber);">
@@ -496,6 +507,39 @@ function showBrand(brand) {
   if (b) b.style.display = 'block';
 }
 
+// --- CİHAZ MARKASINI OTOMATİK ALGILA ---
+function detectBrand() {
+  const ua = navigator.userAgent || '';
+  if (/iPhone|iPad|iPod/i.test(ua)) return 'iphone';
+  if (/; ?(Redmi|POCO|Mi )|MIUI|Xiaomi/i.test(ua)) return 'xiaomi';
+  if (/; ?SM-|Samsung/i.test(ua)) return 'samsung';
+  if (/Android/i.test(ua)) return 'android';
+  return 'android';
+}
+
+const brandNames = { samsung: 'Samsung', xiaomi: 'Xiaomi/Redmi', iphone: 'iPhone', android: 'Android' };
+
+function initBrandGuide() {
+  const detected = detectBrand();
+  showBrand(detected);
+  const label = document.getElementById('brandDetectedLabel');
+  if (label) label.textContent = `Cihazınız İçin Önerilen Ayar (${brandNames[detected]} algılandı):`;
+}
+
+// --- ANDROID'DE BİLDİRİM AYARLARINI AÇMAYI DENE (BEST-EFFORT DEEP LINK) ---
+function tryOpenAndroidNotifSettings() {
+  // Bu sadece Chrome/Android üzerinde çalışır; iOS'ta veya masaüstünde etkisizdir.
+  try {
+    window.location.href = 'intent:#Intent;action=android.settings.APP_NOTIFICATION_SETTINGS;S.android.provider.extra.APP_PACKAGE=com.android.chrome;end';
+  } catch (e) {
+    console.log('Ayarlar açılamadı:', e);
+  }
+}
+['samsung', 'xiaomi', 'android'].forEach((brand) => {
+  const btn = document.getElementById('btnOpenSettings-' + brand);
+  if (btn) btn.addEventListener('click', tryOpenAndroidNotifSettings);
+});
+
 // --- SEKMELER & TEMA ---
 document.querySelectorAll('.tabs .tab-btn').forEach(btn => {
   if (btn.dataset.tab) {
@@ -555,6 +599,7 @@ function showWizardStep(stepNum) {
   }
   document.getElementById('step' + stepNum).classList.add('active');
   document.getElementById('dot' + stepNum).classList.add('active');
+  if (stepNum === 3) initBrandGuide();
 }
 
 function checkFirstRunWizard() {
