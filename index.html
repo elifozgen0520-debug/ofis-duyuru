@@ -140,8 +140,32 @@
     box-shadow: 0 12px 28px var(--paper-shadow);
     margin-bottom: 18px;
   }
-  .card h2 { font-family: 'Fraunces', serif; font-size: 17px; margin: 0 0 4px; }
+  .card h2 { font-family: 'Fraunces', serif; font-size: 17px; margin: 0; }
   .card .sub { font-size: 12.5px; color: #6b6b6b; margin-bottom: 16px; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .card-close {
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+  .card-close:hover { color: var(--ink); background: rgba(0,0,0,0.06); }
+
+  .card.anim-open { animation: card-in 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
+  .card.anim-close { animation: card-out 0.2s ease forwards; }
+  @keyframes card-in {
+    from { opacity: 0; transform: translateY(10px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes card-out {
+    from { opacity: 1; transform: translateY(0) scale(1); }
+    to { opacity: 0; transform: translateY(8px) scale(0.98); }
+  }
 
   label {
     display: block;
@@ -310,8 +334,10 @@
   </div>
 
   <div class="card" id="profileModal" style="display:none;">
-    <h2>Profilim</h2>
-    <div class="sub">İsteğe bağlı: adını ve telefonunu bildirebilirsin. Bu, "kim okudu" bilgisinde bir öneri olarak görünür — onaylanırsa kesinleşir.</div>
+    <div class="card-header">
+      <h2>Profilim</h2>
+      <button class="card-close" id="profileCloseBtn" aria-label="Kapat">✕</button>
+    </div>
     <label>Adın</label>
     <input type="text" id="profileName" placeholder="Örn: Ali Yılmaz">
     <label>Telefon (opsiyonel)</label>
@@ -321,8 +347,10 @@
   </div>
 
   <div class="card" id="feedbackModal" style="display:none;">
-    <h2>Görüş &amp; Öneri Gönder</h2>
-    <div class="sub">İstersen adını yaz, istemezsen isimsiz gönderebilirsin.</div>
+    <div class="card-header">
+      <h2>Görüş &amp; Öneri Gönder</h2>
+      <button class="card-close" id="feedbackCloseBtn" aria-label="Kapat">✕</button>
+    </div>
     <label>Adın (opsiyonel)</label>
     <input type="text" id="feedbackName" placeholder="Örn: Ali Yılmaz">
     <label>Mesajın</label>
@@ -537,18 +565,35 @@ loadReadOnlyList('/api/tasks', 'tasksList', 'Henüz görev eklenmedi.', (t) =>
   true
 );
 
+function openCard(card) {
+  card.style.display = 'block';
+  card.classList.remove('anim-close');
+  card.classList.add('anim-open');
+  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function closeCard(card) {
+  card.classList.remove('anim-open');
+  card.classList.add('anim-close');
+  setTimeout(() => {
+    card.style.display = 'none';
+    card.classList.remove('anim-close');
+  }, 200);
+}
+
 const profileLink = document.getElementById('profileLink');
 const profileModal = document.getElementById('profileModal');
 profileLink.addEventListener('click', (e) => {
   e.preventDefault();
   const showing = profileModal.style.display !== 'none';
-  profileModal.style.display = showing ? 'none' : 'block';
-  if (!showing) {
+  if (showing) {
+    closeCard(profileModal);
+  } else {
     document.getElementById('profileName').value = localStorage.getItem('selfName') || '';
     document.getElementById('profilePhone').value = localStorage.getItem('selfPhone') || '';
-    profileModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    openCard(profileModal);
   }
 });
+document.getElementById('profileCloseBtn').addEventListener('click', () => closeCard(profileModal));
 document.getElementById('profileSaveBtn').addEventListener('click', async () => {
   const name = document.getElementById('profileName').value.trim();
   const phone = document.getElementById('profilePhone').value.trim();
@@ -566,12 +611,14 @@ const feedbackModal = document.getElementById('feedbackModal');
 feedbackLink.addEventListener('click', (e) => {
   e.preventDefault();
   const showing = feedbackModal.style.display !== 'none';
-  feedbackModal.style.display = showing ? 'none' : 'block';
-  if (!showing) {
+  if (showing) {
+    closeCard(feedbackModal);
+  } else {
     document.getElementById('feedbackName').value = localStorage.getItem('selfName') || '';
-    feedbackModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    openCard(feedbackModal);
   }
 });
+document.getElementById('feedbackCloseBtn').addEventListener('click', () => closeCard(feedbackModal));
 document.getElementById('feedbackSendBtn').addEventListener('click', async () => {
   const text = document.getElementById('feedbackText').value.trim();
   const name = document.getElementById('feedbackName').value.trim();
