@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 const { Redis } = require('@upstash/redis');
+const { Resend } = require('resend');
 
 const app = express();
 app.use(express.json());
@@ -13,14 +14,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 const UPLOADS_DIR = path.join(__dirname, 'public', 'uploads');
 fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
+// Yüklenen dosyalar artık diske değil, belleğe alınıp Redis'e kaydediliyor
+// (aynı JSON verileri gibi kalıcı olsun diye — disk her deploy'da siliniyordu).
 const upload = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => cb(null, UPLOADS_DIR),
-    filename: (req, file, cb) => {
-      const ext = path.extname(file.originalname).toLowerCase();
-      cb(null, Date.now().toString(36) + Math.random().toString(36).slice(2, 8) + ext);
-    },
-  }),
+  storage: multer.memoryStorage(),
   limits: { fileSize: 8 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const ok = ['image/jpeg', 'image/png', 'application/pdf'].includes(file.mimetype);
@@ -29,13 +26,7 @@ const upload = multer({
 });
 
 const avatarUpload = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => cb(null, UPLOADS_DIR),
-    filename: (req, file, cb) => {
-      const ext = path.extname(file.originalname).toLowerCase();
-      cb(null, 'avatar-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8) + ext);
-    },
-  }),
+  storage: multer.memoryStorage(),
   limits: { fileSize: 3 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const ok = ['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype);
@@ -43,14 +34,79 @@ const avatarUpload = multer({
   },
 });
 
-function attachmentFromFile(file) {
+function makeFilename(originalname, prefix) {
+  const ext = path.extname(originalname || '').toLowerCase();
+  return (prefix || '') + Date.now().toString(36) + Math.random().toString(36).slice(2, 8) + ext;
+}
+
+// Dosyayı kalıcı depoya (Redis) kaydeder, dosya adını döner.
+// Resimleri Upstash'in 10 MB istek sınırının altında kalması için küçültüp sıkıştırır.
+// PDF'lere dokunmaz (sharp resim işleyemez), sadece resim dosyalarında devreye girer.
+async function compressIfImage(file) {
+  const isImage = file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/webp';
+  if (!isImage) return file;
+  try {
+    const compressed = await sharp(file.buffer)
+      .resize({ width: 1600, height: 1600, fit: 'inside', withoutEnlargement: true })
+      .jpeg({ quality: 78 })
+      .toBuffer();
+    return { ...file, buffer: compressed, mimetype: 'image/jpeg' };
+  } catch (err) {
+    console.error('Resim sıkıştırılamadı, orijinal kullanılıyor:', err.message);
+    return file;
+  }
+}
+
+async function saveFileToStore(file, prefix) {
   if (!file) return null;
+  file = await compressIfImage(file);
+  const filename = makeFilename(file.originalname, prefix);
+
+  // Upstash'in 10 MB istek sınırını base64 + JSON zarfıyla birlikte aşmayalım (güvenli pay için 9 MB'ta kes).
+  const approxBase64Size = Math.ceil(file.buffer.length * 4 / 3);
+  if (redis && approxBase64Size > 9 * 1024 * 1024) {
+    throw new Error('Dosya çok büyük (sıkıştırma sonrası bile). Lütfen daha küçük bir dosya deneyin.');
+  }
+
+  if (redis) {
+    await redis.set('file:' + filename, JSON.stringify({
+      mimetype: file.mimetype,
+      data: file.buffer.toString('base64'),
+      originalname: file.originalname,
+    }));
+  } else {
+    // Fallback: Upstash yoksa yerel diske yaz (kalıcı olmaz)
+    fs.writeFileSync(path.join(UPLOADS_DIR, filename), file.buffer);
+  }
+  return filename;
+}
+
+async function attachmentFromFile(file) {
+  if (!file) return null;
+  const filename = await saveFileToStore(file);
   return {
-    url: '/uploads/' + file.filename,
+    url: '/uploads/' + filename,
     type: file.mimetype === 'application/pdf' ? 'pdf' : 'image',
     name: file.originalname,
   };
 }
+
+// Kalıcı depodaki (Redis) dosyaları servis eder. Yerel fallback modunda
+// express.static zaten public/uploads'ı karşılıyor, buraya hiç düşmez.
+app.get('/uploads/:filename', async (req, res) => {
+  if (!redis) return res.status(404).end();
+  try {
+    const raw = await redis.get('file:' + req.params.filename);
+    if (!raw) return res.status(404).end();
+    const obj = (typeof raw === 'string') ? JSON.parse(raw) : raw;
+    const buf = Buffer.from(obj.data, 'base64');
+    res.set('Content-Type', obj.mimetype || 'application/octet-stream');
+    res.set('Cache-Control', 'public, max-age=31536000, immutable');
+    res.send(buf);
+  } catch (err) {
+    res.status(500).end();
+  }
+});
 
 // ============================================================================
 // KALICI DEPOLAMA: Upstash Redis (ücretsiz, ömür boyu kalıcı)
@@ -182,6 +238,56 @@ if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
 
 webpush.setVapidDetails('mailto:ofis@example.com', VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 
+// --- E-POSTA (Resend) — uygulamayı henüz kurmamış kişilere ulaşmak için ücretsiz yedek kanal ---
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const RESEND_FROM = process.env.RESEND_FROM || 'duyuru@salihozgen.com';
+const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
+
+function categoryColorHex(cat) {
+  const map = { acil: '#E0972C', yemek: '#6B8F71', vefat: '#4A4A52', dogum: '#C9A24B', genel: '#7A2331' };
+  return map[cat] || map.genel;
+}
+
+async function sendAnnouncementEmails(title, body, category) {
+  if (!resend) return { attempted: 0, sent: 0, skipped: 'RESEND_API_KEY tanımlı değil' };
+  const profiles = await loadJson(PROFILES_KEY, {});
+  const emails = Object.values(profiles).map(p => p.email).filter(Boolean);
+  if (emails.length === 0) return { attempted: 0, sent: 0 };
+
+  const color = categoryColorHex(category);
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+      <div style="background:${color}; color:#fff; padding:20px 24px; border-radius:6px 6px 0 0;">
+        <div style="font-size:11px; letter-spacing:1px; text-transform:uppercase; opacity:0.85; margin-bottom:6px;">${catNamesEmail(category)}</div>
+        <h2 style="margin:0; font-size:20px;">${escapeHtml(title)}</h2>
+      </div>
+      <div style="background:#F7F5F0; padding:20px 24px; border-radius:0 0 6px 6px; color:#1F2430;">
+        <p style="font-size:14px; line-height:1.6; margin:0;">${escapeHtml(body)}</p>
+        <p style="font-size:11px; color:#888; margin-top:20px;">Bu e-posta, Amasya CSB Acil Duyuru Sistemi tarafından otomatik gönderilmiştir. Anlık bildirim almak için uygulamayı telefonunuza kurabilirsiniz.</p>
+      </div>
+    </div>`;
+
+  let sent = 0;
+  for (const email of emails) {
+    try {
+      await resend.emails.send({ from: RESEND_FROM, to: email, subject: `${catNamesEmail(category)}: ${title}`, html });
+      sent++;
+    } catch (err) {
+      console.error('E-posta gönderilemedi (' + email + '):', err.message);
+    }
+  }
+  return { attempted: emails.length, sent };
+}
+
+function catNamesEmail(cat) {
+  const map = { acil: 'Acil Duyuru', yemek: 'Yemek Listesi', vefat: 'Vefat', dogum: 'Doğum', genel: 'Duyuru' };
+  return map[cat] || map.genel;
+}
+
+function escapeHtml(s) {
+  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 app.get('/api/messages', async (req, res) => {
   const page = Math.max(1, parseInt(req.query.page, 10) || 1);
   const pageSize = Math.max(1, Math.min(200, parseInt(req.query.pageSize, 10) || 10));
@@ -254,11 +360,16 @@ app.post('/api/self-profile/avatar', avatarUpload.single('avatar'), async (req, 
   const { deviceId } = req.body;
   if (!deviceId) return res.status(400).json({ ok: false, error: 'Cihaz kimliği eksik.' });
   if (!req.file) return res.status(400).json({ ok: false, error: 'Görsel yüklenemedi.' });
-  const profiles = await loadJson(PROFILES_KEY, {});
-  const existing = profiles[deviceId] || {};
-  profiles[deviceId] = { ...existing, avatar: '/uploads/' + req.file.filename, updatedAt: new Date().toISOString() };
-  await saveJson(PROFILES_KEY, profiles);
-  res.json({ ok: true, avatar: profiles[deviceId].avatar });
+  try {
+    const filename = await saveFileToStore(req.file, 'avatar-');
+    const profiles = await loadJson(PROFILES_KEY, {});
+    const existing = profiles[deviceId] || {};
+    profiles[deviceId] = { ...existing, avatar: '/uploads/' + filename, updatedAt: new Date().toISOString() };
+    await saveJson(PROFILES_KEY, profiles);
+    res.json({ ok: true, avatar: profiles[deviceId].avatar });
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message || 'Fotoğraf kaydedilemedi.' });
+  }
 });
 
 app.get('/api/self-profile/:deviceId', async (req, res) => {
@@ -293,12 +404,17 @@ app.post('/api/devices/name', async (req, res) => {
 });
 
 app.post('/api/send', upload.single('attachment'), async (req, res) => {
-  const { password, category, title, body } = req.body;
+  const { password, category, title, body, alsoEmail } = req.body;
   const result = checkPassword(password, req);
   if (passwordCheckResponse(res, result)) return;
   if (!title || !body) return res.status(400).json({ ok: false, error: 'Başlık ve mesaj zorunlu.' });
 
-  const attachment = attachmentFromFile(req.file);
+  let attachment;
+  try {
+    attachment = await attachmentFromFile(req.file);
+  } catch (err) {
+    return res.status(400).json({ ok: false, error: err.message || 'Dosya yüklenemedi.' });
+  }
   const messageId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   const subs = await loadJson(SUBS_KEY);
 
@@ -340,7 +456,12 @@ app.post('/api/send', upload.single('attachment'), async (req, res) => {
   messages.push({ id: messageId, category: category || 'genel', title, body, time: new Date().toISOString(), attachment, reads: [] });
   await saveJson(MESSAGES_KEY, messages.slice(-100));
 
-  res.json({ ok: true, sent, totalSubscribers: stillValid.length, messageId });
+  let emailResult = null;
+  if (alsoEmail === 'true' || alsoEmail === true) {
+    emailResult = await sendAnnouncementEmails(title, body, category || 'genel');
+  }
+
+  res.json({ ok: true, sent, totalSubscribers: stillValid.length, messageId, email: emailResult });
 });
 
 // --- KİŞİYE ÖZEL (HEDEFLİ) BİLDİRİM GÖNDERME ---
@@ -355,7 +476,12 @@ app.post('/api/send-to', upload.single('attachment'), async (req, res) => {
   const targetSubs = subs.filter(s => s.deviceId === deviceId);
   if (targetSubs.length === 0) return res.status(404).json({ ok: false, error: 'Bu kişiye ait aktif bildirim aboneliği bulunamadı.' });
 
-  const attachment = attachmentFromFile(req.file);
+  let attachment;
+  try {
+    attachment = await attachmentFromFile(req.file);
+  } catch (err) {
+    return res.status(400).json({ ok: false, error: err.message || 'Dosya yüklenemedi.' });
+  }
   const messageId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
   const payload = JSON.stringify({
@@ -396,6 +522,26 @@ app.delete('/api/messages/:id', async (req, res) => {
   const messages = (await loadJson(MESSAGES_KEY)).filter(m => m.id !== req.params.id);
   await saveJson(MESSAGES_KEY, messages);
   res.json({ ok: true });
+});
+
+// --- DUYURU DÜZENLEME (yeni bildirim GÖNDERMEZ, sadece metni günceller) ---
+app.put('/api/messages/:id', async (req, res) => {
+  const { password, title, body, category } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  if (!title || !body) return res.status(400).json({ ok: false, error: 'Başlık ve mesaj zorunlu.' });
+
+  const messages = await loadJson(MESSAGES_KEY);
+  const msg = messages.find(m => m.id === req.params.id);
+  if (!msg) return res.status(404).json({ ok: false, error: 'Duyuru bulunamadı.' });
+
+  msg.title = title;
+  msg.body = body;
+  if (category) msg.category = category;
+  msg.editedAt = new Date().toISOString();
+
+  await saveJson(MESSAGES_KEY, messages);
+  res.json({ ok: true, message: msg });
 });
 
 app.post('/api/messages/:id/read', async (req, res) => {
@@ -731,7 +877,12 @@ function makeListApi(name, key) {
     const { password, ...fields } = req.body;
     const result = checkPassword(password, req);
     if (passwordCheckResponse(res, result)) return;
-    const attachment = attachmentFromFile(req.file);
+    let attachment;
+    try {
+      attachment = await attachmentFromFile(req.file);
+    } catch (err) {
+      return res.status(400).json({ ok: false, error: err.message || 'Dosya yüklenemedi.' });
+    }
     const items = await loadJson(key);
     const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), time: new Date().toISOString(), done: false, attachment, ...fields };
     items.push(item);
@@ -761,6 +912,19 @@ function makeListApi(name, key) {
 makeListApi('notes', 'notes');
 makeListApi('phones', 'phones');
 makeListApi('tasks', 'tasks');
+
+// Multer/genel hataları çirkin bir stack trace sayfası yerine düzgün JSON olarak dön.
+app.use((err, req, res, next) => {
+  if (err && err.name === 'MulterError') {
+    const msg = err.code === 'LIMIT_FILE_SIZE' ? 'Dosya çok büyük.' : 'Dosya yüklenemedi.';
+    return res.status(400).json({ ok: false, error: msg });
+  }
+  if (err) {
+    console.error('Beklenmeyen hata:', err.message);
+    return res.status(500).json({ ok: false, error: 'Sunucu hatası oluştu.' });
+  }
+  next();
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Ofis Duyuru Sistemi aktif: http://localhost:${PORT}`));
