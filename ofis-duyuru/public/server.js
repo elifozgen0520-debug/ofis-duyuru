@@ -26,6 +26,21 @@ const upload = multer({
   },
 });
 
+const avatarUpload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => cb(null, UPLOADS_DIR),
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase();
+      cb(null, 'avatar-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8) + ext);
+    },
+  }),
+  limits: { fileSize: 3 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const ok = ['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype);
+    cb(ok ? null : new Error('Sadece JPG, PNG veya WEBP yükleyebilirsiniz.'), ok);
+  },
+});
+
 function attachmentFromFile(file) {
   if (!file) return null;
   return {
@@ -39,6 +54,10 @@ const SUBS_FILE = path.join(__dirname, 'subscriptions.json');
 const MESSAGES_FILE = path.join(__dirname, 'messages.json');
 const PROFILES_FILE = path.join(__dirname, 'profiles.json');
 const FEEDBACK_FILE = path.join(__dirname, 'feedback.json');
+const DIRECT_FILE = path.join(__dirname, 'direct-messages.json');
+const CHAT_GENERAL_FILE = path.join(__dirname, 'chat-general.json');
+const CHAT_DIRECT_FILE = path.join(__dirname, 'chat-direct.json');
+const PRESENCE_FILE = path.join(__dirname, 'presence.json');
 const ADMIN_PASSWORD = (process.env.ADMIN_PASSWORD || 'degistir-bu-sifreyi').trim();
 
 const loginAttempts = new Map();
@@ -141,18 +160,45 @@ app.get('/api/devices', (req, res) => {
       subscribedAt: s.subscribedAt || null,
       suggestedName: profile ? profile.name : null,
       suggestedPhone: profile ? profile.phone : null,
+      email: profile ? profile.email : null,
+      bloodType: profile ? profile.bloodType : null,
+      avatar: profile ? profile.avatar : null,
     });
   }
   res.json({ devices: Array.from(byDevice.values()).sort((a, b) => (b.subscribedAt || '').localeCompare(a.subscribedAt || '')) });
 });
 
 app.post('/api/self-profile', (req, res) => {
-  const { deviceId, name, phone } = req.body;
+  const { deviceId, name, phone, email, bloodType } = req.body;
   if (!deviceId) return res.status(400).json({ ok: false, error: 'Cihaz kimliği eksik.' });
   const profiles = loadJson(PROFILES_FILE, {});
-  profiles[deviceId] = { name: (name || '').trim() || null, phone: (phone || '').trim() || null, updatedAt: new Date().toISOString() };
+  const existing = profiles[deviceId] || {};
+  profiles[deviceId] = {
+    ...existing,
+    name: (name || '').trim() || null,
+    phone: (phone || '').trim() || null,
+    email: (email !== undefined ? (email || '').trim() || null : existing.email || null),
+    bloodType: (bloodType !== undefined ? (bloodType || '').trim() || null : existing.bloodType || null),
+    updatedAt: new Date().toISOString(),
+  };
   saveJson(PROFILES_FILE, profiles);
   res.json({ ok: true });
+});
+
+app.post('/api/self-profile/avatar', avatarUpload.single('avatar'), (req, res) => {
+  const { deviceId } = req.body;
+  if (!deviceId) return res.status(400).json({ ok: false, error: 'Cihaz kimliği eksik.' });
+  if (!req.file) return res.status(400).json({ ok: false, error: 'Görsel yüklenemedi.' });
+  const profiles = loadJson(PROFILES_FILE, {});
+  const existing = profiles[deviceId] || {};
+  profiles[deviceId] = { ...existing, avatar: '/uploads/' + req.file.filename, updatedAt: new Date().toISOString() };
+  saveJson(PROFILES_FILE, profiles);
+  res.json({ ok: true, avatar: profiles[deviceId].avatar });
+});
+
+app.get('/api/self-profile/:deviceId', (req, res) => {
+  const profiles = loadJson(PROFILES_FILE, {});
+  res.json({ profile: profiles[req.params.deviceId] || null });
 });
 
 app.post('/api/feedback', (req, res) => {
@@ -197,7 +243,6 @@ app.post('/api/send', upload.single('attachment'), async (req, res) => {
     body,
     category: category || 'genel',
     urgent: true,
-    sound: '/notify.wav',
     image: attachment && attachment.type === 'image' ? attachment.url : undefined,
   });
 
@@ -229,6 +274,50 @@ app.post('/api/send', upload.single('attachment'), async (req, res) => {
   saveJson(MESSAGES_FILE, messages.slice(-100));
 
   res.json({ ok: true, sent, totalSubscribers: stillValid.length, messageId });
+});
+
+// --- KİŞİYE ÖZEL (HEDEFLİ) BİLDİRİM GÖNDERME ---
+app.post('/api/send-to', upload.single('attachment'), async (req, res) => {
+  const { password, deviceId, title, body, category } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  if (!deviceId) return res.status(400).json({ ok: false, error: 'Kişi seçilmedi.' });
+  if (!title || !body) return res.status(400).json({ ok: false, error: 'Başlık ve mesaj zorunlu.' });
+
+  const subs = loadJson(SUBS_FILE);
+  const targetSubs = subs.filter(s => s.deviceId === deviceId);
+  if (targetSubs.length === 0) return res.status(404).json({ ok: false, error: 'Bu kişiye ait aktif bildirim aboneliği bulunamadı.' });
+
+  const attachment = attachmentFromFile(req.file);
+  const messageId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+  const payload = JSON.stringify({
+    id: messageId,
+    title: `${categoryEmoji(category)} ${title}`,
+    body,
+    category: category || 'genel',
+    urgent: true,
+    personal: true,
+    image: attachment && attachment.type === 'image' ? attachment.url : undefined,
+  });
+
+  const requestOptions = { headers: { Urgency: 'high', Topic: 'kisiye-ozel' }, TTL: 86400 };
+
+  let sent = 0;
+  for (const sub of targetSubs) {
+    try {
+      await webpush.sendNotification(sub, payload, requestOptions);
+      sent++;
+    } catch (err) {
+      // sessizce yut, hedefli mesajlarda ana abonelik listesini bozmayalım
+    }
+  }
+
+  const direct = loadJson(DIRECT_FILE);
+  direct.push({ id: messageId, deviceId, category: category || 'genel', title, body, time: new Date().toISOString(), attachment });
+  saveJson(DIRECT_FILE, direct.slice(-500));
+
+  res.json({ ok: true, sent });
 });
 
 app.delete('/api/messages/:id', (req, res) => {
@@ -267,6 +356,170 @@ app.get('/api/messages/:id/reads', (req, res) => {
     return { name: label, time: r.time };
   });
   res.json({ reads, totalSubscribers: subs.length });
+});
+
+// --- GÜNLÜK İSTATİSTİKLER (ADMIN DASHBOARD) ---
+app.get('/api/stats', (req, res) => {
+  const result = checkPassword(req.query.password, req);
+  if (passwordCheckResponse(res, result)) return;
+
+  const subs = loadJson(SUBS_FILE);
+  const profiles = loadJson(PROFILES_FILE, {});
+  const messages = loadJson(MESSAGES_FILE);
+  const feedback = loadJson(FEEDBACK_FILE);
+
+  const totalSubscribers = subs.length;
+  const namedDevices = Object.values(profiles).filter(p => p.name).length;
+
+  const last30 = messages.slice(-30);
+  const perMessage = last30.map(m => ({
+    id: m.id,
+    title: m.title,
+    category: m.category,
+    time: m.time,
+    readCount: (m.reads || []).length,
+  })).reverse();
+
+  const today = new Date().toISOString().slice(0, 10);
+  const todaysMessages = messages.filter(m => (m.time || '').slice(0, 10) === today).length;
+  const todaysFeedback = feedback.filter(f => (f.time || '').slice(0, 10) === today).length;
+
+  res.json({
+    totalSubscribers,
+    namedDevices,
+    totalMessages: messages.length,
+    todaysMessages,
+    totalFeedback: feedback.length,
+    todaysFeedback,
+    perMessage,
+  });
+});
+
+// --- KİMLİK DOĞRULAMA YARDIMCI FONKSİYONU (SOHBET İÇİN) ---
+function requireCompleteProfile(deviceId) {
+  if (!deviceId) return { ok: false, error: 'Cihaz kimliği eksik.' };
+  const profiles = loadJson(PROFILES_FILE, {});
+  const p = profiles[deviceId];
+  if (!p || !p.name || !p.phone) {
+    return { ok: false, error: 'Sohbete katılmak için önce Profilim bölümünden adınızı ve telefon numaranızı girmelisiniz.' };
+  }
+  return { ok: true, profile: p };
+}
+
+// --- ÇEVRİMİÇİ DURUM (PRESENCE) ---
+app.post('/api/presence', (req, res) => {
+  const { deviceId } = req.body;
+  const check = requireCompleteProfile(deviceId);
+  if (!check.ok) return res.status(403).json({ ok: false, error: check.error });
+  const presence = loadJson(PRESENCE_FILE, {});
+  presence[deviceId] = Date.now();
+  saveJson(PRESENCE_FILE, presence);
+  res.json({ ok: true });
+});
+
+app.get('/api/presence', (req, res) => {
+  const presence = loadJson(PRESENCE_FILE, {});
+  const now = Date.now();
+  const online = Object.entries(presence)
+    .filter(([, ts]) => now - ts < 90 * 1000)
+    .map(([deviceId]) => deviceId);
+  res.json({ online });
+});
+
+// --- SOHBET İÇİN KİŞİ LİSTESİ (profilini tamamlamış herkes) ---
+app.get('/api/chat/contacts', (req, res) => {
+  const { deviceId } = req.query;
+  const profiles = loadJson(PROFILES_FILE, {});
+  const presence = loadJson(PRESENCE_FILE, {});
+  const now = Date.now();
+  const contacts = Object.entries(profiles)
+    .filter(([id, p]) => id !== deviceId && p.name && p.phone)
+    .map(([id, p]) => ({
+      deviceId: id,
+      name: p.name,
+      avatar: p.avatar || null,
+      online: presence[id] ? (now - presence[id] < 90 * 1000) : false,
+    }))
+    .sort((a, b) => (b.online - a.online) || a.name.localeCompare(b.name, 'tr'));
+  res.json({ contacts });
+});
+
+// --- GENEL SOHBET ODASI ---
+app.get('/api/chat/general', (req, res) => {
+  const messages = loadJson(CHAT_GENERAL_FILE).slice(-100);
+  res.json({ messages });
+});
+
+app.post('/api/chat/general', (req, res) => {
+  const { deviceId, text } = req.body;
+  const check = requireCompleteProfile(deviceId);
+  if (!check.ok) return res.status(403).json({ ok: false, error: check.error });
+  const clean = (text || '').trim().slice(0, 1000);
+  if (!clean) return res.status(400).json({ ok: false, error: 'Mesaj boş olamaz.' });
+
+  const messages = loadJson(CHAT_GENERAL_FILE);
+  const msg = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    deviceId,
+    name: check.profile.name,
+    avatar: check.profile.avatar || null,
+    text: clean,
+    time: new Date().toISOString(),
+  };
+  messages.push(msg);
+  saveJson(CHAT_GENERAL_FILE, messages.slice(-500));
+  res.json({ ok: true, message: msg });
+});
+
+// --- BİREBİR ÖZEL SOHBET ---
+function conversationKey(a, b) { return [a, b].sort().join('__'); }
+
+app.get('/api/chat/direct', (req, res) => {
+  const { deviceId, withId } = req.query;
+  if (!deviceId || !withId) return res.status(400).json({ ok: false, error: 'Eksik parametre.' });
+  const all = loadJson(CHAT_DIRECT_FILE);
+  const key = conversationKey(deviceId, withId);
+  const messages = all.filter(m => m.key === key).slice(-200);
+  res.json({ messages });
+});
+
+app.post('/api/chat/direct', (req, res) => {
+  const { deviceId, toDeviceId, text } = req.body;
+  const check = requireCompleteProfile(deviceId);
+  if (!check.ok) return res.status(403).json({ ok: false, error: check.error });
+  const toCheck = requireCompleteProfile(toDeviceId);
+  if (!toCheck.ok) return res.status(403).json({ ok: false, error: 'Karşı taraf henüz profilini tamamlamamış.' });
+  const clean = (text || '').trim().slice(0, 1000);
+  if (!clean) return res.status(400).json({ ok: false, error: 'Mesaj boş olamaz.' });
+
+  const all = loadJson(CHAT_DIRECT_FILE);
+  const msg = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    key: conversationKey(deviceId, toDeviceId),
+    fromDeviceId: deviceId,
+    toDeviceId,
+    fromName: check.profile.name,
+    text: clean,
+    time: new Date().toISOString(),
+  };
+  all.push(msg);
+  saveJson(CHAT_DIRECT_FILE, all.slice(-2000));
+
+  // Karşı tarafa push bildirimi de gönder (aktif abonelikleri varsa)
+  const subs = loadJson(SUBS_FILE).filter(s => s.deviceId === toDeviceId);
+  if (subs.length) {
+    const payload = JSON.stringify({
+      id: msg.id,
+      title: `💬 ${check.profile.name}`,
+      body: clean,
+      category: 'genel',
+      urgent: false,
+      personal: true,
+    });
+    subs.forEach(sub => { webpush.sendNotification(sub, payload, { TTL: 86400 }).catch(() => {}); });
+  }
+
+  res.json({ ok: true, message: msg });
 });
 
 function categoryEmoji(cat) {
