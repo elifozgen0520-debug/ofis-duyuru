@@ -239,7 +239,7 @@ app.post('/api/send', upload.single('attachment'), async (req, res) => {
 
   const payload = JSON.stringify({
     id: messageId,
-    title: `${categoryEmoji(category)} ${title}`,
+    title: title,
     body,
     category: category || 'genel',
     urgent: true,
@@ -293,7 +293,7 @@ app.post('/api/send-to', upload.single('attachment'), async (req, res) => {
 
   const payload = JSON.stringify({
     id: messageId,
-    title: `${categoryEmoji(category)} ${title}`,
+    title: title,
     body,
     category: category || 'genel',
     urgent: true,

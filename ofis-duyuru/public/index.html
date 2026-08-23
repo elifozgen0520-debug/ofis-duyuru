@@ -120,9 +120,28 @@
     to { opacity: 0; transform: translateY(8px) scale(0.97); }
   }
 
-  /* SOHBET */
+  /* SOHBET — telefon ekranına göre otomatik boy, input her zaman altta sabit */
+  #chatModal {
+    display: flex;
+    flex-direction: column;
+    max-height: 82vh;
+  }
+  #chatModal #chatUnlocked {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
+  .chat-panel {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
   .chat-box {
-    height: 320px; overflow-y: auto; background: #f5f3ee; border-radius: 8px;
+    flex: 1;
+    min-height: 120px;
+    overflow-y: auto; background: #f5f3ee; border-radius: 8px;
     padding: 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;
   }
   .chat-bubble {
@@ -133,7 +152,7 @@
   .chat-bubble.theirs { align-self: flex-start; background: #fff; color: var(--ink); border: 1px solid #e2ddd2; border-bottom-left-radius: 3px; }
   .chat-bubble .cb-name { font-size: 10.5px; font-weight: 700; opacity: 0.75; margin-bottom: 2px; }
   .chat-bubble .cb-time { font-size: 9.5px; opacity: 0.55; margin-top: 3px; text-align: right; }
-  .chat-input-row { display: flex; gap: 8px; }
+  .chat-input-row { display: flex; gap: 8px; flex-shrink: 0; }
   .chat-input-row input { flex: 1; }
   .contact-row {
     display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-radius: 6px;
@@ -204,14 +223,14 @@
   #splash.hide { opacity: 0; pointer-events: none; }
 
   #notifBanner {
-    display: none; max-width: 640px; margin: 0 auto 20px; padding: 16px 18px;
+    display: none; max-width: 640px; margin: 0 auto 20px; padding: 20px 22px;
     border-radius: 4px; font-family: 'Inter', sans-serif; color: #fff;
     box-shadow: 0 8px 20px rgba(0,0,0,0.25);
   }
   #notifBanner.show { display: block; }
-  #notifBanner .tag { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; background: rgba(255,255,255,0.25); padding: 3px 8px; border-radius: 20px; margin-bottom: 6px; }
-  #notifBanner .btitle { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 700; margin: 0 0 4px; }
-  #notifBanner .bbody { font-size: 13px; line-height: 1.45; margin: 0; }
+  #notifBanner .tag { display: block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; margin-bottom: 8px; }
+  #notifBanner .btitle { font-family: 'Fraunces', serif; font-size: 24px; line-height: 1.2; font-weight: 700; margin: 0 0 8px; }
+  #notifBanner .bbody { font-size: 14px; line-height: 1.5; margin: 0; opacity: 0.95; }
   #notifBanner.acil { background: linear-gradient(135deg, #E0972C, #B5674A); }
 
   .site-footer {
@@ -433,14 +452,6 @@
     </div>
   </div>
 
-  <!-- AYARLAR & TEST MODALI -->
-  <div class="card" id="settingsModal" style="display:none;">
-    <div class="card-header"><h2>⚙️ Bildirim &amp; Ses Test Paneli</h2><button class="card-close" data-close="settingsModal" aria-label="Kapat">✕</button></div>
-    <div class="sub">Bildirim sesinizi ve kilit ekranı davranışınızı buradan test edebilirsiniz.</div>
-    <button class="btn-success" id="testSoundBtn" style="width:100%; margin-bottom:10px;">🔊 Sesi Çal (3 Defa)</button>
-    <button class="btn-warning" id="testLockBtn" style="width:100%;">🧪 Kilit Ekranı Bildirim Testi (3 Sn)</button>
-  </div>
-
   <!-- PROFİL MODALI -->
   <div class="card" id="profileModal" style="display:none;">
     <div class="card-header"><h2>Profilim</h2><button class="card-close" data-close="profileModal" aria-label="Kapat">✕</button></div>
@@ -475,11 +486,17 @@
     </select>
     <div class="send-row"><button class="btn-primary" id="profileSaveBtn">Kaydet</button></div>
     <div class="feedback-msg" id="profileFeedback"></div>
+
+    <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--line);">
+      <label style="margin-top:0;">🔔 Bildirim & Ses Testi</label>
+      <button class="btn-success" id="testSoundBtn" style="width:100%; margin-bottom:8px; margin-top:6px;">🔊 Sesi Çal (3 Defa)</button>
+      <button class="btn-warning" id="testLockBtn" style="width:100%;">🧪 Kilit Ekranı Bildirim Testi (3 Sn)</button>
+    </div>
   </div>
 
   <!-- GÖRÜŞ MODALI -->
   <div class="card" id="feedbackModal" style="display:none;">
-    <div class="card-header"><h2>Görüş &amp; Öneri Gönder</h2><button class="card-close" data-close="feedbackModal" aria-label="Kapat">✕</button></div>
+    <div class="card-header"><h2>Öneri</h2><button class="card-close" data-close="feedbackModal" aria-label="Kapat">✕</button></div>
     <div class="sub">Yönetime iletmek istediğiniz not veya talebiniz:</div>
     <label>Adınız (opsiyonel)</label>
     <input type="text" id="feedbackName" placeholder="İsimsiz bırakabilirsiniz">
@@ -500,11 +517,11 @@
 
     <div id="chatUnlocked" style="display:none;">
       <div class="tabs" style="margin-bottom:12px;">
-        <button class="tab-btn active" id="chatTabGeneral">Genel Oda</button>
-        <button class="tab-btn" id="chatTabDirect">Özel Mesajlar</button>
+        <button class="tab-btn active" id="chatTabGeneral">Sohbet</button>
+        <button class="tab-btn" id="chatTabDirect">Online Üyeler</button>
       </div>
 
-      <div id="chatPanelGeneral">
+      <div id="chatPanelGeneral" class="chat-panel">
         <div id="chatGeneralMessages" class="chat-box"></div>
         <div class="chat-input-row">
           <input type="text" id="chatGeneralInput" placeholder="Mesajınızı yazın..." maxlength="1000">
@@ -512,9 +529,9 @@
         </div>
       </div>
 
-      <div id="chatPanelDirect" style="display:none;">
+      <div id="chatPanelDirect" class="chat-panel" style="display:none;">
         <div id="chatContactList" class="list-empty">Yükleniyor...</div>
-        <div id="chatDirectConversation" style="display:none;">
+        <div id="chatDirectConversation" style="display:none;" class="chat-panel">
           <button type="button" id="chatBackToContacts" style="background:none;border:none;color:var(--clay);font-size:12px;cursor:pointer;padding:0 0 8px;">← Kişi Listesine Dön</button>
           <div id="chatDirectTitle" style="font-weight:700;font-size:14px;margin-bottom:8px;"></div>
           <div id="chatDirectMessages" class="chat-box"></div>
@@ -605,15 +622,13 @@
 </div>
 
 <footer class="site-footer">
-  <a href="#" id="settingsLink">⚙️ Bildirim &amp; Ses</a>
-  <span class="fdot">·</span>
   <a href="#" id="profileLink">👤 Profilim</a>
   <span class="fdot">·</span>
-  <a href="#" id="feedbackLink">💬 Görüş &amp; Öneri</a>
+  <a href="#" id="feedbackLink">💬 Öneri</a>
   <span class="fdot">·</span>
   <a href="#" id="chatLink">🗨️ Sohbet</a>
   <span class="fdot">·</span>
-  <a href="#" id="adminLink">🔒 Yönetici</a>
+  <a href="#" id="adminSecretBtn" title="" style="color:var(--line); text-decoration:none; padding:0 4px; font-size:14px;">•</a>
 </footer>
 
 <script>
@@ -852,7 +867,7 @@ function showNotifBanner(category, title, body) {
   const el = document.getElementById('notifBanner');
   if (!el) return;
   el.className = 'show ' + (category || 'genel');
-  const tagNames = { acil: '🚨 ACİL DUYURU', yemek: '🍽️ Yemek Listesi', vefat: '🕯️ Vefat', dogum: '🎉 Doğum', genel: '📢 Duyuru' };
+  const tagNames = { acil: 'ACİL DUYURU', yemek: 'YEMEK LİSTESİ', vefat: 'VEFAT', dogum: 'DOĞUM', genel: 'DUYURU' };
   el.innerHTML = `<div class="tag">${tagNames[category] || tagNames.genel}</div><div class="btitle">${title || ''}</div><div class="bbody">${body || ''}</div>`;
   playNotifSound();
 }
@@ -930,7 +945,7 @@ loadReadOnlyList('/api/tasks', 'tasksList', 'Henüz görev eklenmedi.', t => `
 
 // --- MODALLAR VE TEST ---
 function openModal(modalId) {
-  ['settingsModal', 'profileModal', 'feedbackModal', 'adminModal', 'chatModal'].forEach(id => {
+  ['profileModal', 'feedbackModal', 'adminModal', 'chatModal'].forEach(id => {
     if (id !== modalId) {
       const el = document.getElementById(id);
       el.classList.remove('anim-open');
@@ -938,7 +953,7 @@ function openModal(modalId) {
     }
   });
   const m = document.getElementById(modalId);
-  m.style.display = 'block';
+  m.style.display = (modalId === 'chatModal') ? 'flex' : 'block';
   m.classList.remove('anim-close');
   m.classList.add('anim-open');
   m.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -963,7 +978,6 @@ document.querySelectorAll('.card-close').forEach(btn => {
   btn.addEventListener('click', () => closeModal(btn.dataset.close));
 });
 
-document.getElementById('settingsLink').addEventListener('click', (e) => { e.preventDefault(); toggleModal('settingsModal'); });
 document.getElementById('testSoundBtn').addEventListener('click', () => { unlockAudioEngine(); playNotifSound(); });
 
 async function triggerLockTest() {
@@ -1244,7 +1258,7 @@ document.getElementById('catRow').addEventListener('click', (e) => {
   btn.classList.add('active'); selectedCategory = btn.dataset.cat;
 });
 
-document.getElementById('adminLink').addEventListener('click', (e) => { e.preventDefault(); toggleModal('adminModal'); });
+document.getElementById('adminSecretBtn').addEventListener('click', (e) => { e.preventDefault(); toggleModal('adminModal'); });
 document.getElementById('adminLoginBtn').addEventListener('click', async () => {
   const pass = document.getElementById('adminGlobalPassword').value.trim();
   const fb = document.getElementById('adminAuthFeedback');
