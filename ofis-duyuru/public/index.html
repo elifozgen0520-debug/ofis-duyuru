@@ -286,7 +286,7 @@
       <p style="font-size:13px; color:#555; text-align:center;">Kurulum tamamlandı! Sesi ve kilit ekranı davranışını şimdi test edin.</p>
 
       <button class="btn-success" id="wizTestSound" style="width:100%; margin-bottom:10px; padding:10px;">
-        🔊 Sesi Test Et (3 Defa Çalar)
+        🔊 Sesi ve Titreşimi Test Et (5 Defa Çalar)
       </button>
       
       <button class="btn-warning" id="wizTestLock" style="width:100%; margin-bottom:16px; padding:10px;">
@@ -658,9 +658,13 @@ if ('Notification' in window && Notification.permission === 'granted') doSubscri
 setTimeout(checkFirstRunWizard, 1600);
 refreshCount();
 
-// --- SES DÖNGÜSÜ (TAM 3 DEFA ÇALAR) ---
+// --- SES DÖNGÜSÜ (TAM 5 DEFA ÇALAR + TİTREŞİM) ---
 function playNotifSound() {
   try {
+    // Android/Chrome'da tab açıkken de fiziksel titreşim tetikle
+    if ('vibrate' in navigator) {
+      navigator.vibrate([700, 200, 700, 200, 700, 200, 700, 200, 700, 200, 700]);
+    }
     let count = 0;
     const audio = new Audio('/notify.wav');
     audio.volume = 1.0;
@@ -674,7 +678,7 @@ function playNotifSound() {
     };
 
     audio.addEventListener('ended', () => {
-      if (count < 3) playOnce();
+      if (count < 5) playOnce();
     });
 
     playOnce();
@@ -784,7 +788,7 @@ async function triggerLockTest() {
     reg.showNotification('🚨 TEST BİLDİRİMİ', {
       body: 'Bu kilit ekranı ve ses test mesajıdır.',
       icon: '/icon-192.png',
-      vibrate: [800, 100, 800, 100, 800, 100, 800],
+      vibrate: [700, 200, 700, 200, 700, 200, 700, 200, 700, 200, 700],
       requireInteraction: true,
       silent: false
     });
