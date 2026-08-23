@@ -1,5 +1,6 @@
 const express = require('express');
 const webpush = require('web-push');
+const sharp = require('sharp');
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
@@ -126,7 +127,13 @@ function loadJson(file, def = []) { try { return JSON.parse(fs.readFileSync(file
 function saveJson(file, data) { fs.writeFileSync(file, JSON.stringify(data, null, 2)); }
 
 app.get('/api/messages', (req, res) => {
-  res.json({ messages: loadJson(MESSAGES_FILE).slice(-30).reverse() });
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const pageSize = Math.max(1, Math.min(200, parseInt(req.query.pageSize, 10) || 10));
+  const all = loadJson(MESSAGES_FILE).slice().reverse();
+  const total = all.length;
+  const start = (page - 1) * pageSize;
+  const messages = all.slice(start, start + pageSize);
+  res.json({ messages, total, page, pageSize });
 });
 
 app.get('/api/vapid-public-key', (req, res) => {
@@ -239,11 +246,13 @@ app.post('/api/send', upload.single('attachment'), async (req, res) => {
 
   const payload = JSON.stringify({
     id: messageId,
-    title: `${categoryEmoji(category)} ${title}`,
+    title: title,
     body,
     category: category || 'genel',
     urgent: true,
-    image: attachment && attachment.type === 'image' ? attachment.url : undefined,
+    image: (attachment && attachment.type === 'image')
+      ? attachment.url
+      : `/api/notif-image?title=${encodeURIComponent(title)}&category=${encodeURIComponent(category || 'genel')}`,
   });
 
   let sent = 0;
@@ -293,12 +302,14 @@ app.post('/api/send-to', upload.single('attachment'), async (req, res) => {
 
   const payload = JSON.stringify({
     id: messageId,
-    title: `${categoryEmoji(category)} ${title}`,
+    title: title,
     body,
     category: category || 'genel',
     urgent: true,
     personal: true,
-    image: attachment && attachment.type === 'image' ? attachment.url : undefined,
+    image: (attachment && attachment.type === 'image')
+      ? attachment.url
+      : `/api/notif-image?title=${encodeURIComponent(title)}&category=${encodeURIComponent(category || 'genel')}`,
   });
 
   const requestOptions = { headers: { Urgency: 'high', Topic: 'kisiye-ozel' }, TTL: 86400 };
@@ -522,6 +533,43 @@ app.post('/api/chat/direct', (req, res) => {
   res.json({ ok: true, message: msg });
 });
 
+// --- SOHBET DENETİMİ (YÖNETİCİ) ---
+app.get('/api/chat/general/all', (req, res) => {
+  const result = checkPassword(req.query.password, req);
+  if (passwordCheckResponse(res, result)) return;
+  res.json({ messages: loadJson(CHAT_GENERAL_FILE).slice(-300).reverse() });
+});
+
+app.delete('/api/chat/general/:id', (req, res) => {
+  const { password } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const messages = loadJson(CHAT_GENERAL_FILE).filter(m => m.id !== req.params.id);
+  saveJson(CHAT_GENERAL_FILE, messages);
+  res.json({ ok: true });
+});
+
+app.get('/api/chat/direct/all', (req, res) => {
+  const result = checkPassword(req.query.password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const profiles = loadJson(PROFILES_FILE, {});
+  const all = loadJson(CHAT_DIRECT_FILE).slice(-300).reverse().map(m => ({
+    ...m,
+    fromLabel: (profiles[m.fromDeviceId] && profiles[m.fromDeviceId].name) || m.fromName || 'Bilinmeyen',
+    toLabel: (profiles[m.toDeviceId] && profiles[m.toDeviceId].name) || 'Bilinmeyen',
+  }));
+  res.json({ messages: all });
+});
+
+app.delete('/api/chat/direct/:id', (req, res) => {
+  const { password } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const messages = loadJson(CHAT_DIRECT_FILE).filter(m => m.id !== req.params.id);
+  saveJson(CHAT_DIRECT_FILE, messages);
+  res.json({ ok: true });
+});
+
 function categoryEmoji(cat) {
   switch (cat) {
     case 'acil': return '🚨';
@@ -531,6 +579,78 @@ function categoryEmoji(cat) {
     default: return '📢';
   }
 }
+
+// --- BİLDİRİM İÇİN DİNAMİK BAŞLIK GÖRSELİ (arka plan + büyük harf başlık) ---
+function categoryColors(cat) {
+  const map = {
+    acil: ['#E0972C', '#B5674A'],
+    yemek: ['#6B8F71', '#3E5C43'],
+    vefat: ['#4A4A52', '#1F2430'],
+    dogum: ['#C9A24B', '#8A6D2F'],
+    genel: ['#7A2331', '#5A1622'],
+  };
+  return map[cat] || map.genel;
+}
+
+function escXml(s) {
+  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// Türkçe büyük harfe çevirme: standart toUpperCase() 'i'/'ı' ayrımını bilmiyor (İ yerine I yapıyor).
+function turkishUpper(str) {
+  return (str || '')
+    .replace(/i/g, 'İ')
+    .replace(/ı/g, 'I')
+    .toUpperCase();
+}
+
+async function generateNotifImage(title, category) {
+  const [c1, c2] = categoryColors(category);
+  const upper = turkishUpper(title || 'DUYURU');
+  const words = upper.split(' ');
+  let lines = [];
+  let cur = '';
+  words.forEach(w => {
+    if ((cur + ' ' + w).trim().length > 22) { lines.push(cur.trim()); cur = w; }
+    else { cur = (cur + ' ' + w).trim(); }
+  });
+  if (cur) lines.push(cur);
+  lines = lines.slice(0, 3);
+
+  const width = 1200, height = 400;
+  const lineHeight = 62;
+  const startY = height / 2 - (lines.length - 1) * lineHeight / 2 + 20;
+  const textSvg = lines.map((line, i) =>
+    `<text x="60" y="${startY + i * lineHeight}" font-family="Arial, Liberation Sans, DejaVu Sans, sans-serif" font-size="56" font-weight="900" fill="#ffffff" letter-spacing="1">${escXml(line)}</text>`
+  ).join('');
+
+  const svg = `
+  <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="${c1}"/>
+        <stop offset="100%" stop-color="${c2}"/>
+      </linearGradient>
+    </defs>
+    <rect width="${width}" height="${height}" fill="url(#bg)"/>
+    ${textSvg}
+  </svg>`;
+
+  return sharp(Buffer.from(svg)).png().toBuffer();
+}
+
+app.get('/api/notif-image', async (req, res) => {
+  try {
+    const title = (req.query.title || 'Duyuru').slice(0, 120);
+    const category = req.query.category || 'genel';
+    const buf = await generateNotifImage(title, category);
+    res.set('Content-Type', 'image/png');
+    res.set('Cache-Control', 'public, max-age=31536000, immutable');
+    res.send(buf);
+  } catch (err) {
+    res.status(500).end();
+  }
+});
 
 app.get('/api/subscriber-count', (req, res) => {
   res.json({ total: loadJson(SUBS_FILE).length });
