@@ -21,7 +21,6 @@
     --muted: #9AA0AE;
   }
 
-  /* Tema varyasyonları — sadece vurgu rengi değişir, kartlar hep okunaklı kalır */
   body[data-theme="lacivert"] { --amber: #3E8FD0; --gold: #5AA8E0; --ink: #0F1F33; }
   body[data-theme="zeytin"] { --amber: #7C9A4A; --gold: #A3C15E; --ink: #1E2A1C; }
   body[data-theme="bordo"] { --amber: #B5384A; --gold: #D46B7A; --ink: #2A1418; }
@@ -37,7 +36,7 @@
       radial-gradient(circle at 80% 80%, rgba(107,143,113,0.06), transparent 40%);
     color: var(--paper);
     min-height: 100vh;
-    padding: 32px 16px 80px;
+    padding: 32px 16px 90px;
   }
 
   .wrap { max-width: 640px; margin: 0 auto; }
@@ -52,7 +51,6 @@
     padding-bottom: 18px;
     flex-wrap: wrap;
   }
-
   h1 {
     font-family: 'Fraunces', serif;
     font-weight: 700;
@@ -61,7 +59,6 @@
     letter-spacing: -0.01em;
     white-space: nowrap;
   }
-
   .pin-count { font-size: 12px; color: var(--muted); letter-spacing: 0.04em; white-space: nowrap; }
 
   .status-card {
@@ -85,7 +82,6 @@
   .status-card h2 { font-family: 'Fraunces', serif; font-size: 15px; margin: 0 0 5px; }
   .status-card p { margin: 0 0 10px; font-size: 13px; line-height: 1.5; color: #444; }
 
-  /* Bildirimler zaten açıksa, büyük kart yerine küçük bir gösterge */
   .bell-status {
     display: inline-flex;
     align-items: center;
@@ -114,9 +110,7 @@
   button:disabled { opacity: 0.5; cursor: default; }
   .btn-primary { background: var(--ink); color: var(--paper); }
   .btn-primary:hover:not(:disabled) { opacity: 0.85; }
-  .btn-danger { background: transparent; color: var(--clay); border: 1px solid var(--clay); padding: 5px 10px; font-size: 12px; }
 
-  /* Sekme çubuğu */
   .tabs {
     display: flex;
     gap: 4px;
@@ -161,15 +155,7 @@
   }
   label:first-of-type { margin-top: 0; }
 
-  .cat-row { display: flex; gap: 8px; flex-wrap: wrap; }
-  .cat-btn { background: #fff; border: 1.5px solid #ddd; color: #555; font-size: 13px; font-weight: 500; padding: 8px 14px; border-radius: 20px; }
-  .cat-btn.active[data-cat="acil"] { background: var(--amber); border-color: var(--amber); color: #fff; }
-  .cat-btn.active[data-cat="yemek"] { background: var(--sage); border-color: var(--sage); color: #fff; }
-  .cat-btn.active[data-cat="vefat"] { background: var(--clay); border-color: var(--clay); color: #fff; }
-  .cat-btn.active[data-cat="dogum"] { background: var(--gold); border-color: var(--gold); color: #fff; }
-  .cat-btn.active[data-cat="genel"] { background: var(--ink); border-color: var(--ink); color: #fff; }
-
-  input[type="text"], input[type="password"], input[type="tel"], textarea {
+  input[type="text"], input[type="tel"], textarea {
     width: 100%;
     font-family: 'Inter', sans-serif;
     font-size: 14.5px;
@@ -183,12 +169,10 @@
   input:focus, textarea:focus { outline: 2px solid var(--ink); outline-offset: 1px; }
 
   .send-row { margin-top: 18px; display: flex; align-items: center; gap: 12px; }
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .feedback { font-size: 13px; margin-top: 10px; min-height: 18px; }
-  .feedback.ok { color: var(--sage); }
-  .feedback.err { color: var(--clay); }
+  .feedback-msg { font-size: 13px; margin-top: 10px; min-height: 18px; }
+  .feedback-msg.ok { color: var(--sage); }
+  .feedback-msg.err { color: var(--clay); }
 
-  /* Listeler (geçmiş duyuru, not, telefon, görev) */
   .list-section { margin-top: 8px; }
   .list-section h3 { font-family: 'Fraunces', serif; font-size: 16px; margin: 0 0 12px; color: var(--paper); }
   .list-item {
@@ -219,25 +203,6 @@
   .list-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 18px; }
   .checkbox { width: 20px; height: 20px; margin-top: 2px; flex-shrink: 0; cursor: pointer; }
 
-  /* Yönetici moduna girmeden bu alanlar gizli kalır — normal personel görmez */
-  .admin-only { display: none !important; }
-  body.admin-mode .admin-only { display: block !important; }
-  body.admin-mode .admin-only.inline { display: inline-block !important; }
-  #adminGateBar { font-size: 11.5px; color: var(--muted); cursor: pointer; text-decoration: underline dotted; }
-  body.admin-mode #adminGateBar { color: var(--sage); text-decoration: none; cursor: default; }
-
-  .site-footer {
-    text-align: center;
-    margin-top: 36px;
-    padding-top: 18px;
-    border-top: 1px solid var(--line);
-    font-size: 11.5px;
-  }
-  .site-footer a { color: var(--muted); text-decoration: none; cursor: pointer; }
-  .site-footer a:hover { color: var(--paper); }
-  .site-footer .fdot { color: var(--line); margin: 0 8px; }
-
-  /* Açılış logosu */
   #splash {
     position: fixed; inset: 0; background: var(--ink);
     display: flex; align-items: center; justify-content: center;
@@ -249,7 +214,6 @@
   #splash.hide { opacity: 0; pointer-events: none; }
   @media (prefers-reduced-motion: reduce) { #splash img { animation: none; } }
 
-  /* Bildirimden açılınca çıkan şerit */
   #notifBanner {
     display: none; max-width: 640px; margin: 0 auto 20px; padding: 16px 18px;
     border-radius: 4px; font-family: 'Inter', sans-serif; color: #fff;
@@ -265,6 +229,20 @@
   #notifBanner.yemek { background: linear-gradient(135deg, #6B8F71, #4a6650); }
   #notifBanner.genel { background: linear-gradient(135deg, #3a4152, #1F2430); }
   @keyframes banner-pulse { 0%, 100% { box-shadow: 0 8px 20px rgba(224,151,44,0.25); } 50% { box-shadow: 0 8px 30px rgba(224,151,44,0.6); } }
+
+  .site-footer {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    background: var(--ink);
+    border-top: 1px solid var(--line);
+    text-align: center;
+    padding: 10px 12px;
+    font-size: 11.5px;
+    z-index: 50;
+  }
+  .site-footer a { color: var(--muted); text-decoration: none; cursor: pointer; }
+  .site-footer a:hover { color: var(--paper); }
+  .site-footer .fdot { color: var(--line); margin: 0 8px; }
 </style>
 </head>
 <body>
@@ -289,27 +267,12 @@
     </div>
   </header>
 
-  <div class="card admin-only" id="devicesPanel">
-    <h2>Cihazları Yönet</h2>
-    <div class="sub">Kim okudu bilgisinde doğru isimlerin görünmesi için, her cihazı gerçek sahibiyle eşleştir. "Öneri" olarak görünen isim, kişinin kendi girdiği isimdir — onaylamak için "Kaydet"e bas.</div>
-    <div id="devicesList" style="margin-top:14px;"></div>
-    <div class="feedback" id="devicesFeedback"></div>
-  </div>
-
-  <div class="card admin-only" id="feedbackPanel">
-    <h2>Görüş &amp; Öneriler</h2>
-    <div class="sub">Personelin gönderdiği (kimden geldiği belirtilmeyen) görüş ve öneriler.</div>
-    <div id="feedbackList" style="margin-top:14px;"></div>
-  </div>
-
   <div class="status-card" id="subscribeCard">
     <h2>Bildirimleri Aç</h2>
     <p>Duyuru, acil bilgi, not ve hatırlatmaları telefonuna anında almak için bir kere izin ver.</p>
     <button class="btn-primary" id="subscribeBtn">Bildirimleri Aç</button>
   </div>
-  <div class="bell-status" id="bellStatus" style="display:none;" title="Bildirimler açık">
-    🔔 <span>Bildirimler açık</span>
-  </div>
+  <div class="bell-status" id="bellStatus" style="display:none;">🔔 <span>Bildirimler açık</span></div>
 
   <div class="tabs">
     <button class="tab-btn active" data-tab="duyurular">Duyurular</button>
@@ -319,26 +282,6 @@
   </div>
 
   <div class="tab-panel active" id="panel-duyurular">
-    <div class="card admin-only">
-      <h2>Duyuru Yaz</h2>
-      <div class="sub">Sadece yetkili personel gönderebilir.</div>
-      <label>Kategori</label>
-      <select id="catSelect" style="width:100%; font-family:'Inter',sans-serif; font-size:14.5px; padding:10px 12px; border:1.5px solid #ddd; border-radius:3px; background:#fff; color:var(--ink);">
-        <option value="genel">📢 Genel</option>
-        <option value="acil">🚨 Acil</option>
-        <option value="yemek">🍽️ Yemek Listesi</option>
-        <option value="vefat">🕯️ Vefat</option>
-        <option value="dogum">🎉 Doğum</option>
-      </select>
-      <label>Başlık</label>
-      <input type="text" id="title" placeholder="Örn: Bugünün Menüsü">
-      <label>Mesaj</label>
-      <textarea id="body" placeholder="Mesajınızı yazın..."></textarea>
-      <label>Görsel / PDF Ekle (opsiyonel)</label>
-      <input type="file" id="attachment" accept="image/jpeg,image/png,application/pdf">
-      <div class="send-row"><button class="btn-primary" id="sendBtn">Gönder</button></div>
-      <div class="feedback" id="feedback"></div>
-    </div>
     <div class="list-section">
       <h3>Son Duyurular</h3>
       <div id="historyList" class="list-empty">Yükleniyor...</div>
@@ -346,16 +289,6 @@
   </div>
 
   <div class="tab-panel" id="panel-notlar">
-    <div class="card admin-only">
-      <h2>Not Ekle</h2>
-      <div class="sub">Sadece yetkili personel ekleyebilir.</div>
-      <label>Not</label>
-      <textarea id="noteText" placeholder="Notunuzu yazın..."></textarea>
-      <label>Görsel / PDF Ekle (opsiyonel)</label>
-      <input type="file" id="noteAttachment" accept="image/jpeg,image/png,application/pdf">
-      <div class="send-row"><button class="btn-primary" id="noteSendBtn">Ekle</button></div>
-      <div class="feedback" id="noteFeedback"></div>
-    </div>
     <div class="list-section">
       <h3>Notlar</h3>
       <div id="notesList" class="list-empty">Yükleniyor...</div>
@@ -363,18 +296,6 @@
   </div>
 
   <div class="tab-panel" id="panel-telefonlar">
-    <div class="card admin-only">
-      <h2>Acil Durum Telefonu Ekle</h2>
-      <div class="sub">İtfaiye, ambulans, müdür vb. Sadece yetkili personel ekleyebilir.</div>
-      <div class="two-col">
-        <div><label>İsim</label><input type="text" id="phoneName" placeholder="Örn: İtfaiye"></div>
-        <div><label>Numara</label><input type="tel" id="phoneNumber" placeholder="Örn: 110"></div>
-      </div>
-      <label>Görsel / PDF Ekle (opsiyonel)</label>
-      <input type="file" id="phoneAttachment" accept="image/jpeg,image/png,application/pdf">
-      <div class="send-row"><button class="btn-primary" id="phoneSendBtn">Ekle</button></div>
-      <div class="feedback" id="phoneFeedback"></div>
-    </div>
     <div class="list-section">
       <h3>Acil Durum Telefonları</h3>
       <div id="phonesList" class="list-empty">Yükleniyor...</div>
@@ -382,49 +303,40 @@
   </div>
 
   <div class="tab-panel" id="panel-isler">
-    <div class="card admin-only">
-      <h2>Görev Ekle</h2>
-      <div class="sub">Sadece yetkili personel ekleyebilir. İşaretlemeyi herkes yapabilir.</div>
-      <label>Görev</label>
-      <input type="text" id="taskText" placeholder="Örn: Yangın tüplerini kontrol et">
-      <label>Görsel / PDF Ekle (opsiyonel)</label>
-      <input type="file" id="taskAttachment" accept="image/jpeg,image/png,application/pdf">
-      <div class="send-row"><button class="btn-primary" id="taskSendBtn">Ekle</button></div>
-      <div class="feedback" id="taskFeedback"></div>
-    </div>
     <div class="list-section">
       <h3>Aylık Yapılacak İşler</h3>
       <div id="tasksList" class="list-empty">Yükleniyor...</div>
     </div>
   </div>
 
-  <footer class="site-footer">
-    <a href="#" id="profileLink">👤 Profilim</a>
-    <span class="fdot">·</span>
-    <a href="#" id="feedbackLink">💬 Görüş &amp; Öneri</a>
-    <span class="fdot">·</span>
-    <a href="#" id="adminGateBar">🔒 Yönetici Girişi</a>
-  </footer>
-
   <div class="card" id="profileModal" style="display:none;">
     <h2>Profilim</h2>
-    <div class="sub">İsteğe bağlı: adını ve telefonunu bildirebilirsin. Bu, "kim okudu" bilgisinde bir öneri olarak görünür — yönetici onaylarsa kesinleşir.</div>
+    <div class="sub">İsteğe bağlı: adını ve telefonunu bildirebilirsin. Bu, "kim okudu" bilgisinde bir öneri olarak görünür — onaylanırsa kesinleşir.</div>
     <label>Adın</label>
     <input type="text" id="profileName" placeholder="Örn: Ali Yılmaz">
     <label>Telefon (opsiyonel)</label>
     <input type="tel" id="profilePhone" placeholder="Örn: 0555 xxx xx xx">
     <div class="send-row"><button class="btn-primary" id="profileSaveBtn">Kaydet</button></div>
-    <div class="feedback" id="profileFeedback"></div>
+    <div class="feedback-msg" id="profileFeedback"></div>
   </div>
 
   <div class="card" id="feedbackModal" style="display:none;">
     <h2>Görüş &amp; Öneri Gönder</h2>
-    <div class="sub">Kimden geldiği kaydedilmez, tamamen isimsiz iletilir.</div>
+    <div class="sub">İstersen adını yaz, istemezsen isimsiz gönderebilirsin.</div>
+    <label>Adın (opsiyonel)</label>
+    <input type="text" id="feedbackName" placeholder="Örn: Ali Yılmaz">
+    <label>Mesajın</label>
     <textarea id="feedbackText" placeholder="Görüş, öneri veya şikayetini yaz..."></textarea>
     <div class="send-row"><button class="btn-primary" id="feedbackSendBtn">Gönder</button></div>
-    <div class="feedback" id="feedbackModalFeedback"></div>
+    <div class="feedback-msg" id="feedbackModalFeedback"></div>
   </div>
 </div>
+
+<footer class="site-footer">
+  <a href="#" id="profileLink">👤 Profilim</a>
+  <span class="fdot">·</span>
+  <a href="#" id="feedbackLink">💬 Görüş &amp; Öneri</a>
+</footer>
 
 <script>
 document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -443,7 +355,6 @@ window.addEventListener('load', () => {
   }, 1800);
 });
 
-// ---------- Tema seçici ----------
 const themeSelect = document.getElementById('themeSelect');
 const savedTheme = localStorage.getItem('theme') || 'klasik';
 if (savedTheme !== 'klasik') document.body.setAttribute('data-theme', savedTheme);
@@ -455,10 +366,6 @@ themeSelect.addEventListener('change', () => {
   localStorage.setItem('theme', val);
 });
 
-// ---------- Cihaz kimliği (okundu takibi için — kullanıcıdan İSİM SORULMAZ) ----------
-// Her cihaza görünmez, değiştirilemez bir kimlik atanır. Kullanıcı hiçbir şey yazmaz,
-// dolayısıyla yanlış/yanıltıcı isim girme ihtimali yoktur. İsim eşleştirmesini sadece
-// yönetici, "Cihazlar" panelinden yapar.
 function getDeviceId() {
   let id = localStorage.getItem('deviceId');
   if (!id) {
@@ -479,9 +386,12 @@ async function ackRead(messageId) {
 
 function playNotifSound() {
   try {
+    let count = 0;
     const audio = new Audio('/notify.wav');
     audio.volume = 1.0;
-    audio.play().catch(() => {});
+    const playOnce = () => { count++; audio.currentTime = 0; audio.play().catch(() => {}); };
+    audio.addEventListener('ended', () => { if (count < 3) playOnce(); });
+    playOnce();
   } catch (e) {}
 }
 function showNotifBanner(category, title, body) {
@@ -512,7 +422,6 @@ if ('serviceWorker' in navigator) {
 const subscribeBtn = document.getElementById('subscribeBtn');
 const subscribeCard = document.getElementById('subscribeCard');
 const subCountEl = document.getElementById('subCount');
-const catSelect = document.getElementById('catSelect');
 
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -556,7 +465,6 @@ async function doSubscribe(silent) {
   return true;
 }
 
-// Sayfa her açıldığında: izin zaten verilmişse buton hiç gösterilmeden sessizce abone kalsın
 (async function initSubscription() {
   if ('Notification' in window && Notification.permission === 'granted') {
     await doSubscribe(true);
@@ -566,169 +474,11 @@ async function doSubscribe(silent) {
 subscribeBtn.addEventListener('click', () => doSubscribe(false));
 refreshCount();
 
-// ---------- Yönetici Girişi/Çıkışı ----------
-// Şifre, girişten sonra sadece bu tarayıcı sekmesinin hafızasında (sessionStorage) tutulur.
-// Sayfa kapanıp yeniden açılınca (veya sekme kapanınca) tekrar giriş istenir.
-function isAdmin() { return document.body.classList.contains('admin-mode'); }
-function getAdminPassword() { return sessionStorage.getItem('adminPassword') || ''; }
-
-const adminGateBar = document.getElementById('adminGateBar');
-function setAdminMode(on) {
-  document.body.classList.toggle('admin-mode', on);
-  adminGateBar.textContent = on ? '🔓 Yönetici (Çıkış)' : '🔒 Yönetici';
-}
-if (getAdminPassword()) setAdminMode(true);
-
-adminGateBar.addEventListener('click', async () => {
-  if (isAdmin()) {
-    if (!confirm('Yönetici modundan çıkmak istiyor musun?')) return;
-    sessionStorage.removeItem('adminPassword');
-    setAdminMode(false);
-    loadHistory(); loadDevices(); loadFeedback();
-    return;
-  }
-  const password = prompt('Yönetici şifresi:');
-  if (!password) return;
-  try {
-    const res = await fetch('/api/admin-check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
-    const data = await res.json();
-    if (!res.ok) { alert(data.error || 'Şifre hatalı.'); return; }
-    sessionStorage.setItem('adminPassword', password);
-    setAdminMode(true);
-    loadHistory(); loadDevices(); loadFeedback();
-  } catch { alert('Bağlantı hatası, tekrar dene.'); }
-});
-
-// ---------- Yönetici: Cihazları Yönet paneli ----------
-const devicesPanel = document.getElementById('devicesPanel');
-
-async function loadDevices() {
-  if (!isAdmin()) return;
-  const listEl = document.getElementById('devicesList');
-  listEl.innerHTML = 'Yükleniyor...';
-  try {
-    const res = await fetch('/api/devices');
-    const data = await res.json();
-    if (!data.devices || data.devices.length === 0) { listEl.innerHTML = '<div class="list-empty">Henüz abone olan cihaz yok.</div>'; return; }
-    listEl.innerHTML = data.devices.map(d => {
-      const hint = d.suggestedName ? ('Öneri: ' + esc(d.suggestedName) + (d.suggestedPhone ? ' (' + esc(d.suggestedPhone) + ')' : '')) : 'İsim yaz...';
-      return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">' +
-        '<span style="font-size:11px;color:#999;min-width:70px;">#' + esc(d.deviceId.slice(-4)) + '</span>' +
-        '<input type="text" value="' + esc(d.name || '') + '" placeholder="' + hint + '" data-device-id="' + esc(d.deviceId) + '" style="flex:1;padding:7px 10px;border:1.5px solid #ddd;border-radius:3px;font-size:13px;">' +
-        '<button class="btn-primary" style="padding:7px 12px;font-size:12px;" data-save-device="' + esc(d.deviceId) + '">Kaydet</button>' +
-      '</div>';
-    }).join('');
-    listEl.querySelectorAll('[data-save-device]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const deviceId = btn.dataset.saveDevice;
-        const input = listEl.querySelector('input[data-device-id="' + deviceId + '"]');
-        const fb = document.getElementById('devicesFeedback');
-        try {
-          const res = await fetch('/api/devices/name', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: getAdminPassword(), deviceId, name: input.value.trim() }) });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'Kaydedilemedi');
-          fb.textContent = 'Kaydedildi.'; fb.className = 'feedback ok';
-        } catch (e) { fb.textContent = e.message; fb.className = 'feedback err'; }
-      });
-    });
-  } catch { listEl.innerHTML = '<div class="list-empty">Yüklenemedi.</div>'; }
-}
-if (isAdmin()) { loadDevices(); loadFeedback(); }
-
-// ---------- Görüş & Öneri (yönetici paneli) ----------
-async function loadFeedback() {
-  if (!isAdmin()) return;
-  const listEl = document.getElementById('feedbackList');
-  listEl.innerHTML = 'Yükleniyor...';
-  try {
-    const res = await fetch('/api/feedback?password=' + encodeURIComponent(getAdminPassword()));
-    const data = await res.json();
-    if (!data.items || data.items.length === 0) { listEl.innerHTML = '<div class="list-empty">Henüz görüş gönderilmedi.</div>'; return; }
-    listEl.innerHTML = data.items.map(f =>
-      '<div class="list-item"><div class="li-main"><div class="li-top"><span class="li-time">' + formatTime(f.time) + '</span></div><div class="li-body">' + esc(f.text) + '</div></div></div>'
-    ).join('');
-  } catch { listEl.innerHTML = '<div class="list-empty">Yüklenemedi.</div>'; }
-}
-
-// ---------- Profilim (footer) ----------
-const profileLink = document.getElementById('profileLink');
-const profileModal = document.getElementById('profileModal');
-profileLink.addEventListener('click', (e) => {
-  e.preventDefault();
-  const showing = profileModal.style.display !== 'none';
-  profileModal.style.display = showing ? 'none' : 'block';
-  if (!showing) {
-    document.getElementById('profileName').value = localStorage.getItem('selfName') || '';
-    document.getElementById('profilePhone').value = localStorage.getItem('selfPhone') || '';
-    profileModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-});
-document.getElementById('profileSaveBtn').addEventListener('click', async () => {
-  const name = document.getElementById('profileName').value.trim();
-  const phone = document.getElementById('profilePhone').value.trim();
-  const fb = document.getElementById('profileFeedback');
-  try {
-    await fetch('/api/self-profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), name, phone }) });
-    localStorage.setItem('selfName', name);
-    localStorage.setItem('selfPhone', phone);
-    fb.textContent = 'Kaydedildi. Yönetici onaylarsa "kim okudu" listesinde görünecek.'; fb.className = 'feedback ok';
-  } catch { fb.textContent = 'Kaydedilemedi.'; fb.className = 'feedback err'; }
-});
-
-// ---------- Görüş & Öneri Gönder (footer) ----------
-const feedbackLink = document.getElementById('feedbackLink');
-const feedbackModal = document.getElementById('feedbackModal');
-feedbackLink.addEventListener('click', (e) => {
-  e.preventDefault();
-  const showing = feedbackModal.style.display !== 'none';
-  feedbackModal.style.display = showing ? 'none' : 'block';
-  if (!showing) feedbackModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
-});
-document.getElementById('feedbackSendBtn').addEventListener('click', async () => {
-  const text = document.getElementById('feedbackText').value.trim();
-  const fb = document.getElementById('feedbackModalFeedback');
-  if (!text) { fb.textContent = 'Boş gönderilemez.'; fb.className = 'feedback err'; return; }
-  try {
-    const res = await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
-    if (!res.ok) throw new Error('Gönderilemedi');
-    document.getElementById('feedbackText').value = '';
-    fb.textContent = 'Gönderildi, teşekkürler!'; fb.className = 'feedback ok';
-  } catch { fb.textContent = 'Gönderilemedi.'; fb.className = 'feedback err'; }
-});
-
-
 const catNames = { acil: 'Acil', yemek: 'Yemek Listesi', vefat: 'Vefat', dogum: 'Doğum', genel: 'Genel' };
 function formatTime(iso) {
   return new Date(iso).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 }
 function esc(s) { return (s || '').replace(/</g, '&lt;'); }
-
-document.getElementById('sendBtn').addEventListener('click', async () => {
-  const title = document.getElementById('title').value.trim();
-  const body = document.getElementById('body').value.trim();
-  const password = getAdminPassword();
-  const fileInput = document.getElementById('attachment');
-  const fb = document.getElementById('feedback');
-  if (!title || !body) { fb.textContent = 'Başlık ve mesaj gerekli.'; fb.className = 'feedback err'; return; }
-  const btn = document.getElementById('sendBtn');
-  btn.disabled = true; fb.textContent = 'Gönderiliyor...'; fb.className = 'feedback';
-  try {
-    const formData = new FormData();
-    formData.append('password', password);
-    formData.append('category', catSelect.value);
-    formData.append('title', title);
-    formData.append('body', body);
-    if (fileInput.files[0]) formData.append('attachment', fileInput.files[0]);
-    const res = await fetch('/api/send', { method: 'POST', body: formData });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Gönderilemedi');
-    fb.textContent = 'Gönderildi: ' + data.sent + ' kişiye ulaştı.'; fb.className = 'feedback ok';
-    document.getElementById('title').value = ''; document.getElementById('body').value = ''; fileInput.value = '';
-    refreshCount(); loadHistory();
-  } catch (err) { fb.textContent = err.message; fb.className = 'feedback err'; }
-  finally { btn.disabled = false; }
-});
-
 function renderAttachment(att) {
   if (!att) return '';
   if (att.type === 'image') {
@@ -751,145 +501,88 @@ async function loadHistory() {
           '<div class="li-title">' + esc(m.title) + '</div>' +
           '<div class="li-body">' + esc(m.body) + '</div>' +
           renderAttachment(m.attachment) +
-          (isAdmin() ? '<div style="margin-top:8px;font-size:11.5px;color:#999;cursor:pointer;" data-reads-id="' + m.id + '">👁 ' + ((m.reads && m.reads.length) || 0) + ' kişi okudu — kimler?</div>' : '') +
-          '<div class="reads-detail" id="reads-' + m.id + '" style="display:none;font-size:12px;color:#666;margin-top:4px;"></div>' +
         '</div>' +
-        (isAdmin() ? '<button class="btn-danger" data-del-msg-id="' + m.id + '">Sil</button>' : '') +
       '</div>'
     ).join('');
-    listEl.querySelectorAll('[data-del-msg-id]').forEach(b => b.addEventListener('click', () => deleteMessage(b.dataset.delMsgId)));
-    listEl.querySelectorAll('[data-reads-id]').forEach(el => el.addEventListener('click', () => toggleReads(el.dataset.readsId)));
   } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
 }
 loadHistory();
 
-async function deleteMessage(id) {
-  if (!confirm('Bu duyuruyu silmek istediğine emin misin?')) return;
+async function loadReadOnlyList(endpoint, listId, emptyText, renderItem, allowToggle) {
+  const listEl = document.getElementById(listId);
   try {
-    const res = await fetch('/api/messages/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: getAdminPassword() }) });
-    if (!res.ok) { const d = await res.json(); alert(d.error || 'Silinemedi'); return; }
-    loadHistory();
-  } catch { alert('Silinemedi.'); }
-}
-
-async function toggleReads(id) {
-  const el = document.getElementById('reads-' + id);
-  if (!el) return;
-  if (el.style.display !== 'none') { el.style.display = 'none'; return; }
-  el.style.display = 'block';
-  el.textContent = 'Yükleniyor...';
-  try {
-    const res = await fetch('/api/messages/' + id + '/reads');
+    const res = await fetch(endpoint);
     const data = await res.json();
-    if (!data.reads || data.reads.length === 0) { el.textContent = 'Henüz kimse okumadı.'; return; }
-    el.textContent = data.reads.map(r => r.name).join(', ') + ' okudu (' + data.reads.length + '/' + data.totalSubscribers + ' abone).';
-  } catch { el.textContent = 'Yüklenemedi.'; }
+    if (!data.items || data.items.length === 0) { listEl.className = 'list-empty'; listEl.textContent = emptyText; return; }
+    listEl.className = '';
+    listEl.innerHTML = data.items.map(renderItem).join('');
+    if (allowToggle) {
+      listEl.querySelectorAll('[data-toggle-id]').forEach(c => c.addEventListener('change', async () => {
+        try { await fetch(endpoint + '/' + c.dataset.toggleId + '/toggle', { method: 'POST' }); loadReadOnlyList(endpoint, listId, emptyText, renderItem, allowToggle); } catch {}
+      }));
+    }
+  } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
 }
 
+loadReadOnlyList('/api/notes', 'notesList', 'Henüz not eklenmedi.', (n) =>
+  '<div class="list-item"><div class="li-main"><div class="li-top"><span class="li-time">' + formatTime(n.time) + '</span></div><div class="li-body">' + esc(n.text) + '</div>' + renderAttachment(n.attachment) + '</div></div>'
+);
 
-function setupSimpleList(opts) {
-  const { endpoint, sendBtnId, feedbackId, listId, buildPayload, validate, renderItem, emptyText, attachmentId } = opts;
-  document.getElementById(sendBtnId).addEventListener('click', async () => {
-    const fb = document.getElementById(feedbackId);
-    const password = getAdminPassword();
-    const payload = buildPayload();
-    const err = validate(payload, password);
-    if (err) { fb.textContent = err; fb.className = 'feedback err'; return; }
-    const btn = document.getElementById(sendBtnId);
-    btn.disabled = true; fb.textContent = 'Ekleniyor...'; fb.className = 'feedback';
-    try {
-      const formData = new FormData();
-      formData.append('password', password);
-      Object.keys(payload).forEach(k => formData.append(k, payload[k]));
-      const fileInput = attachmentId && document.getElementById(attachmentId);
-      if (fileInput && fileInput.files[0]) formData.append('attachment', fileInput.files[0]);
-      const res = await fetch(endpoint, { method: 'POST', body: formData });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Eklenemedi');
-      fb.textContent = 'Eklendi.'; fb.className = 'feedback ok';
-      if (fileInput) fileInput.value = '';
-      opts.onSuccess && opts.onSuccess();
-      load();
-    } catch (e) { fb.textContent = e.message; fb.className = 'feedback err'; }
-    finally { btn.disabled = false; }
-  });
+loadReadOnlyList('/api/phones', 'phonesList', 'Henüz telefon eklenmedi.', (p) =>
+  '<div class="list-item"><div class="li-main"><div class="li-title">' + esc(p.name) + '</div><a class="li-phone" href="tel:' + esc(p.number) + '">' + esc(p.number) + '</a>' + renderAttachment(p.attachment) + '</div></div>'
+);
 
-  async function load() {
-    const listEl = document.getElementById(listId);
-    try {
-      const res = await fetch(endpoint);
-      const data = await res.json();
-      if (!data.items || data.items.length === 0) { listEl.className = 'list-empty'; listEl.textContent = emptyText; return; }
-      listEl.className = '';
-      listEl.innerHTML = data.items.map(renderItem).join('');
-      listEl.querySelectorAll('[data-del-id]').forEach(b => b.addEventListener('click', () => deleteItem(b.dataset.delId)));
-      listEl.querySelectorAll('[data-toggle-id]').forEach(c => c.addEventListener('change', () => toggleItem(c.dataset.toggleId)));
-    } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
+loadReadOnlyList('/api/tasks', 'tasksList', 'Henüz görev eklenmedi.', (t) =>
+  '<div class="list-item ' + (t.done ? 'done' : '') + '"><input type="checkbox" class="checkbox" data-toggle-id="' + t.id + '" ' + (t.done ? 'checked' : '') + '><div class="li-main"><div class="li-title">' + esc(t.text) + '</div>' + renderAttachment(t.attachment) + '</div></div>',
+  true
+);
+
+const profileLink = document.getElementById('profileLink');
+const profileModal = document.getElementById('profileModal');
+profileLink.addEventListener('click', (e) => {
+  e.preventDefault();
+  const showing = profileModal.style.display !== 'none';
+  profileModal.style.display = showing ? 'none' : 'block';
+  if (!showing) {
+    document.getElementById('profileName').value = localStorage.getItem('selfName') || '';
+    document.getElementById('profilePhone').value = localStorage.getItem('selfPhone') || '';
+    profileModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
-
-  async function deleteItem(id) {
-    if (!confirm('Silmek istediğine emin misin?')) return;
-    try {
-      const res = await fetch(endpoint + '/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: getAdminPassword() }) });
-      if (!res.ok) { const d = await res.json(); alert(d.error || 'Silinemedi'); return; }
-      load();
-    } catch { alert('Silinemedi.'); }
-  }
-
-  async function toggleItem(id) {
-    try { await fetch(endpoint + '/' + id + '/toggle', { method: 'POST' }); load(); } catch {}
-  }
-
-  load();
-  return { load };
-}
-
-setupSimpleList({
-  endpoint: '/api/notes', sendBtnId: 'noteSendBtn', feedbackId: 'noteFeedback', listId: 'notesList', attachmentId: 'noteAttachment',
-  buildPayload: () => ({ text: document.getElementById('noteText').value.trim() }),
-  validate: (p, pw) => (!p.text || !pw) ? 'Not gerekli.' : null,
-  onSuccess: () => { document.getElementById('noteText').value = ''; },
-  emptyText: 'Henüz not eklenmedi.',
-  renderItem: (n) =>
-    '<div class="list-item">' +
-      '<div class="li-main">' +
-        '<div class="li-top"><span class="li-time">' + formatTime(n.time) + '</span></div>' +
-        '<div class="li-body">' + esc(n.text) + '</div>' +
-        renderAttachment(n.attachment) +
-      '</div>' +
-      (isAdmin() ? '<button class="btn-danger" data-del-id="' + n.id + '">Sil</button>' : '') +
-    '</div>',
+});
+document.getElementById('profileSaveBtn').addEventListener('click', async () => {
+  const name = document.getElementById('profileName').value.trim();
+  const phone = document.getElementById('profilePhone').value.trim();
+  const fb = document.getElementById('profileFeedback');
+  try {
+    await fetch('/api/self-profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), name, phone }) });
+    localStorage.setItem('selfName', name);
+    localStorage.setItem('selfPhone', phone);
+    fb.textContent = 'Kaydedildi. Onaylanırsa "kim okudu" listesinde görünecek.'; fb.className = 'feedback-msg ok';
+  } catch { fb.textContent = 'Kaydedilemedi.'; fb.className = 'feedback-msg err'; }
 });
 
-setupSimpleList({
-  endpoint: '/api/phones', sendBtnId: 'phoneSendBtn', feedbackId: 'phoneFeedback', listId: 'phonesList', attachmentId: 'phoneAttachment',
-  buildPayload: () => ({ name: document.getElementById('phoneName').value.trim(), number: document.getElementById('phoneNumber').value.trim() }),
-  validate: (p, pw) => (!p.name || !p.number || !pw) ? 'İsim ve numara gerekli.' : null,
-  onSuccess: () => { document.getElementById('phoneName').value = ''; document.getElementById('phoneNumber').value = ''; },
-  emptyText: 'Henüz telefon eklenmedi.',
-  renderItem: (p) =>
-    '<div class="list-item">' +
-      '<div class="li-main">' +
-        '<div class="li-title">' + esc(p.name) + '</div>' +
-        '<a class="li-phone" href="tel:' + esc(p.number) + '">' + esc(p.number) + '</a>' +
-        renderAttachment(p.attachment) +
-      '</div>' +
-      (isAdmin() ? '<button class="btn-danger" data-del-id="' + p.id + '">Sil</button>' : '') +
-    '</div>',
+const feedbackLink = document.getElementById('feedbackLink');
+const feedbackModal = document.getElementById('feedbackModal');
+feedbackLink.addEventListener('click', (e) => {
+  e.preventDefault();
+  const showing = feedbackModal.style.display !== 'none';
+  feedbackModal.style.display = showing ? 'none' : 'block';
+  if (!showing) {
+    document.getElementById('feedbackName').value = localStorage.getItem('selfName') || '';
+    feedbackModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 });
-
-setupSimpleList({
-  endpoint: '/api/tasks', sendBtnId: 'taskSendBtn', feedbackId: 'taskFeedback', listId: 'tasksList', attachmentId: 'taskAttachment',
-  buildPayload: () => ({ text: document.getElementById('taskText').value.trim() }),
-  validate: (p, pw) => (!p.text || !pw) ? 'Görev gerekli.' : null,
-  onSuccess: () => { document.getElementById('taskText').value = ''; },
-  emptyText: 'Henüz görev eklenmedi.',
-  renderItem: (t) =>
-    '<div class="list-item ' + (t.done ? 'done' : '') + '">' +
-      '<input type="checkbox" class="checkbox" data-toggle-id="' + t.id + '" ' + (t.done ? 'checked' : '') + '>' +
-      '<div class="li-main"><div class="li-title">' + esc(t.text) + '</div>' + renderAttachment(t.attachment) + '</div>' +
-      (isAdmin() ? '<button class="btn-danger" data-del-id="' + t.id + '">Sil</button>' : '') +
-    '</div>',
+document.getElementById('feedbackSendBtn').addEventListener('click', async () => {
+  const text = document.getElementById('feedbackText').value.trim();
+  const name = document.getElementById('feedbackName').value.trim();
+  const fb = document.getElementById('feedbackModalFeedback');
+  if (!text) { fb.textContent = 'Boş gönderilemez.'; fb.className = 'feedback-msg err'; return; }
+  try {
+    const res = await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, name }) });
+    if (!res.ok) throw new Error('Gönderilemedi');
+    document.getElementById('feedbackText').value = '';
+    fb.textContent = 'Gönderildi, teşekkürler!'; fb.className = 'feedback-msg ok';
+  } catch { fb.textContent = 'Gönderilemedi.'; fb.className = 'feedback-msg err'; }
 });
 </script>
 </body>
