@@ -1,19 +1,14 @@
-// Service Worker: telefon uygulaması kapalıyken bile push bildirimini yakalar.
-
 self.addEventListener('push', (event) => {
   let data = { title: '📢 Duyuru', body: 'Yeni bir mesaj var.' };
   try {
     data = event.data.json();
-  } catch (e) {
-    // veri parse edilemezse varsayılanı kullan
-  }
+  } catch (e) {}
 
   const options = {
     body: data.body,
     icon: '/icon-192.png',
     badge: '/icon-192.png',
-    image: data.image || undefined, // varsa büyük resim bildirim tepsisinde görünür
-    // Acil duyurularda titreşim deseni farklı olsun
+    image: data.image || undefined,
     vibrate: data.urgent ? [200, 100, 200, 100, 200] : [100],
     tag: data.category || 'genel',
     renotify: true,
@@ -27,14 +22,6 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const data = event.notification.data || {};
-  const params = new URLSearchParams({
-    notif: '1',
-    cat: data.category || 'genel',
-    id: data.id || '',
-    title: (event.notification.title || '').replace(/^\S+\s/, ''),
-    body: event.notification.body || '',
-  });
-  const targetUrl = '/?' + params.toString();
 
   event.waitUntil(
     clients.matchAll({ type: 'window' }).then((clientList) => {
@@ -44,7 +31,7 @@ self.addEventListener('notificationclick', (event) => {
           return client.focus();
         }
       }
-      if (clients.openWindow) return clients.openWindow(targetUrl);
+      if (clients.openWindow) return clients.openWindow('/');
     })
   );
 });
