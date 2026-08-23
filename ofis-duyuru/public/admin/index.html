@@ -171,6 +171,12 @@
       <textarea id="body" placeholder="Mesajınızı yazın..."></textarea>
       <label>Görsel / PDF Ekle (opsiyonel)</label>
       <input type="file" id="attachment" accept="image/jpeg,image/png,application/pdf">
+
+      <label style="display:flex; align-items:center; gap:8px; margin-top:16px; cursor:pointer; text-transform:none; letter-spacing:normal; font-weight:400; font-size:13px; color:#555;">
+        <input type="checkbox" id="alsoEmailCheck">
+        <span>Uygulamayı henüz kurmayanlara <b>e-posta ile de</b> gönder (profilinde e-posta girmiş olanlara)</span>
+      </label>
+
       <div class="send-row"><button class="btn-primary" id="sendBtn">Gönder</button></div>
       <div class="feedback-msg" id="feedback"></div>
     </div>
@@ -369,6 +375,7 @@ document.getElementById('sendBtn').addEventListener('click', async () => {
   const title = document.getElementById('title').value.trim();
   const body = document.getElementById('body').value.trim();
   const fileInput = document.getElementById('attachment');
+  const alsoEmail = document.getElementById('alsoEmailCheck').checked;
   const fb = document.getElementById('feedback');
   if (!title || !body) { fb.textContent = 'Başlık ve mesaj gerekli.'; fb.className = 'feedback-msg err'; return; }
   const btn = document.getElementById('sendBtn');
@@ -379,11 +386,17 @@ document.getElementById('sendBtn').addEventListener('click', async () => {
     formData.append('category', document.getElementById('catSelect').value);
     formData.append('title', title);
     formData.append('body', body);
+    formData.append('alsoEmail', alsoEmail ? 'true' : 'false');
     if (fileInput.files[0]) formData.append('attachment', fileInput.files[0]);
     const res = await fetch('/api/send', { method: 'POST', body: formData });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Gönderilemedi');
-    fb.textContent = 'Gönderildi: ' + data.sent + ' kişiye ulaştı.'; fb.className = 'feedback-msg ok';
+    let msg = 'Gönderildi: ' + data.sent + ' kişiye ulaştı.';
+    if (data.email) {
+      if (data.email.skipped) msg += ' (E-posta gönderilemedi: Resend ayarlı değil.)';
+      else msg += ' + ' + data.email.sent + '/' + data.email.attempted + ' e-posta gönderildi.';
+    }
+    fb.textContent = msg; fb.className = 'feedback-msg ok';
     document.getElementById('title').value = ''; document.getElementById('body').value = ''; fileInput.value = '';
     loadHistory();
   } catch (err) { fb.textContent = err.message; fb.className = 'feedback-msg err'; }
@@ -399,21 +412,61 @@ async function loadHistory() {
     if (!data.messages || data.messages.length === 0) { listEl.className = 'list-empty'; listEl.textContent = 'Henüz duyuru gönderilmedi.'; return; }
     listEl.className = '';
     listEl.innerHTML = data.messages.map(m =>
-      '<div class="list-item ' + (m.category || 'genel') + '">' +
+      '<div class="list-item ' + (m.category || 'genel') + '" id="msgitem-' + m.id + '">' +
         '<div class="li-main">' +
-          '<div class="li-top"><span class="li-tag">' + (catNames[m.category] || 'Genel') + '</span><span class="li-time">' + formatTime(m.time) + '</span></div>' +
-          '<div class="li-title">' + esc(m.title) + '</div>' +
-          '<div class="li-body">' + esc(m.body) + '</div>' +
+          '<div class="li-top"><span class="li-tag">' + (catNames[m.category] || 'Genel') + (m.editedAt ? ' · <i>düzenlendi</i>' : '') + '</span><span class="li-time">' + formatTime(m.time) + '</span></div>' +
+          '<div class="li-title" id="mtitle-' + m.id + '">' + esc(m.title) + '</div>' +
+          '<div class="li-body" id="mbody-' + m.id + '">' + esc(m.body) + '</div>' +
           renderAttachment(m.attachment) +
           '<div class="reads-link" data-reads-id="' + m.id + '">👁 ' + ((m.reads && m.reads.length) || 0) + ' kişi okudu — kimler?</div>' +
           '<div class="reads-detail" id="reads-' + m.id + '"></div>' +
+          '<div id="editbox-' + m.id + '" style="display:none;margin-top:10px;padding-top:10px;border-top:1px dashed #ddd;">' +
+            '<select id="editcat-' + m.id + '" style="margin-bottom:6px;">' +
+              ['genel','acil','yemek','vefat','dogum'].map(c => '<option value="' + c + '"' + (m.category === c ? ' selected' : '') + '>' + (catNames[c]) + '</option>').join('') +
+            '</select>' +
+            '<input type="text" id="edittitle-' + m.id + '" value="' + esc(m.title) + '" style="margin-bottom:6px;">' +
+            '<textarea id="editbody-' + m.id + '" style="min-height:60px;">' + esc(m.body) + '</textarea>' +
+            '<div style="display:flex;gap:6px;margin-top:8px;">' +
+              '<button class="btn-primary" style="font-size:12px;padding:6px 12px;" data-save-edit="' + m.id + '">Güncelle</button>' +
+              '<button class="btn-danger" style="font-size:12px;" data-cancel-edit="' + m.id + '">Vazgeç</button>' +
+            '</div>' +
+            '<div class="feedback-msg" id="editfb-' + m.id + '"></div>' +
+          '</div>' +
         '</div>' +
-        '<button class="btn-danger" data-del-msg-id="' + m.id + '">Sil</button>' +
+        '<div style="display:flex;flex-direction:column;gap:6px;">' +
+          '<button class="btn-primary" style="font-size:12px;padding:5px 10px;" data-edit-msg-id="' + m.id + '">Düzenle</button>' +
+          '<button class="btn-danger" data-del-msg-id="' + m.id + '">Sil</button>' +
+        '</div>' +
       '</div>'
     ).join('');
     listEl.querySelectorAll('[data-del-msg-id]').forEach(b => b.addEventListener('click', () => deleteMessage(b.dataset.delMsgId)));
     listEl.querySelectorAll('[data-reads-id]').forEach(el => el.addEventListener('click', () => toggleReads(el.dataset.readsId)));
+    listEl.querySelectorAll('[data-edit-msg-id]').forEach(b => b.addEventListener('click', () => {
+      document.getElementById('editbox-' + b.dataset.editMsgId).style.display = 'block';
+    }));
+    listEl.querySelectorAll('[data-cancel-edit]').forEach(b => b.addEventListener('click', () => {
+      document.getElementById('editbox-' + b.dataset.cancelEdit).style.display = 'none';
+    }));
+    listEl.querySelectorAll('[data-save-edit]').forEach(b => b.addEventListener('click', () => saveMessageEdit(b.dataset.saveEdit)));
   } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
+}
+
+async function saveMessageEdit(id) {
+  const title = document.getElementById('edittitle-' + id).value.trim();
+  const body = document.getElementById('editbody-' + id).value.trim();
+  const category = document.getElementById('editcat-' + id).value;
+  const fb = document.getElementById('editfb-' + id);
+  if (!title || !body) { fb.textContent = 'Başlık ve mesaj boş olamaz.'; fb.className = 'feedback-msg err'; return; }
+  try {
+    const res = await fetch('/api/messages/' + id, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: getAdminPassword(), title, body, category })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Güncellenemedi');
+    fb.textContent = 'Güncellendi.'; fb.className = 'feedback-msg ok';
+    setTimeout(loadHistory, 600);
+  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
 }
 
 async function deleteMessage(id) {
