@@ -522,6 +522,43 @@ app.post('/api/chat/direct', (req, res) => {
   res.json({ ok: true, message: msg });
 });
 
+// --- SOHBET DENETİMİ (YÖNETİCİ) ---
+app.get('/api/chat/general/all', (req, res) => {
+  const result = checkPassword(req.query.password, req);
+  if (passwordCheckResponse(res, result)) return;
+  res.json({ messages: loadJson(CHAT_GENERAL_FILE).slice(-300).reverse() });
+});
+
+app.delete('/api/chat/general/:id', (req, res) => {
+  const { password } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const messages = loadJson(CHAT_GENERAL_FILE).filter(m => m.id !== req.params.id);
+  saveJson(CHAT_GENERAL_FILE, messages);
+  res.json({ ok: true });
+});
+
+app.get('/api/chat/direct/all', (req, res) => {
+  const result = checkPassword(req.query.password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const profiles = loadJson(PROFILES_FILE, {});
+  const all = loadJson(CHAT_DIRECT_FILE).slice(-300).reverse().map(m => ({
+    ...m,
+    fromLabel: (profiles[m.fromDeviceId] && profiles[m.fromDeviceId].name) || m.fromName || 'Bilinmeyen',
+    toLabel: (profiles[m.toDeviceId] && profiles[m.toDeviceId].name) || 'Bilinmeyen',
+  }));
+  res.json({ messages: all });
+});
+
+app.delete('/api/chat/direct/:id', (req, res) => {
+  const { password } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const messages = loadJson(CHAT_DIRECT_FILE).filter(m => m.id !== req.params.id);
+  saveJson(CHAT_DIRECT_FILE, messages);
+  res.json({ ok: true });
+});
+
 function categoryEmoji(cat) {
   switch (cat) {
     case 'acil': return '🚨';
