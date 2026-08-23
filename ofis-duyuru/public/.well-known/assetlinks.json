@@ -1,1 +1,10 @@
-
+[{
+  "relation": ["delegate_permission/common.handle_all_urls", "delegate_permission/common.use_as_origin"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.salihozgen.duyuru.twa",
+    "sha256_cert_fingerprints": [
+      "9F:E3:23:90:9C:E7:43:3E:CC:A0:9A:28:B6:CA:98:4E:8C:55:06:98:B3:96:FA:19:C7:4A:E6:1B:58:E7:A0:FD"
+    ]
+  }
+}]
