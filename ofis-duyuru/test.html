@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sistem Tanı Aracı</title>
+<style>
+  body { font-family: -apple-system, 'Segoe UI', Arial, sans-serif; background: #1F2430; color: #F7F5F0; margin: 0; padding: 20px; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .sub { color: #9AA0AE; font-size: 13px; margin-bottom: 20px; }
+  .check {
+    background: #F7F5F0; color: #1F2430; border-radius: 6px; padding: 14px 16px;
+    margin-bottom: 10px; display: flex; align-items: flex-start; gap: 12px;
+  }
+  .icon { font-size: 18px; flex-shrink: 0; width: 24px; text-align: center; }
+  .label { font-weight: 700; font-size: 14px; margin-bottom: 3px; }
+  .detail { font-size: 12.5px; color: #555; white-space: pre-wrap; word-break: break-all; }
+  .pending .icon::after { content: '⏳'; }
+  .ok .icon::after { content: '✅'; }
+  .fail .icon::after { content: '❌'; }
+  .warn .icon::after { content: '⚠️'; }
+  button {
+    background: #E0972C; color: #1F2430; border: none; padding: 12px 20px;
+    border-radius: 6px; font-weight: 700; font-size: 14px; cursor: pointer; width: 100%; margin-top: 10px;
+  }
+  input[type="password"] { width: 100%; padding: 10px; border-radius: 4px; border: none; margin-bottom: 8px; font-size: 14px; box-sizing: border-box; }
+  #sendTestSection { background: #2A3040; border-radius: 6px; padding: 16px; margin-top: 20px; }
+  #sendTestSection h3 { margin: 0 0 10px; font-size: 15px; }
+  #copyBtn { background: #6B8F71; margin-top: 16px; }
+</style>
+</head>
+<body>
+
+<h1>🔍 Sistem Tanı Aracı</h1>
+<div class="sub">Bu sayfa, duyuru sisteminin her katmanını otomatik test eder. Sonuçları ekran görüntüsü alıp paylaşabilirsin.</div>
+
+<div id="results"></div>
+
+<div id="sendTestSection">
+  <h3>🚀 Gerçek Push Testi (opsiyonel)</h3>
+  <div class="sub" style="margin-bottom:10px;">Yönetici şifreni gir, gerçek bir test bildirimi göndersin — bu şifre hiçbir yere kaydedilmez, sadece bu sayfadan direkt sunucuya gider.</div>
+  <input type="password" id="adminPw" placeholder="Yönetici şifresi">
+  <button id="sendTestBtn">Test Bildirimi Gönder</button>
+</div>
+
+<button id="copyBtn">📋 Sonuçları Kopyala (Paylaşmak İçin)</button>
+
+<script>
+const results = document.getElementById('results');
+const rows = {};
+
+function addRow(id, label) {
+  const div = document.createElement('div');
+  div.className = 'check pending';
+  div.id = 'row-' + id;
+  div.innerHTML = `<div class="icon"></div><div><div class="label">${label}</div><div class="detail" id="detail-${id}">Kontrol ediliyor...</div></div>`;
+  results.appendChild(div);
+  rows[id] = div;
+}
+function setRow(id, status, detail) {
+  rows[id].className = 'check ' + status;
+  document.getElementById('detail-' + id).textContent = detail;
+}
+
+addRow('sw', 'Service Worker Kayıtlı mı?');
+addRow('perm', 'Bildirim İzni');
+addRow('push', 'Push Aboneliği');
+addRow('subcount', 'Sunucudaki Toplam Abone Sayısı (/api/subscriber-count)');
+addRow('messages', 'Son Duyurular (/api/messages)');
+addRow('notifimg', 'Bildirim Görsel Üretici (/api/notif-image)');
+addRow('deviceid', 'Bu Cihazın Kimliği');
+
+(async function run() {
+  // Service Worker
+  try {
+    if (!('serviceWorker' in navigator)) { setRow('sw', 'fail', 'Bu tarayıcı service worker desteklemiyor.'); }
+    else {
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (reg) setRow('sw', 'ok', 'Kayıtlı. Scope: ' + reg.scope);
+      else setRow('sw', 'fail', 'Kayıtlı service worker bulunamadı.');
+    }
+  } catch (e) { setRow('sw', 'fail', 'Hata: ' + e.message); }
+
+  // Notification Permission
+  try {
+    const perm = Notification.permission;
+    if (perm === 'granted') setRow('perm', 'ok', 'İzin verilmiş (granted).');
+    else if (perm === 'denied') setRow('perm', 'fail', 'İzin REDDEDİLMİŞ. Ayarlar > Bildirimler\'den açman gerekiyor.');
+    else setRow('perm', 'warn', 'Henüz izin istenmemiş (default).');
+  } catch (e) { setRow('perm', 'fail', 'Hata: ' + e.message); }
+
+  // Push Subscription
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (reg) {
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) setRow('push', 'ok', 'Aktif abonelik var.\nEndpoint: ' + sub.endpoint.slice(0, 70) + '...');
+      else setRow('push', 'fail', 'Push aboneliği YOK. Uygulamada "Bildirimlere İzin Ver" adımını tamamlamamış olabilirsin.');
+    } else {
+      setRow('push', 'fail', 'Service worker olmadığı için abonelik kontrol edilemedi.');
+    }
+  } catch (e) { setRow('push', 'fail', 'Hata: ' + e.message); }
+
+  // Subscriber count
+  try {
+    const res = await fetch('/api/subscriber-count');
+    const data = await res.json();
+    setRow('subcount', data.total > 0 ? 'ok' : 'warn', 'Sunucuda kayıtlı toplam abone: ' + data.total);
+  } catch (e) { setRow('subcount', 'fail', 'Sunucuya ulaşılamadı: ' + e.message); }
+
+  // Messages
+  try {
+    const res = await fetch('/api/messages?page=1&pageSize=3');
+    const data = await res.json();
+    if (data.messages && data.messages.length > 0) {
+      const last = data.messages[0];
+      setRow('messages', 'ok', `Toplam ${data.total} duyuru var. Son duyuru: "${last.title}" (${new Date(last.time).toLocaleString('tr-TR')})`);
+    } else {
+      setRow('messages', 'warn', 'Hiç duyuru bulunamadı.');
+    }
+  } catch (e) { setRow('messages', 'fail', 'Sunucuya ulaşılamadı: ' + e.message); }
+
+  // Notif image
+  try {
+    const res = await fetch('/api/notif-image?title=Tanı+Testi&category=acil');
+    if (res.ok && res.headers.get('content-type') === 'image/png') {
+      setRow('notifimg', 'ok', 'Görsel üretici çalışıyor (PNG döndü, boyut: ' + res.headers.get('content-length') + ' byte).');
+    } else {
+      setRow('notifimg', 'fail', 'Beklenmeyen yanıt: HTTP ' + res.status + ', content-type: ' + res.headers.get('content-type'));
+    }
+  } catch (e) { setRow('notifimg', 'fail', 'Sunucuya ulaşılamadı: ' + e.message); }
+
+  // Device ID
+  try {
+    const id = localStorage.getItem('deviceId');
+    setRow('deviceid', id ? 'ok' : 'warn', id || 'Henüz bir cihaz kimliği oluşturulmamış.');
+  } catch (e) { setRow('deviceid', 'fail', 'Hata: ' + e.message); }
+})();
+
+document.getElementById('sendTestBtn').addEventListener('click', async () => {
+  const pw = document.getElementById('adminPw').value;
+  const btn = document.getElementById('sendTestBtn');
+  if (!pw) { alert('Şifre gerekli.'); return; }
+  btn.disabled = true; btn.textContent = 'Gönderiliyor...';
+  try {
+    const formData = new FormData();
+    formData.append('password', pw);
+    formData.append('category', 'acil');
+    formData.append('title', 'Tanı Aracı Testi');
+    formData.append('body', 'Bu, tanı sayfasından gönderilen gerçek bir test bildirimidir. Saat: ' + new Date().toLocaleTimeString('tr-TR'));
+    const res = await fetch('/api/send', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Bilinmeyen hata');
+    alert('✅ Sunucu kabul etti: ' + data.sent + ' cihaza gönderildi.\n\nŞimdi telefonunu kilitleyip bekle.');
+  } catch (e) {
+    alert('❌ Hata: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Test Bildirimi Gönder';
+  }
+});
+
+document.getElementById('copyBtn').addEventListener('click', () => {
+  let text = '=== SİSTEM TANI SONUÇLARI ===\n' + new Date().toLocaleString('tr-TR') + '\n\n';
+  Object.keys(rows).forEach(id => {
+    const label = rows[id].querySelector('.label').textContent;
+    const status = rows[id].className.includes('ok') ? '✅' : rows[id].className.includes('fail') ? '❌' : '⚠️';
+    const detail = document.getElementById('detail-' + id).textContent;
+    text += `${status} ${label}\n   ${detail}\n\n`;
+  });
+  navigator.clipboard.writeText(text).then(() => alert('Kopyalandı! Şimdi yapıştırabilirsin.'));
+});
+</script>
+</body>
+</html>
