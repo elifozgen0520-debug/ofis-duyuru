@@ -255,23 +255,47 @@
       <div class="dot" id="dot4"></div>
     </div>
 
-    <!-- ADIM 1: UYGULAMA İNDİR / EKLE -->
+    <!-- ADIM 1: UYGULAMA İNDİR (tarayıcı) / KURULUM ÖZETİ (APK) -->
     <div class="wizard-step active" id="step1">
-      <div style="font-size:36px; text-align:center; margin-bottom:8px;">📱</div>
-      <h2 style="text-align:center; margin:0 0 8px;">Adım 1: Uygulamayı İndir</h2>
-      <p style="font-size:13px; color:#555; text-align:center;">Duyuruların cebinize anında düşmesi için uygulamayı telefonunuza ekleyin.</p>
-      
-      <div id="pwaInstallContainer" style="display:none; text-align:center; margin:16px 0;">
-        <button class="btn-primary" id="btnPwaInstall" style="width:100%; padding:12px; font-size:15px; background:var(--sage);">
-          📥 Uygulamayı Telefona Yükle
-        </button>
+
+      <!-- Tarayıcıdan (PWA) açılıyorsa: indirme rehberi -->
+      <div id="step1-download">
+        <div style="font-size:36px; text-align:center; margin-bottom:8px;">📱</div>
+        <h2 style="text-align:center; margin:0 0 8px;">Adım 1: Uygulamayı İndir</h2>
+        <p style="font-size:13px; color:#555; text-align:center;">Duyuruların cebinize anında düşmesi için uygulamayı telefonunuza ekleyin.</p>
+
+        <div id="pwaInstallContainer" style="display:none; text-align:center; margin:16px 0;">
+          <button class="btn-primary" id="btnPwaInstall" style="width:100%; padding:12px; font-size:15px; background:var(--sage);">
+            📥 Uygulamayı Telefona Yükle
+          </button>
+        </div>
+
+        <div class="guide-box" id="iosPwaNotice" style="display:none;">
+          <b>iPhone (Safari) Kullanıcıları:</b><br>
+          1. Alt menüdeki <b>Paylaş (⬆️)</b> simgesine dokunun.<br>
+          2. Açılan listeden <b>"Ana Ekrana Ekle"</b> seçeneğini seçin.<br>
+          3. Ardından uygulamayı ana ekrandan açın.
+        </div>
       </div>
 
-      <div class="guide-box" id="iosPwaNotice" style="display:none;">
-        <b>iPhone (Safari) Kullanıcıları:</b><br>
-        1. Alt menüdeki <b>Paylaş (⬆️)</b> simgesine dokunun.<br>
-        2. Açılan listeden <b>"Ana Ekrana Ekle"</b> seçeneğini seçin.<br>
-        3. Ardından uygulamayı ana ekrandan açın.
+      <!-- Kurulu APK içinden açılıyorsa: kurulum sırasında görülen uyarıların özeti -->
+      <div id="step1-installed" style="display:none;">
+        <div style="font-size:36px; text-align:center; margin-bottom:8px;">✅</div>
+        <h2 style="text-align:center; margin:0 0 8px;">Kurulumu Başarıyla Tamamladınız</h2>
+        <p style="font-size:13px; color:#555; text-align:center; margin-bottom:14px;">Kurulum sırasında karşınıza çıkan uyarıları merak ettiyseniz — hepsi normal, işte kısaca nedenleri:</p>
+
+        <div class="guide-box" style="margin-bottom:10px;">
+          <b>🛡️ "Bilinmeyen uygulama engellendi"</b><br>
+          Play Store dışından gelen tüm dosyalar için Android'in standart uyarısıdır — WhatsApp'tan gelen her belgede de aynısını görürsünüz.
+        </div>
+        <div class="guide-box" style="margin-bottom:10px;">
+          <b>🛡️ "Google Play Protect" uyarısı</b><br>
+          Google, henüz Play Store'da yayınlanmamış her uygulama için bu uyarıyı gösterir. Zararlı olduğu anlamına gelmez, sadece "tanımıyorum" demektir.
+        </div>
+        <div class="guide-box">
+          <b>🔒 Verileriniz güvende</b><br>
+          Uygulama yalnızca duyuru bildirimlerini almak için çalışır. <b>Uzman Salih ÖZGEN</b> imzasıyla onaylanmıştır.
+        </div>
       </div>
 
       <button class="btn-primary" id="btnNext1" style="width:100%; margin-top:12px;">Devam Et (2/4) ➔</button>
@@ -673,8 +697,8 @@ if (isIOS) {
 // Uygulama, kurulu APK (TWA) içinden mi açıldı? (tarayıcıdan mı yoksa yüklü uygulamadan mı)
 const isInstalledApp = document.referrer.startsWith('android-app://') || window.matchMedia('(display-mode: standalone)').matches;
 if (isInstalledApp) {
-  document.getElementById('step1').style.display = 'none';
-  document.getElementById('dot1').style.display = 'none';
+  document.getElementById('step1-download').style.display = 'none';
+  document.getElementById('step1-installed').style.display = 'block';
 }
 
 function showWizardStep(stepNum) {
@@ -691,14 +715,14 @@ function checkFirstRunWizard() {
   const hasName = localStorage.getItem('selfName');
   if (perm !== 'granted' || !hasName) {
     document.getElementById('wizardModal').style.display = 'flex';
-    showWizardStep(isInstalledApp ? 2 : 1);
+    showWizardStep(1);
   }
 }
 
 document.getElementById('subscribeBtn').addEventListener('click', () => {
   unlockAudioEngine();
   document.getElementById('wizardModal').style.display = 'flex';
-  showWizardStep(isInstalledApp ? 2 : 1);
+  showWizardStep(1);
 });
 
 document.getElementById('btnPwaInstall').addEventListener('click', async () => {
