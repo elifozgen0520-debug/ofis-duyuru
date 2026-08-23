@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 const { Redis } = require('@upstash/redis');
+const { Resend } = require('resend');
 
 const app = express();
 app.use(express.json());
@@ -212,6 +213,56 @@ if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
 
 webpush.setVapidDetails('mailto:ofis@example.com', VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 
+// --- E-POSTA (Resend) — uygulamayı henüz kurmamış kişilere ulaşmak için ücretsiz yedek kanal ---
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const RESEND_FROM = process.env.RESEND_FROM || 'duyuru@salihozgen.com';
+const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
+
+function categoryColorHex(cat) {
+  const map = { acil: '#E0972C', yemek: '#6B8F71', vefat: '#4A4A52', dogum: '#C9A24B', genel: '#7A2331' };
+  return map[cat] || map.genel;
+}
+
+async function sendAnnouncementEmails(title, body, category) {
+  if (!resend) return { attempted: 0, sent: 0, skipped: 'RESEND_API_KEY tanımlı değil' };
+  const profiles = await loadJson(PROFILES_KEY, {});
+  const emails = Object.values(profiles).map(p => p.email).filter(Boolean);
+  if (emails.length === 0) return { attempted: 0, sent: 0 };
+
+  const color = categoryColorHex(category);
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+      <div style="background:${color}; color:#fff; padding:20px 24px; border-radius:6px 6px 0 0;">
+        <div style="font-size:11px; letter-spacing:1px; text-transform:uppercase; opacity:0.85; margin-bottom:6px;">${catNamesEmail(category)}</div>
+        <h2 style="margin:0; font-size:20px;">${escapeHtml(title)}</h2>
+      </div>
+      <div style="background:#F7F5F0; padding:20px 24px; border-radius:0 0 6px 6px; color:#1F2430;">
+        <p style="font-size:14px; line-height:1.6; margin:0;">${escapeHtml(body)}</p>
+        <p style="font-size:11px; color:#888; margin-top:20px;">Bu e-posta, Amasya CSB Acil Duyuru Sistemi tarafından otomatik gönderilmiştir. Anlık bildirim almak için uygulamayı telefonunuza kurabilirsiniz.</p>
+      </div>
+    </div>`;
+
+  let sent = 0;
+  for (const email of emails) {
+    try {
+      await resend.emails.send({ from: RESEND_FROM, to: email, subject: `${catNamesEmail(category)}: ${title}`, html });
+      sent++;
+    } catch (err) {
+      console.error('E-posta gönderilemedi (' + email + '):', err.message);
+    }
+  }
+  return { attempted: emails.length, sent };
+}
+
+function catNamesEmail(cat) {
+  const map = { acil: 'Acil Duyuru', yemek: 'Yemek Listesi', vefat: 'Vefat', dogum: 'Doğum', genel: 'Duyuru' };
+  return map[cat] || map.genel;
+}
+
+function escapeHtml(s) {
+  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 app.get('/api/messages', async (req, res) => {
   const page = Math.max(1, parseInt(req.query.page, 10) || 1);
   const pageSize = Math.max(1, Math.min(200, parseInt(req.query.pageSize, 10) || 10));
@@ -324,7 +375,7 @@ app.post('/api/devices/name', async (req, res) => {
 });
 
 app.post('/api/send', upload.single('attachment'), async (req, res) => {
-  const { password, category, title, body } = req.body;
+  const { password, category, title, body, alsoEmail } = req.body;
   const result = checkPassword(password, req);
   if (passwordCheckResponse(res, result)) return;
   if (!title || !body) return res.status(400).json({ ok: false, error: 'Başlık ve mesaj zorunlu.' });
@@ -371,7 +422,12 @@ app.post('/api/send', upload.single('attachment'), async (req, res) => {
   messages.push({ id: messageId, category: category || 'genel', title, body, time: new Date().toISOString(), attachment, reads: [] });
   await saveJson(MESSAGES_KEY, messages.slice(-100));
 
-  res.json({ ok: true, sent, totalSubscribers: stillValid.length, messageId });
+  let emailResult = null;
+  if (alsoEmail === 'true' || alsoEmail === true) {
+    emailResult = await sendAnnouncementEmails(title, body, category || 'genel');
+  }
+
+  res.json({ ok: true, sent, totalSubscribers: stillValid.length, messageId, email: emailResult });
 });
 
 // --- KİŞİYE ÖZEL (HEDEFLİ) BİLDİRİM GÖNDERME ---
@@ -427,6 +483,26 @@ app.delete('/api/messages/:id', async (req, res) => {
   const messages = (await loadJson(MESSAGES_KEY)).filter(m => m.id !== req.params.id);
   await saveJson(MESSAGES_KEY, messages);
   res.json({ ok: true });
+});
+
+// --- DUYURU DÜZENLEME (yeni bildirim GÖNDERMEZ, sadece metni günceller) ---
+app.put('/api/messages/:id', async (req, res) => {
+  const { password, title, body, category } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  if (!title || !body) return res.status(400).json({ ok: false, error: 'Başlık ve mesaj zorunlu.' });
+
+  const messages = await loadJson(MESSAGES_KEY);
+  const msg = messages.find(m => m.id === req.params.id);
+  if (!msg) return res.status(404).json({ ok: false, error: 'Duyuru bulunamadı.' });
+
+  msg.title = title;
+  msg.body = body;
+  if (category) msg.category = category;
+  msg.editedAt = new Date().toISOString();
+
+  await saveJson(MESSAGES_KEY, messages);
+  res.json({ ok: true, message: msg });
 });
 
 app.post('/api/messages/:id/read', async (req, res) => {
