@@ -149,6 +149,7 @@
       <div class="dash-card" data-view="istatistik"><div class="icon">📊</div><div class="label">İstatistikler</div><div class="count" id="countIstatistik"></div></div>
       <div class="dash-card" data-view="ozelmesaj"><div class="icon">📩</div><div class="label">Kişiye Özel Mesaj</div><div class="count"></div></div>
       <div class="dash-card" data-view="sohbetdenetim"><div class="icon">🛡️</div><div class="label">Sohbet Denetimi</div><div class="count" id="countSohbet"></div></div>
+      <div class="dash-card" data-view="personel"><div class="icon">👥</div><div class="label">Personel Ekle</div><div class="count" id="countPersonel"></div></div>
     </div>
   </div>
 
@@ -297,6 +298,26 @@
       <div id="modDirectList" class="list-empty">Yükleniyor...</div>
     </div>
   </div>
+
+  <div class="view" id="view-personel">
+    <a class="back-link" data-back>← Panele Dön</a>
+    <div class="card">
+      <h2>Personel Ekle</h2>
+      <div class="sub">Henüz uygulamayı kurmamış kişileri buradan ekle — push bildirimi gönderemeyiz ama e-posta girdiysen "e-posta ile de gönder" seçeneğiyle onlara da ulaşabilirsin.</div>
+      <label>Adı Soyadı *</label>
+      <input type="text" id="personelName" placeholder="Örn: Ahmet Yılmaz">
+      <label>Telefon (opsiyonel)</label>
+      <input type="tel" id="personelPhone" placeholder="Örn: 0555 111 22 33">
+      <label>E-posta (opsiyonel — telefon veya e-postadan en az biri olmalı)</label>
+      <input type="text" id="personelEmail" placeholder="Örn: ahmet@ornek.com">
+      <div class="send-row"><button class="btn-primary" id="personelAddBtn">Ekle</button></div>
+      <div class="feedback-msg" id="personelBulkFeedback"></div>
+    </div>
+    <div class="list-section">
+      <h3>Elle Eklenen Personel (henüz uygulamayı kurmamış)</h3>
+      <div id="personelManualList" class="list-empty">Yükleniyor...</div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -312,7 +333,7 @@ async function showDashboard() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
   loadHistory(); loadNotes(); loadPhones(); loadTasks(); loadDevices(); loadFeedback();
-  loadStats(); loadPmDeviceList(); loadModGeneral(); loadModDirect();
+  loadStats(); loadPmDeviceList(); loadModGeneral(); loadModDirect(); loadManualPersonnel();
 }
 
 document.getElementById('loginBtn').addEventListener('click', async () => {
@@ -763,6 +784,64 @@ async function deleteChatMsg(type, id) {
     const res = await fetch('/api/chat/' + type + '/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: getAdminPassword() }) });
     if (!res.ok) { const d = await res.json(); alert(d.error || 'Silinemedi'); return; }
     if (type === 'general') loadModGeneral(); else loadModDirect();
+  } catch { alert('Silinemedi.'); }
+}
+
+// ---------- Personel Ekle (tek tek, form ile) ----------
+document.getElementById('personelAddBtn').addEventListener('click', async () => {
+  const name = document.getElementById('personelName').value.trim();
+  const phone = document.getElementById('personelPhone').value.trim();
+  const email = document.getElementById('personelEmail').value.trim();
+  const fb = document.getElementById('personelBulkFeedback');
+
+  if (!name) { fb.textContent = 'Adı Soyadı zorunlu.'; fb.className = 'feedback-msg err'; return; }
+  if (!phone && !email) { fb.textContent = 'Telefon veya e-postadan en az biri girilmeli.'; fb.className = 'feedback-msg err'; return; }
+
+  const btn = document.getElementById('personelAddBtn');
+  btn.disabled = true; fb.textContent = 'Ekleniyor...'; fb.className = 'feedback-msg';
+  try {
+    const res = await fetch('/api/personnel/bulk-add', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: getAdminPassword(), entries: [{ name, phone, email }] })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Eklenemedi');
+    fb.textContent = '"' + name + '" eklendi.'; fb.className = 'feedback-msg ok';
+    document.getElementById('personelName').value = '';
+    document.getElementById('personelPhone').value = '';
+    document.getElementById('personelEmail').value = '';
+    document.getElementById('personelName').focus();
+    loadManualPersonnel();
+  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
+  finally { btn.disabled = false; }
+});
+document.getElementById('personelEmail').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('personelAddBtn').click(); });
+document.getElementById('personelPhone').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('personelAddBtn').click(); });
+
+async function loadManualPersonnel() {
+  const el = document.getElementById('personelManualList');
+  try {
+    const res = await fetch('/api/personnel/manual?password=' + encodeURIComponent(getAdminPassword()));
+    const data = await res.json();
+    document.getElementById('countPersonel').textContent = (data.personnel || []).length + ' kişi';
+    if (!data.personnel || data.personnel.length === 0) { el.className = 'list-empty'; el.textContent = 'Henüz elle eklenmiş kimse yok.'; return; }
+    el.className = '';
+    el.innerHTML = data.personnel.map(p =>
+      '<div class="list-item"><div class="li-main">' +
+        '<div class="li-title">' + esc(p.name) + '</div>' +
+        '<div class="li-body">' + [p.phone, p.email].filter(Boolean).map(esc).join(' · ') + '</div>' +
+      '</div><button class="btn-danger" data-del-personnel="' + p.deviceId + '">Sil</button></div>'
+    ).join('');
+    el.querySelectorAll('[data-del-personnel]').forEach(b => b.addEventListener('click', () => deleteManualPersonnel(b.dataset.delPersonnel)));
+  } catch { el.className = 'list-empty'; el.textContent = 'Yüklenemedi.'; }
+}
+
+async function deleteManualPersonnel(deviceId) {
+  if (!confirm('Bu kişiyi listeden silmek istediğine emin misin?')) return;
+  try {
+    const res = await fetch('/api/personnel/manual/' + deviceId, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: getAdminPassword() }) });
+    if (!res.ok) { const d = await res.json(); alert(d.error || 'Silinemedi'); return; }
+    loadManualPersonnel();
   } catch { alert('Silinemedi.'); }
 }
 </script>
