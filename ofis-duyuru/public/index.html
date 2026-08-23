@@ -211,7 +211,7 @@
   /* OKUNDU İŞARETLEME */
   .li-read-btn {
     display: inline-flex; align-items: center; gap: 4px; background: none; border: 1.5px solid #ccc;
-    color: #888; font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 20px; cursor: pointer;
+    color: #888; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; cursor: pointer;
     transition: all 0.15s ease; flex-shrink: 0;
   }
   .li-read-btn:hover { border-color: var(--sage); color: var(--sage); }
@@ -230,13 +230,13 @@
   .list-item .li-main { flex: 1; min-width: 0; }
   .list-item .li-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 3px; }
   .li-toggle {
-    background: none; border: none; color: var(--amber); font-size: 17px; cursor: pointer;
-    padding: 2px 6px; border-radius: 4px; transition: transform 0.2s ease, background 0.15s ease; flex-shrink: 0;
-    animation: chevron-bounce 1.6s ease-in-out infinite;
+    background: rgba(224,151,44,0.12); border: none; color: var(--amber); font-size: 26px; line-height: 1; cursor: pointer;
+    padding: 4px 10px; border-radius: 6px; transition: transform 0.2s ease, background 0.15s ease; flex-shrink: 0;
+    animation: chevron-bounce 1.6s ease-in-out infinite; font-weight: 900;
   }
-  .li-toggle:hover { background: rgba(224,151,44,0.15); }
+  .li-toggle:hover { background: rgba(224,151,44,0.22); }
   .li-toggle.open { transform: rotate(180deg); animation: none; }
-  @keyframes chevron-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
+  @keyframes chevron-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
   .attach-wrap { overflow: hidden; max-height: 0; transition: max-height 0.25s ease; }
   .attach-wrap.open { max-height: 2000px; }
 
@@ -309,6 +309,22 @@
 <div id="notifBanner"></div>
 
 <!-- ADIM ADIM KURULUM VE GÖRSEL MARKA AYAR SİHİRBAZI -->
+<!-- KVKK AYDINLATMA METNİ MODALI -->
+<div id="kvkkModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:2000; align-items:center; justify-content:center; padding:16px;">
+  <div style="background:var(--paper); color:var(--ink); max-width:520px; width:100%; max-height:85vh; overflow-y:auto; border-radius:8px; padding:24px;">
+    <h2 style="font-family:'Fraunces',serif; font-size:18px; margin:0 0 14px;">KVKK Aydınlatma Metni</h2>
+    <div style="font-size:13px; line-height:1.7; color:#333;">
+      <p><b>Veri Sorumlusu:</b> Amasya Çevre, Şehircilik ve İklim Değişikliği İl Müdürlüğü.</p>
+      <p><b>İşlenen Kişisel Veriler:</b> Ad-soyad, telefon numarası, e-posta adresi, kan grubu, profil fotoğrafı, cihaz kimliği, uygulama içi sohbet mesajları ve bildirim okuma zaman bilgisi.</p>
+      <p><b>İşleme Amacı:</b> Bu veriler yalnızca kurum içi acil duyuru, bilgilendirme, iç iletişim (sohbet) ve acil durumlarda (kan grubu bilgisi gibi) personele hızlı ulaşım amacıyla işlenir. Herhangi bir ticari amaçla kullanılmaz, üçüncü taraflarla paylaşılmaz.</p>
+      <p><b>Hukuki Sebep:</b> 6698 sayılı Kişisel Verilerin Korunması Kanunu'nun 5. maddesi kapsamında açık rızanız ve kurumun meşru menfaati.</p>
+      <p><b>Saklama Süresi:</b> Verileriniz, uygulamayı kullandığınız süre boyunca ve kurumsal gereklilikler doğrultusunda saklanır; talebiniz halinde silinir.</p>
+      <p><b>Haklarınız:</b> KVKK'nın 11. maddesi uyarınca kişisel verilerinizin işlenip işlenmediğini öğrenme, işlenmişse bilgi talep etme, düzeltilmesini veya silinmesini isteme haklarına sahipsiniz. Bu haklarınızı kullanmak için kurum Bilgi İşlem Sorumlusu ile iletişime geçebilirsiniz.</p>
+    </div>
+    <button type="button" class="btn-primary" id="kvkkCloseBtn" style="width:100%; margin-top:16px;">Kapat</button>
+  </div>
+</div>
+
 <div class="wizard-overlay" id="wizardModal" style="display:none;">
   <div class="wizard-card">
     <div class="step-dots">
@@ -374,7 +390,15 @@
       <label>Telefon Numarası (Opsiyonel)</label>
       <input type="tel" id="wizPhone" placeholder="Örn: 0555 xxx xx xx">
 
+      <label style="display:flex; align-items:flex-start; gap:8px; margin-top:16px; cursor:pointer; text-transform:none; letter-spacing:normal; font-weight:400; font-size:12.5px; color:#555;">
+        <input type="checkbox" id="wizKvkkConsent" style="margin-top:2px; flex-shrink:0;">
+        <span>
+          <a href="#" id="kvkkLinkOpen" style="color:var(--clay); font-weight:600; text-decoration:underline;">KVKK Aydınlatma Metni</a>'ni okudum, kişisel verilerimin (ad, telefon, e-posta, kan grubu) yalnızca kurum içi duyuru ve iletişim amacıyla işlenmesini kabul ediyorum. *
+        </span>
+      </label>
+
       <button class="btn-primary" id="btnNext2" style="width:100%; margin-top:16px;">Kaydet ve Devam Et ➔</button>
+      <div id="kvkkWarning" style="display:none; color:var(--clay); font-size:12px; margin-top:8px; text-align:center;">Devam etmek için KVKK metnini onaylamanız gerekiyor.</div>
     </div>
 
     <!-- ADIM 3: BİLDİRİM VE MARKA BAZLI SES REHBERİ -->
@@ -414,6 +438,13 @@
       <button class="btn-primary" id="btnGrantPush" style="width:100%; padding:12px; font-size:15px; background:var(--amber);">
         🔔 Bildirimlere Şimdi İzin Ver
       </button>
+
+      <div id="permFailedNotice" style="display:none; margin-top:14px; background:#FBEFE0; border:1.5px solid var(--amber); border-radius:6px; padding:12px 14px;">
+        <div style="font-size:13px; font-weight:700; margin-bottom:4px;">⚠️ Otomatik izin penceresi açılmadı</div>
+        <div style="font-size:12.5px; color:#555; margin-bottom:10px;">Bazı telefonlarda bu normal. Sizi ayar ekranına yönlendirmeyi deniyoruz — açılmazsa Ayarlar &gt; Uygulamalar &gt; Amasya CSB Acil Duyuru &gt; Bildirimler'e girip elle açın.</div>
+        <button type="button" class="btn-primary" onclick="tryOpenAndroidNotifSettings()" style="width:100%; font-size:12.5px; padding:8px; margin-bottom:8px;">⚙️ Ayarları Açmayı Tekrar Dene</button>
+        <button type="button" class="btn-success" id="permRetryBtn" style="width:100%; font-size:12.5px; padding:8px;">✓ Ayardan Açtım, Devam Et</button>
+      </div>
     </div>
 
     <!-- ADIM 4: SES VE KİLİT EKRANI TESTİ -->
@@ -856,20 +887,32 @@ document.getElementById('btnNext1').addEventListener('click', () => showWizardSt
 document.getElementById('btnNext2').addEventListener('click', async () => {
   const name = document.getElementById('wizName').value.trim();
   const phone = document.getElementById('wizPhone').value.trim();
+  const kvkkOk = document.getElementById('wizKvkkConsent').checked;
   if (!name) { alert('Lütfen adınızı soyadınızı girin.'); return; }
-  
+  if (!kvkkOk) { document.getElementById('kvkkWarning').style.display = 'block'; return; }
+  document.getElementById('kvkkWarning').style.display = 'none';
+
   localStorage.setItem('selfName', name);
   localStorage.setItem('selfPhone', phone);
-  
+  localStorage.setItem('kvkkConsent', 'true');
+
   try {
     await fetch('/api/self-profile', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ deviceId: getDeviceId(), name, phone })
+      body: JSON.stringify({ deviceId: getDeviceId(), name, phone, kvkkConsent: true, kvkkConsentAt: new Date().toISOString() })
     });
   } catch(e){}
 
   // İzin bu adımdan önce (kurulu APK akışında) zaten verilmiş olabilir, o zaman direkt bitir.
   showWizardStep(Notification.permission === 'granted' ? 4 : 3);
+});
+
+document.getElementById('kvkkLinkOpen').addEventListener('click', (e) => {
+  e.preventDefault();
+  document.getElementById('kvkkModal').style.display = 'flex';
+});
+document.getElementById('kvkkCloseBtn').addEventListener('click', () => {
+  document.getElementById('kvkkModal').style.display = 'none';
 });
 
 document.getElementById('btnGrantPush').addEventListener('click', async () => {
@@ -879,7 +922,17 @@ document.getElementById('btnGrantPush').addEventListener('click', async () => {
     // Kurulu APK akışında izin adımı isimden ÖNCE geldiyse, şimdi ismi soralım.
     showWizardStep(localStorage.getItem('selfName') ? 4 : 2);
   } else {
-    alert('Bildirim izni verilmedi. Ayarlardan izin verip tekrar deneyin.');
+    // İzin penceresi hiç çıkmadıysa ya da reddedildiyse: doğrudan ayar ekranına götürmeyi dene.
+    document.getElementById('permFailedNotice').style.display = 'block';
+    if (isInstalledApp) tryOpenAndroidNotifSettings();
+  }
+});
+
+document.getElementById('permRetryBtn').addEventListener('click', async () => {
+  const ok = await doSubscribe(false);
+  if (ok) {
+    document.getElementById('permFailedNotice').style.display = 'none';
+    showWizardStep(localStorage.getItem('selfName') ? 4 : 2);
   }
 });
 
