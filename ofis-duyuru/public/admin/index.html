@@ -118,6 +118,13 @@
   .reads-link { margin-top: 8px; font-size: 11.5px; color: #999; cursor: pointer; }
   .reads-detail { display: none; font-size: 12px; color: #666; margin-top: 4px; }
 
+  .pagination-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 14px 0; flex-wrap: wrap; }
+  .page-size-select { width: auto; padding: 6px 10px; font-size: 12.5px; }
+  .page-nav { display: flex; align-items: center; gap: 8px; }
+  .page-nav button { background: var(--paper); color: var(--ink); border: none; padding: 6px 12px; border-radius: 20px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+  .page-nav button:disabled { opacity: 0.35; cursor: default; }
+  .page-nav .page-info { font-size: 12.5px; color: var(--muted); }
+
   .toast-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
   .toast-overlay.show { display: flex; }
   .toast-box { background: var(--paper); color: var(--ink); border-radius: 8px; padding: 26px 24px; max-width: 360px; width: 100%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
@@ -253,6 +260,7 @@
       <h2>Cihazları Yönet</h2>
       <div class="sub">"Kim okudu" bilgisinde doğru isimlerin görünmesi için her cihazı gerçek sahibiyle eşleştir. "Öneri" olarak görünen isim kişinin kendi bildirdiği isimdir — onaylamak için Kaydet'e bas.</div>
       <div id="devicesList" style="margin-top:14px;"></div>
+      <div id="devicesPagination"></div>
       <div class="feedback-msg" id="devicesFeedback"></div>
     </div>
   </div>
@@ -263,6 +271,7 @@
       <h2>Görüş &amp; Öneriler</h2>
       <div class="sub">Personelin gönderdiği görüş ve öneriler.</div>
       <div id="feedbackList" style="margin-top:14px;"></div>
+      <div id="feedbackPagination"></div>
     </div>
   </div>
 
@@ -309,10 +318,12 @@
     <div class="list-section" id="modPanelGeneral">
       <h3>Genel Oda Mesajları</h3>
       <div id="modGeneralList" class="list-empty">Yükleniyor...</div>
+      <div id="modGeneralPagination"></div>
     </div>
     <div class="list-section" id="modPanelDirect" style="display:none;">
       <h3>Özel Mesajlar (Tüm Konuşmalar)</h3>
       <div id="modDirectList" class="list-empty">Yükleniyor...</div>
+      <div id="modDirectPagination"></div>
     </div>
   </div>
 
@@ -333,6 +344,7 @@
     <div class="list-section">
       <h3>Elle Eklenen Personel (henüz uygulamayı kurmamış)</h3>
       <div id="personelManualList" class="list-empty">Yükleniyor...</div>
+      <div id="personelPagination"></div>
     </div>
   </div>
 </div>
@@ -399,6 +411,55 @@ document.querySelectorAll('[data-back]').forEach(link => {
 const catNames = { acil: 'Acil', yemek: 'Yemek Listesi', vefat: 'Vefat', dogum: 'Doğum', genel: 'Genel' };
 function formatTime(iso) { return new Date(iso).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); }
 function esc(s) { return (s || '').replace(/</g, '&lt;'); }
+
+// ---------- GENEL SAYFALAMA MOTORU ----------
+const pgState = {};
+function pgGet(key) {
+  if (!pgState[key]) pgState[key] = { page: 1, pageSize: parseInt(localStorage.getItem('admPg_' + key) || '10', 10) };
+  return pgState[key];
+}
+function pgSlice(key, items) {
+  const st = pgGet(key);
+  const totalPages = Math.max(1, Math.ceil(items.length / st.pageSize));
+  if (st.page > totalPages) st.page = totalPages;
+  const start = (st.page - 1) * st.pageSize;
+  return items.slice(start, start + st.pageSize);
+}
+function pgControls(key, containerId, total, rerenderFn) {
+  const st = pgGet(key);
+  const totalPages = Math.max(1, Math.ceil(total / st.pageSize));
+  const containerEl = document.getElementById(containerId);
+  if (!containerEl) return;
+  if (total <= 10 && st.pageSize === 10) { containerEl.innerHTML = ''; return; }
+  containerEl.innerHTML =
+    '<div class="pagination-row">' +
+      '<select class="page-size-select">' +
+        '<option value="10">10 / sayfa</option><option value="20">20 / sayfa</option>' +
+        '<option value="30">30 / sayfa</option><option value="40">40 / sayfa</option>' +
+        '<option value="50">50 / sayfa</option>' +
+      '</select>' +
+      '<div class="page-nav">' +
+        '<button type="button" data-pg-prev>← Önceki</button>' +
+        '<span class="page-info">Sayfa ' + st.page + ' / ' + totalPages + '</span>' +
+        '<button type="button" data-pg-next>Sonraki →</button>' +
+      '</div>' +
+    '</div>';
+  const sel = containerEl.querySelector('select');
+  sel.value = String(st.pageSize);
+  sel.addEventListener('change', () => {
+    st.pageSize = parseInt(sel.value, 10);
+    localStorage.setItem('admPg_' + key, String(st.pageSize));
+    st.page = 1;
+    rerenderFn();
+  });
+  const prevBtn = containerEl.querySelector('[data-pg-prev]');
+  const nextBtn = containerEl.querySelector('[data-pg-next]');
+  prevBtn.disabled = st.page <= 1;
+  nextBtn.disabled = st.page >= totalPages;
+  prevBtn.addEventListener('click', () => { if (st.page > 1) { st.page--; rerenderFn(); } });
+  nextBtn.addEventListener('click', () => { if (st.page < totalPages) { st.page++; rerenderFn(); } });
+}
+
 function renderAttachment(att) {
   if (!att) return '';
   if (att.type === 'image') return '<a href="' + att.url + '" target="_blank"><img src="' + att.url + '" style="max-width:100%;border-radius:4px;margin-top:8px;display:block;"></a>';
@@ -614,57 +675,143 @@ const loadTasks = () => setupSimpleList({
 }).load;
 
 // ---------- Cihazlar ----------
+let devicesAllItems = [];
 async function loadDevices() {
   const listEl = document.getElementById('devicesList');
   listEl.innerHTML = 'Yükleniyor...';
   try {
     const res = await fetch('/api/devices');
     const data = await res.json();
-    document.getElementById('countCihazlar').textContent = (data.devices || []).length + ' cihaz';
-    if (!data.devices || data.devices.length === 0) { listEl.innerHTML = '<div class="list-empty">Henüz abone olan cihaz yok.</div>'; return; }
-    listEl.innerHTML = data.devices.map(d => {
-      const hint = d.suggestedName ? ('Öneri: ' + esc(d.suggestedName) + (d.suggestedPhone ? ' (' + esc(d.suggestedPhone) + ')' : '')) : 'İsim yaz...';
-      const avatarHtml = d.avatar
-        ? '<img src="' + esc(d.avatar) + '" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">'
-        : '';
-      const placeholderHtml = '<div style="width:38px;height:38px;border-radius:50%;background:#eee;display:' + (d.avatar ? 'none' : 'flex') + ';align-items:center;justify-content:center;font-size:15px;color:#999;flex-shrink:0;">👤</div>';
-      const extra = [d.email, d.bloodType].filter(Boolean).map(esc).join(' · ');
-      return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">' +
-        avatarHtml + placeholderHtml +
-        '<span style="font-size:11px;color:#999;min-width:60px;">#' + esc(d.deviceId.slice(-4)) + (extra ? '<br>' + extra : '') + '</span>' +
-        '<input type="text" value="' + esc(d.name || '') + '" placeholder="' + hint + '" data-device-id="' + esc(d.deviceId) + '" style="flex:1;padding:7px 10px;border:1.5px solid #ddd;border-radius:3px;font-size:13px;">' +
-        '<button class="btn-primary" style="padding:7px 12px;font-size:12px;" data-save-device="' + esc(d.deviceId) + '">Kaydet</button>' +
-      '</div>';
-    }).join('');
-    listEl.querySelectorAll('[data-save-device]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const deviceId = btn.dataset.saveDevice;
-        const input = listEl.querySelector('input[data-device-id="' + deviceId + '"]');
-        const fb = document.getElementById('devicesFeedback');
-        try {
-          const res = await fetch('/api/devices/name', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: getAdminPassword(), deviceId, name: input.value.trim() }) });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'Kaydedilemedi');
-          fb.textContent = 'Kaydedildi.'; fb.className = 'feedback-msg ok';
-        } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
-      });
-    });
+    devicesAllItems = data.devices || [];
+    document.getElementById('countCihazlar').textContent = devicesAllItems.length + ' cihaz';
+    renderDevicesPage();
   } catch { listEl.innerHTML = '<div class="list-empty">Yüklenemedi.</div>'; }
 }
 
+function renderDevicesPage() {
+  const listEl = document.getElementById('devicesList');
+  if (devicesAllItems.length === 0) { listEl.innerHTML = '<div class="list-empty">Henüz abone olan cihaz yok.</div>'; pgControls('devices', 'devicesPagination', 0, renderDevicesPage); return; }
+  const pageItems = pgSlice('devices', devicesAllItems);
+  listEl.innerHTML = pageItems.map(d => {
+    const hint = d.suggestedName ? ('Öneri: ' + esc(d.suggestedName) + (d.suggestedPhone ? ' (' + esc(d.suggestedPhone) + ')' : '')) : 'İsim yaz...';
+    const avatarHtml = d.avatar
+      ? '<img src="' + esc(d.avatar) + '" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">'
+      : '';
+    const placeholderHtml = '<div style="width:38px;height:38px;border-radius:50%;background:#eee;display:' + (d.avatar ? 'none' : 'flex') + ';align-items:center;justify-content:center;font-size:15px;color:#999;flex-shrink:0;">👤</div>';
+    const extra = [d.email, d.bloodType].filter(Boolean).map(esc).join(' · ');
+    return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">' +
+      avatarHtml + placeholderHtml +
+      '<span style="font-size:11px;color:#999;min-width:60px;">#' + esc(d.deviceId.slice(-4)) + (extra ? '<br>' + extra : '') + '</span>' +
+      '<input type="text" value="' + esc(d.name || '') + '" placeholder="' + hint + '" data-device-id="' + esc(d.deviceId) + '" style="flex:1;padding:7px 10px;border:1.5px solid #ddd;border-radius:3px;font-size:13px;">' +
+      '<button class="btn-primary" style="padding:7px 12px;font-size:12px;" data-save-device="' + esc(d.deviceId) + '">Kaydet</button>' +
+      '<button class="btn-danger" data-del-device="' + esc(d.deviceId) + '">Sil</button>' +
+    '</div>';
+  }).join('');
+  listEl.querySelectorAll('[data-save-device]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const deviceId = btn.dataset.saveDevice;
+      const input = listEl.querySelector('input[data-device-id="' + deviceId + '"]');
+      const fb = document.getElementById('devicesFeedback');
+      try {
+        const res = await fetch('/api/devices/name', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: getAdminPassword(), deviceId, name: input.value.trim() }) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Kaydedilemedi');
+        fb.textContent = 'Kaydedildi.'; fb.className = 'feedback-msg ok';
+      } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
+    });
+  });
+  listEl.querySelectorAll('[data-del-device]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const deviceId = btn.dataset.delDevice;
+      if (!confirm('Bu cihaz kaydını kalıcı olarak silmek istediğine emin misin? Kişi bir daha uygulamayı açarsa yeniden abone olması gerekir.')) return;
+      const fb = document.getElementById('devicesFeedback');
+      try {
+        const res = await fetch('/api/devices/' + deviceId, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: getAdminPassword() }) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Silinemedi');
+        fb.textContent = 'Silindi.'; fb.className = 'feedback-msg ok';
+        loadDevices();
+        loadPmDeviceList();
+      } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
+    });
+  });
+  pgControls('devices', 'devicesPagination', devicesAllItems.length, renderDevicesPage);
+}
+
 // ---------- Görüşler ----------
+let feedbackAllItems = [];
 async function loadFeedback() {
   const listEl = document.getElementById('feedbackList');
   listEl.innerHTML = 'Yükleniyor...';
   try {
     const res = await fetch('/api/feedback?password=' + encodeURIComponent(getAdminPassword()));
     const data = await res.json();
-    document.getElementById('countGorusler').textContent = (data.items || []).length + ' görüş';
-    if (!data.items || data.items.length === 0) { listEl.innerHTML = '<div class="list-empty">Henüz görüş gönderilmedi.</div>'; return; }
-    listEl.innerHTML = data.items.map(f =>
-      '<div class="list-item"><div class="li-main"><div class="li-top"><span class="li-tag">' + esc(f.name || 'İsimsiz') + '</span><span class="li-time">' + formatTime(f.time) + '</span></div><div class="li-body">' + esc(f.text) + '</div></div></div>'
-    ).join('');
+    feedbackAllItems = data.items || [];
+    document.getElementById('countGorusler').textContent = feedbackAllItems.length + ' görüş';
+    renderFeedbackPage();
   } catch { listEl.innerHTML = '<div class="list-empty">Yüklenemedi.</div>'; }
+}
+
+function renderFeedbackPage() {
+  const listEl = document.getElementById('feedbackList');
+  if (feedbackAllItems.length === 0) { listEl.innerHTML = '<div class="list-empty">Henüz görüş gönderilmedi.</div>'; return; }
+  const pageItems = pgSlice('feedback', feedbackAllItems);
+  listEl.innerHTML = pageItems.map(f =>
+    '<div class="list-item" id="fbitem-' + f.id + '"><div class="li-main">' +
+      '<div class="li-top"><span class="li-tag">' + esc(f.name || 'İsimsiz') + (f.editedAt ? ' · <i>düzenlendi</i>' : '') + '</span><span class="li-time">' + formatTime(f.time) + '</span></div>' +
+      '<div class="li-body" id="fbbody-' + f.id + '">' + esc(f.text) + '</div>' +
+      '<div id="fbedit-' + f.id + '" style="display:none;margin-top:10px;padding-top:10px;border-top:1px dashed #ddd;">' +
+        '<input type="text" id="fbeditname-' + f.id + '" value="' + esc(f.name || '') + '" placeholder="İsim (opsiyonel)" style="margin-bottom:6px;">' +
+        '<textarea id="fbeditbody-' + f.id + '" style="min-height:60px;">' + esc(f.text) + '</textarea>' +
+        '<div style="display:flex;gap:6px;margin-top:8px;">' +
+          '<button class="btn-primary" style="font-size:12px;padding:6px 12px;" data-save-fb="' + f.id + '">Güncelle</button>' +
+          '<button class="btn-danger" style="font-size:12px;" data-cancel-fb="' + f.id + '">Vazgeç</button>' +
+        '</div>' +
+        '<div class="feedback-msg" id="fbeditfb-' + f.id + '"></div>' +
+      '</div>' +
+    '</div>' +
+    '<div style="display:flex;flex-direction:column;gap:6px;">' +
+      '<button class="btn-primary" style="font-size:12px;padding:5px 10px;" data-edit-fb="' + f.id + '">Düzenle</button>' +
+      '<button class="btn-danger" data-del-fb="' + f.id + '">Sil</button>' +
+    '</div></div>'
+  ).join('');
+
+  listEl.querySelectorAll('[data-edit-fb]').forEach(b => b.addEventListener('click', () => {
+    document.getElementById('fbedit-' + b.dataset.editFb).style.display = 'block';
+  }));
+  listEl.querySelectorAll('[data-cancel-fb]').forEach(b => b.addEventListener('click', () => {
+    document.getElementById('fbedit-' + b.dataset.cancelFb).style.display = 'none';
+  }));
+  listEl.querySelectorAll('[data-save-fb]').forEach(b => b.addEventListener('click', () => saveFeedbackEdit(b.dataset.saveFb)));
+  listEl.querySelectorAll('[data-del-fb]').forEach(b => b.addEventListener('click', () => deleteFeedback(b.dataset.delFb)));
+
+  pgControls('feedback', 'feedbackPagination', feedbackAllItems.length, renderFeedbackPage);
+}
+
+async function saveFeedbackEdit(id) {
+  const text = document.getElementById('fbeditbody-' + id).value.trim();
+  const name = document.getElementById('fbeditname-' + id).value.trim();
+  const fb = document.getElementById('fbeditfb-' + id);
+  if (!text) { fb.textContent = 'Mesaj boş olamaz.'; fb.className = 'feedback-msg err'; return; }
+  try {
+    const res = await fetch('/api/feedback/' + id, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: getAdminPassword(), text, name })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Güncellenemedi');
+    fb.textContent = 'Güncellendi.'; fb.className = 'feedback-msg ok';
+    setTimeout(loadFeedback, 500);
+  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
+}
+
+async function deleteFeedback(id) {
+  if (!confirm('Bu görüşü kalıcı olarak silmek istediğine emin misin?')) return;
+  try {
+    const res = await fetch('/api/feedback/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: getAdminPassword() }) });
+    if (!res.ok) { const d = await res.json(); alert(d.error || 'Silinemedi'); return; }
+    loadFeedback();
+  } catch { alert('Silinemedi.'); }
 }
 // ---------- İstatistikler ----------
 async function loadStats() {
@@ -778,39 +925,55 @@ document.getElementById('modTabDirect').addEventListener('click', () => {
   document.getElementById('modPanelGeneral').style.display = 'none';
 });
 
+let modGeneralAllItems = [];
 async function loadModGeneral() {
   const el = document.getElementById('modGeneralList');
   try {
     const res = await fetch('/api/chat/general/all?password=' + encodeURIComponent(getAdminPassword()));
     const data = await res.json();
-    document.getElementById('countSohbet').textContent = (data.messages || []).length + ' mesaj';
-    if (!data.messages || data.messages.length === 0) { el.className = 'list-empty'; el.textContent = 'Henüz mesaj yok.'; return; }
-    el.className = '';
-    el.innerHTML = data.messages.map(m =>
-      '<div class="list-item"><div class="li-main">' +
-        '<div class="li-top"><span class="li-tag">' + esc(m.name || 'İsimsiz') + '</span><span class="li-time">' + formatTime(m.time) + '</span></div>' +
-        '<div class="li-body">' + esc(m.text) + '</div>' +
-      '</div><button class="btn-danger" data-del-chat-id="' + m.id + '">Sil</button></div>'
-    ).join('');
-    el.querySelectorAll('[data-del-chat-id]').forEach(b => b.addEventListener('click', () => deleteChatMsg('general', b.dataset.delChatId)));
+    modGeneralAllItems = data.messages || [];
+    document.getElementById('countSohbet').textContent = modGeneralAllItems.length + ' mesaj';
+    renderModGeneralPage();
   } catch { el.className = 'list-empty'; el.textContent = 'Yüklenemedi.'; }
 }
+function renderModGeneralPage() {
+  const el = document.getElementById('modGeneralList');
+  if (modGeneralAllItems.length === 0) { el.className = 'list-empty'; el.textContent = 'Henüz mesaj yok.'; pgControls('modGeneral', 'modGeneralPagination', 0, renderModGeneralPage); return; }
+  el.className = '';
+  const pageItems = pgSlice('modGeneral', modGeneralAllItems);
+  el.innerHTML = pageItems.map(m =>
+    '<div class="list-item"><div class="li-main">' +
+      '<div class="li-top"><span class="li-tag">' + esc(m.name || 'İsimsiz') + '</span><span class="li-time">' + formatTime(m.time) + '</span></div>' +
+      '<div class="li-body">' + esc(m.text) + '</div>' +
+    '</div><button class="btn-danger" data-del-chat-id="' + m.id + '">Sil</button></div>'
+  ).join('');
+  el.querySelectorAll('[data-del-chat-id]').forEach(b => b.addEventListener('click', () => deleteChatMsg('general', b.dataset.delChatId)));
+  pgControls('modGeneral', 'modGeneralPagination', modGeneralAllItems.length, renderModGeneralPage);
+}
 
+let modDirectAllItems = [];
 async function loadModDirect() {
   const el = document.getElementById('modDirectList');
   try {
     const res = await fetch('/api/chat/direct/all?password=' + encodeURIComponent(getAdminPassword()));
     const data = await res.json();
-    if (!data.messages || data.messages.length === 0) { el.className = 'list-empty'; el.textContent = 'Henüz özel mesaj yok.'; return; }
-    el.className = '';
-    el.innerHTML = data.messages.map(m =>
-      '<div class="list-item"><div class="li-main">' +
-        '<div class="li-top"><span class="li-tag">' + esc(m.fromLabel) + ' → ' + esc(m.toLabel) + '</span><span class="li-time">' + formatTime(m.time) + '</span></div>' +
-        '<div class="li-body">' + esc(m.text) + '</div>' +
-      '</div><button class="btn-danger" data-del-chat-id="' + m.id + '">Sil</button></div>'
-    ).join('');
-    el.querySelectorAll('[data-del-chat-id]').forEach(b => b.addEventListener('click', () => deleteChatMsg('direct', b.dataset.delChatId)));
+    modDirectAllItems = data.messages || [];
+    renderModDirectPage();
   } catch { el.className = 'list-empty'; el.textContent = 'Yüklenemedi.'; }
+}
+function renderModDirectPage() {
+  const el = document.getElementById('modDirectList');
+  if (modDirectAllItems.length === 0) { el.className = 'list-empty'; el.textContent = 'Henüz özel mesaj yok.'; pgControls('modDirect', 'modDirectPagination', 0, renderModDirectPage); return; }
+  el.className = '';
+  const pageItems = pgSlice('modDirect', modDirectAllItems);
+  el.innerHTML = pageItems.map(m =>
+    '<div class="list-item"><div class="li-main">' +
+      '<div class="li-top"><span class="li-tag">' + esc(m.fromLabel) + ' → ' + esc(m.toLabel) + '</span><span class="li-time">' + formatTime(m.time) + '</span></div>' +
+      '<div class="li-body">' + esc(m.text) + '</div>' +
+    '</div><button class="btn-danger" data-del-chat-id="' + m.id + '">Sil</button></div>'
+  ).join('');
+  el.querySelectorAll('[data-del-chat-id]').forEach(b => b.addEventListener('click', () => deleteChatMsg('direct', b.dataset.delChatId)));
+  pgControls('modDirect', 'modDirectPagination', modDirectAllItems.length, renderModDirectPage);
 }
 
 async function deleteChatMsg(type, id) {
@@ -870,22 +1033,30 @@ document.getElementById('personelAddBtn').addEventListener('click', async () => 
 document.getElementById('personelEmail').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('personelAddBtn').click(); });
 document.getElementById('personelPhone').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('personelAddBtn').click(); });
 
+let personelAllItems = [];
 async function loadManualPersonnel() {
   const el = document.getElementById('personelManualList');
   try {
     const res = await fetch('/api/personnel/manual?password=' + encodeURIComponent(getAdminPassword()));
     const data = await res.json();
-    document.getElementById('countPersonel').textContent = (data.personnel || []).length + ' kişi';
-    if (!data.personnel || data.personnel.length === 0) { el.className = 'list-empty'; el.textContent = 'Henüz elle eklenmiş kimse yok.'; return; }
-    el.className = '';
-    el.innerHTML = data.personnel.map(p =>
-      '<div class="list-item"><div class="li-main">' +
-        '<div class="li-title">' + esc(p.name) + '</div>' +
-        '<div class="li-body">' + [p.phone, p.email].filter(Boolean).map(esc).join(' · ') + '</div>' +
-      '</div><button class="btn-danger" data-del-personnel="' + p.deviceId + '">Sil</button></div>'
-    ).join('');
-    el.querySelectorAll('[data-del-personnel]').forEach(b => b.addEventListener('click', () => deleteManualPersonnel(b.dataset.delPersonnel)));
+    personelAllItems = data.personnel || [];
+    document.getElementById('countPersonel').textContent = personelAllItems.length + ' kişi';
+    renderPersonelPage();
   } catch { el.className = 'list-empty'; el.textContent = 'Yüklenemedi.'; }
+}
+function renderPersonelPage() {
+  const el = document.getElementById('personelManualList');
+  if (personelAllItems.length === 0) { el.className = 'list-empty'; el.textContent = 'Henüz elle eklenmiş kimse yok.'; pgControls('personel', 'personelPagination', 0, renderPersonelPage); return; }
+  el.className = '';
+  const pageItems = pgSlice('personel', personelAllItems);
+  el.innerHTML = pageItems.map(p =>
+    '<div class="list-item"><div class="li-main">' +
+      '<div class="li-title">' + esc(p.name) + '</div>' +
+      '<div class="li-body">' + [p.phone, p.email].filter(Boolean).map(esc).join(' · ') + '</div>' +
+    '</div><button class="btn-danger" data-del-personnel="' + p.deviceId + '">Sil</button></div>'
+  ).join('');
+  el.querySelectorAll('[data-del-personnel]').forEach(b => b.addEventListener('click', () => deleteManualPersonnel(b.dataset.delPersonnel)));
+  pgControls('personel', 'personelPagination', personelAllItems.length, renderPersonelPage);
 }
 
 async function deleteManualPersonnel(deviceId) {
