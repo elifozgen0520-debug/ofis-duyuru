@@ -145,10 +145,13 @@
   .cal-day:hover { background: #f5f3ee; }
   .cal-day.empty { border: none; cursor: default; }
   .cal-day.today { border-color: var(--amber); border-width: 2px; }
+  .cal-day.weekend { background: #EFE7D6; }
   .cal-day.holiday { background: #FDECEA; border-color: #E8A3A0; }
+  .cal-day.note-holiday { border: 2px solid #B03030; }
   .cal-day .cd-num { font-weight: 700; }
   .cal-day .cd-dot { position: absolute; bottom: 4px; right: 4px; width: 7px; height: 7px; border-radius: 50%; }
-  .cal-day .cd-holiday-dot { position: absolute; top: 4px; right: 4px; width: 6px; height: 6px; border-radius: 50%; background: #D93838; }
+  .cal-day .cd-holiday-dot { position: absolute; top: 4px; right: 4px; width: 6px; height: 6px; border-radius: 50%; background: #D93838; animation: cd-blink 2.2s ease-in-out infinite; }
+  @keyframes cd-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
   .cal-cat-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: #fff; margin-right: 6px; }
   .cal-year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
   .cal-mini-month { background: #f7f5f0; border-radius: 6px; padding: 10px; cursor: pointer; }
@@ -871,20 +874,44 @@ function renderMenuDayCards(days) {
     const dowName = TR_DOW_NAMES[(dow + 6) % 7];
     const key = menuDateKey(menuYear, menuMonth, d);
     const existing = menuAllItems.find(i => i.date === key);
+    const holidayName = getHolidayName(key);
     const dishes = existing ? existing.dishes : ['', '', '', ''];
-    return '<div class="card" style="margin-bottom:14px; padding:16px;">' +
-      '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">' +
-        '<span style="font-family:\'Fraunces\',serif; font-weight:700; font-size:15px;">' + dowName + ' — ' + d + ' ' + TR_MONTHS[menuMonth] + '</span>' +
-        (existing ? '<button class="btn-danger" style="font-size:11px;" data-del-menu="' + existing.id + '">Sil</button>' : '') +
+
+    if (holidayName) {
+      return '<div class="card" style="margin-bottom:8px; padding:14px 16px; background:#FDECEA;">' +
+        '<span style="font-family:\'Fraunces\',serif; font-weight:700; font-size:14px;">' + dowName + ' — ' + d + ' ' + TR_MONTHS[menuMonth] + '</span>' +
+        '<div style="font-size:12px; color:#B03030; margin-top:4px;">🎉 ' + esc(holidayName) + ' — resmi tatil, menü girilemez</div>' +
+      '</div>';
+    }
+
+    const summary = existing ? existing.dishes.filter(Boolean).join(' · ') : 'Menü girilmedi';
+    return '<div class="card" style="margin-bottom:8px; padding:0; overflow:hidden;">' +
+      '<div data-toggle-day="' + key + '" style="display:flex; justify-content:space-between; align-items:center; padding:14px 16px; cursor:pointer;">' +
+        '<span><span style="font-family:\'Fraunces\',serif; font-weight:700; font-size:14px;">' + dowName + ' — ' + d + ' ' + TR_MONTHS[menuMonth] + '</span>' +
+        '<div style="font-size:11.5px; color:#888; margin-top:2px;">' + esc(summary) + '</div></span>' +
+        '<span style="font-size:18px; color:var(--amber);" id="chev-' + key + '">▾</span>' +
       '</div>' +
-      DISH_LABELS.map((label, i) =>
-        '<label style="font-size:11px;">' + DISH_ICONS[i] + ' ' + label + '</label>' +
-        '<input type="text" id="menu-' + key + '-' + i + '" value="' + esc(dishes[i] || '') + '" placeholder="' + label + '..." style="margin-bottom:8px;">'
-      ).join('') +
-      '<button class="btn-primary" data-save-menu="' + key + '" style="width:100%; margin-top:4px;">Kaydet</button>' +
-      '<div class="feedback-msg" id="menufb-' + key + '"></div>' +
+      '<div id="daybody-' + key + '" style="display:none; padding:0 16px 16px;">' +
+        DISH_LABELS.map((label, i) =>
+          '<label style="font-size:11px;">' + DISH_ICONS[i] + ' ' + label + '</label>' +
+          '<input type="text" id="menu-' + key + '-' + i + '" value="' + esc(dishes[i] || '') + '" placeholder="' + label + '..." style="margin-bottom:8px;">'
+        ).join('') +
+        '<div style="display:flex; gap:8px;">' +
+          '<button class="btn-primary" data-save-menu="' + key + '" style="flex:1;">Kaydet</button>' +
+          (existing ? '<button class="btn-danger" data-del-menu="' + existing.id + '">Sil</button>' : '') +
+        '</div>' +
+        '<div class="feedback-msg" id="menufb-' + key + '"></div>' +
+      '</div>' +
     '</div>';
   }).join('');
+  el.querySelectorAll('[data-toggle-day]').forEach(h => h.addEventListener('click', () => {
+    const key = h.dataset.toggleDay;
+    const body = document.getElementById('daybody-' + key);
+    const chev = document.getElementById('chev-' + key);
+    const isOpen = body.style.display === 'block';
+    body.style.display = isOpen ? 'none' : 'block';
+    chev.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+  }));
   el.querySelectorAll('[data-save-menu]').forEach(b => b.addEventListener('click', () => saveMenuDay(b.dataset.saveMenu)));
   el.querySelectorAll('[data-del-menu]').forEach(b => b.addEventListener('click', () => deleteMenuItem(b.dataset.delMenu)));
 }
@@ -1493,8 +1520,16 @@ function renderCalMonth() {
     const notes = calNotesForDate(key);
     const isToday = key === todayKey;
     const holidayName = getHolidayName(key);
+    const dow = new Date(y, m, d).getDay();
+    const isWeekend = dow === 0 || dow === 6;
+    const hasNotesAndHoliday = notes.length > 0 && holidayName;
     const dotColor = notes.length ? (CAL_CATEGORIES[notes[0].category]?.color || CAL_CATEGORIES.genel.color) : null;
-    html += '<div class="cal-day' + (isToday ? ' today' : '') + (holidayName ? ' holiday' : '') + '" data-day-key="' + key + '" title="' + (holidayName ? esc(holidayName) : '') + '">' +
+    const classes = ['cal-day'];
+    if (isToday) classes.push('today');
+    if (holidayName) classes.push('holiday');
+    if (isWeekend) classes.push('weekend');
+    if (hasNotesAndHoliday) classes.push('note-holiday');
+    html += '<div class="' + classes.join(' ') + '" data-day-key="' + key + '" title="' + (holidayName ? esc(holidayName) : '') + '">' +
       '<div class="cd-num">' + d + '</div>' +
       (holidayName ? '<div class="cd-holiday-dot"></div>' : '') +
       (dotColor ? '<div class="cd-dot" style="background:' + dotColor + ';"></div>' : '') +
