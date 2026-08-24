@@ -5,24 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Müdürlük Duyuru Sistemi</title>
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0077C8">
+<meta name="theme-color" content="#1F2430">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
 
   :root {
-    --primary-blue: #0077C8;
-    --cyan-accent: #00A3E0;
-    --amber: #F36F21;
-    --amber-gradient: linear-gradient(135deg, #FF7A29, #F36F21);
-    --sage: #10B981;
-    --clay: #EF4444;
-    --gold: #F59E0B;
-    --ink: #0F172A;
-    --paper: #FFFFFF;
-    --paper-shadow: rgba(0, 102, 178, 0.08);
-    --line: #E2E8F0;
-    --muted: #64748B;
-    --bg-main: #F4F6F9;
+    --ink: #1F2430;
+    --paper: #F7F5F0;
+    --paper-shadow: rgba(0,0,0,0.18);
+    --amber: #E0972C;
+    --sage: #6B8F71;
+    --clay: #B5674A;
+    --gold: #C9A24B;
+    --line: rgba(255,255,255,0.12);
+    --muted: #9AA0AE;
   }
 
   body[data-theme="lacivert"] { --amber: #3E8FD0; --gold: #5AA8E0; --ink: #0F1F33; }
@@ -32,21 +28,22 @@
   * { box-sizing: border-box; }
 
   body {
-    margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-main);
-    background-image: linear-gradient(180deg, var(--primary-blue) 0%, var(--cyan-accent) 210px, var(--bg-main) 210px, var(--bg-main) 100%);
-    background-repeat: no-repeat;
-    color: var(--ink); min-height: 100vh; padding: 32px 16px 90px;
+    margin: 0; font-family: 'Inter', sans-serif; background: var(--ink);
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(224,151,44,0.06), transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(107,143,113,0.06), transparent 40%);
+    color: var(--paper); min-height: 100vh; padding: 32px 16px 90px;
   }
 
   .wrap { max-width: 640px; margin: 0 auto; }
 
   header {
     display: flex; align-items: center; justify-content: space-between;
-    gap: 12px; margin-bottom: 22px; border-bottom: 1px solid rgba(255,255,255,0.2);
-    padding-bottom: 18px; flex-wrap: wrap; color: #FFFFFF;
+    gap: 12px; margin-bottom: 22px; border-bottom: 1px solid var(--line);
+    padding-bottom: 18px; flex-wrap: wrap;
   }
-  h1 { font-family: 'Fraunces', serif; font-weight: 700; font-size: clamp(20px, 6vw, 26px); margin: 0; color: #FFFFFF; }
-  .pin-count { font-size: 12px; color: rgba(255,255,255,0.85); }
+  h1 { font-family: 'Fraunces', serif; font-weight: 700; font-size: clamp(20px, 6vw, 26px); margin: 0; }
+  .pin-count { font-size: 12px; color: var(--muted); }
 
   /* SALLANAN LOGO VE ZİL ANİMASYONU */
   .sway-logo {
@@ -61,47 +58,46 @@
   }
 
   .status-card {
-    background: var(--paper); color: var(--ink); border-radius: 12px; padding: 16px 18px;
-    margin-bottom: 20px; box-shadow: 0 8px 24px var(--paper-shadow); position: relative; border: 1px solid var(--line);
+    background: var(--paper); color: var(--ink); border-radius: 4px; padding: 16px 18px;
+    margin-bottom: 20px; box-shadow: 0 8px 24px var(--paper-shadow); position: relative;
   }
   .status-card::before {
     content: ''; position: absolute; top: -6px; left: 24px; width: 12px; height: 12px;
-    border-radius: 50%; background: var(--amber);
+    border-radius: 50%; background: var(--clay);
   }
 
   .bell-status {
     display: inline-flex; align-items: center; gap: 6px; background: var(--paper);
     color: var(--sage); font-size: 12px; font-weight: 600; padding: 6px 12px;
-    border-radius: 20px; margin-bottom: 20px; border: 1px solid var(--line);
+    border-radius: 20px; margin-bottom: 20px;
   }
 
   button {
     font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px;
-    border: none; border-radius: 8px; padding: 10px 16px; cursor: pointer;
+    border: none; border-radius: 4px; padding: 10px 16px; cursor: pointer;
     transition: transform 0.1s ease, opacity 0.15s ease;
   }
   button:active { transform: scale(0.97); }
-  .btn-primary { background: var(--amber-gradient); color: #fff; box-shadow: 0 4px 14px rgba(243, 111, 33, 0.3); }
-  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary { background: var(--ink); color: var(--paper); }
+  .btn-primary:hover { opacity: 0.85; }
   .btn-success { background: var(--sage); color: #fff; }
   .btn-warning { background: var(--amber); color: #fff; }
   .btn-danger { background: var(--clay); color: #fff; padding: 5px 9px; font-size: 11px; }
 
-  .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--line); }
   .tab-btn {
-    background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.85); border-radius: 8px 8px 0 0;
+    background: transparent; color: var(--muted); border-radius: 0;
     padding: 10px 12px; font-size: 13px; font-weight: 600;
-    border-bottom: 2px solid transparent; flex: 1; text-align: center;
+    border-bottom: 2px solid transparent; flex: 1;
   }
-  .tab-btn.active { color: #FFFFFF; border-bottom-color: #FFFFFF; background: rgba(255,255,255,0.25); }
-  .card .tab-btn { background: #f1f5f9; color: var(--muted); border-radius: 4px; }
-  .card .tab-btn.active { color: var(--ink); background: #fff; border-bottom-color: var(--amber); }
+  .tab-btn.active { color: var(--paper); border-bottom-color: var(--amber); }
+  .card .tab-btn.active { color: var(--ink); border-bottom-color: var(--clay, var(--amber)); }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
 
   .card {
-    background: var(--paper); color: var(--ink); border-radius: 12px; padding: 20px;
-    box-shadow: 0 12px 28px var(--paper-shadow); margin-bottom: 18px; border: 1px solid var(--line);
+    background: var(--paper); color: var(--ink); border-radius: 4px; padding: 20px;
+    box-shadow: 0 12px 28px var(--paper-shadow); margin-bottom: 18px;
   }
   .card h2 { font-family: 'Fraunces', serif; font-size: 17px; margin: 0; }
   .card .sub { font-size: 12.5px; color: #6b6b6b; margin-bottom: 16px; }
@@ -124,7 +120,8 @@
     to { opacity: 0; transform: translateY(8px) scale(0.97); }
   }
 
-  /* SOHBET MODALI */
+  /* SOHBET — telefon ekranına göre otomatik boy, input her zaman altta sabit */
+  /* Artık sayfa akışında değil, sağ altta sabit yüzen (floating) bir pencere */
   #chatModal {
     display: flex;
     flex-direction: column;
@@ -136,16 +133,16 @@
     width: 380px;
     max-width: calc(100vw - 24px);
     max-height: 78vh;
-    border-radius: 16px;
-    box-shadow: 0 24px 60px rgba(0,0,0,0.35);
-    border: 1px solid var(--line);
+    border-radius: 22px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 4px 14px rgba(0,0,0,0.25);
+    border: 1px solid rgba(0,0,0,0.06);
     z-index: 1600;
     margin-bottom: 0;
   }
   @media (max-width: 560px) {
     #chatModal {
       right: 8px; left: 8px; bottom: 8px; width: auto; max-width: none;
-      border-radius: 16px;
+      border-radius: 22px 22px 18px 18px;
       max-height: 82vh;
     }
   }
@@ -164,15 +161,15 @@
   .chat-box {
     flex: 1;
     min-height: 120px;
-    overflow-y: auto; background: #f8fafc; border-radius: 8px;
-    padding: 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; border: 1px solid var(--line);
+    overflow-y: auto; background: #f5f3ee; border-radius: 8px;
+    padding: 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;
   }
   .chat-bubble {
     max-width: 78%; padding: 8px 12px; border-radius: 14px; font-size: 13px; line-height: 1.4;
     word-wrap: break-word; position: relative;
   }
-  .chat-bubble.mine { align-self: flex-end; background: var(--primary-blue); color: #fff; border-bottom-right-radius: 3px; }
-  .chat-bubble.theirs { align-self: flex-start; background: #fff; color: var(--ink); border: 1px solid #e2e8f0; border-bottom-left-radius: 3px; }
+  .chat-bubble.mine { align-self: flex-end; background: var(--bordo, #7A2331); color: #fff; border-bottom-right-radius: 3px; }
+  .chat-bubble.theirs { align-self: flex-start; background: #fff; color: var(--ink); border: 1px solid #e2ddd2; border-bottom-left-radius: 3px; }
   .chat-bubble .cb-name { font-size: 10.5px; font-weight: 700; opacity: 0.75; margin-bottom: 2px; }
   .chat-bubble .cb-time { font-size: 9.5px; opacity: 0.55; margin-top: 3px; text-align: right; }
   .chat-bubble .cb-tick { opacity: 0.85; }
@@ -199,14 +196,14 @@
     display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-radius: 6px;
     cursor: pointer; transition: background 0.15s ease;
   }
-  .contact-row:hover { background: #f8fafc; }
+  .contact-row:hover { background: #f5f3ee; }
   .contact-avatar {
-    width: 36px; height: 36px; border-radius: 50%; background: #e2e8f0; flex-shrink: 0;
+    width: 36px; height: 36px; border-radius: 50%; background: #ddd; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700;
-    color: var(--primary-blue); object-fit: cover; position: relative;
+    color: #777; object-fit: cover; position: relative;
   }
   .contact-online-dot {
-    width: 9px; height: 9px; border-radius: 50%; background: var(--sage); border: 2px solid #fff;
+    width: 9px; height: 9px; border-radius: 50%; background: #3E7A4F; border: 2px solid #fff;
     position: absolute; bottom: -1px; right: -1px;
   }
   .contact-name { font-size: 13.5px; font-weight: 600; }
@@ -214,23 +211,22 @@
 
   label {
     display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.05em;
-    text-transform: uppercase; color: var(--muted); margin-bottom: 6px; margin-top: 14px;
+    text-transform: uppercase; color: #777; margin-bottom: 6px; margin-top: 14px;
   }
 
-  input[type="text"], input[type="tel"], input[type="password"], input[type="email"], textarea, select {
+  input[type="text"], input[type="tel"], input[type="password"], textarea, select {
     width: 100%; font-family: 'Inter', sans-serif; font-size: 14px;
-    padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; background: #fff; color: var(--ink);
+    padding: 9px 11px; border: 1.5px solid #ddd; border-radius: 3px; background: #fff; color: var(--ink);
   }
-  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--amber); box-shadow: 0 0 0 3px rgba(243, 111, 33, 0.15); }
   textarea { resize: vertical; min-height: 70px; }
 
   .cat-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-  .cat-btn { background: #fff; border: 1.5px solid #cbd5e1; color: #555; font-size: 12px; padding: 6px 12px; border-radius: 20px; }
-  .cat-btn.active[data-cat="genel"] { background: var(--primary-blue); color: #fff; border-color: var(--primary-blue); }
-  .cat-btn.active[data-cat="acil"] { background: var(--amber); color: #fff; border-color: var(--amber); }
-  .cat-btn.active[data-cat="yemek"] { background: var(--sage); color: #fff; border-color: var(--sage); }
-  .cat-btn.active[data-cat="vefat"] { background: var(--clay); color: #fff; border-color: var(--clay); }
-  .cat-btn.active[data-cat="dogum"] { background: var(--gold); color: #fff; border-color: var(--gold); }
+  .cat-btn { background: #fff; border: 1.5px solid #ddd; color: #555; font-size: 12px; padding: 6px 12px; border-radius: 20px; }
+  .cat-btn.active[data-cat="genel"] { background: var(--ink); color: #fff; }
+  .cat-btn.active[data-cat="acil"] { background: var(--amber); color: #fff; }
+  .cat-btn.active[data-cat="yemek"] { background: var(--sage); color: #fff; }
+  .cat-btn.active[data-cat="vefat"] { background: var(--clay); color: #fff; }
+  .cat-btn.active[data-cat="dogum"] { background: var(--gold); color: #fff; }
 
   .send-row { margin-top: 18px; display: flex; align-items: center; gap: 12px; }
   .feedback-msg { font-size: 13px; margin-top: 10px; min-height: 18px; }
@@ -241,7 +237,7 @@
   #toastContainer { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 3000; display: flex; flex-direction: column; gap: 8px; align-items: center; }
   .toast {
     background: var(--ink); color: var(--paper); font-size: 13.5px; font-weight: 600;
-    padding: 12px 20px; border-radius: 30px; box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    padding: 12px 20px; border-radius: 30px; box-shadow: 0 8px 24px rgba(0,0,0,0.35);
     display: flex; align-items: center; gap: 8px;
     animation: toast-in 0.3s cubic-bezier(0.22,1,0.36,1), toast-out 0.3s ease 2.4s forwards;
   }
@@ -252,19 +248,18 @@
 
   /* OKUNDU İŞARETLEME */
   .li-read-btn {
-    display: inline-flex; align-items: center; gap: 4px; background: none; border: 1.5px solid #cbd5e1;
-    color: var(--muted); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 4px; background: none; border: 1.5px solid #ccc;
+    color: #888; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; cursor: pointer;
     transition: all 0.15s ease; flex-shrink: 0;
   }
   .li-read-btn:hover { border-color: var(--sage); color: var(--sage); }
   .li-read-btn.done { background: var(--sage); border-color: var(--sage); color: #fff; cursor: default; }
 
-  .list-section h3 { font-family: 'Fraunces', serif; font-size: 16px; margin: 0 0 12px; color: #FFFFFF; }
+  .list-section h3 { font-family: 'Fraunces', serif; font-size: 16px; margin: 0 0 12px; color: var(--paper); }
   .list-item {
-    background: var(--paper); color: var(--ink); border-radius: 12px;
-    padding: 14px 16px; margin-bottom: 10px; box-shadow: 0 4px 16px rgba(0, 102, 178, 0.06);
-    border-left: 5px solid var(--primary-blue); display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
-    border-top: 1px solid var(--line); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    background: var(--paper); color: var(--ink); border-radius: 4px;
+    padding: 13px 15px; margin-bottom: 9px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-left: 4px solid var(--ink); display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
   }
   .list-item.acil { border-left-color: var(--amber); }
   .list-item.yemek { border-left-color: var(--sage); }
@@ -273,47 +268,63 @@
   .list-item .li-main { flex: 1; min-width: 0; }
   .list-item .li-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 3px; }
   .li-toggle {
-    background: rgba(243, 111, 33, 0.12); border: none; color: var(--amber); font-size: 22px; line-height: 1; cursor: pointer;
-    padding: 4px 10px; border-radius: 8px; transition: transform 0.2s ease, background 0.15s ease; flex-shrink: 0;
-    font-weight: 900;
+    background: rgba(224,151,44,0.12); border: none; color: var(--amber); font-size: 26px; line-height: 1; cursor: pointer;
+    padding: 4px 10px; border-radius: 6px; transition: transform 0.2s ease, background 0.15s ease; flex-shrink: 0;
+    animation: chevron-bounce 1.6s ease-in-out infinite; font-weight: 900;
   }
-  .li-toggle:hover { background: rgba(243, 111, 33, 0.22); }
-  .li-toggle.open { transform: rotate(180deg); }
+  .li-toggle:hover { background: rgba(224,151,44,0.22); }
+  .li-toggle.open { transform: rotate(180deg); animation: none; }
+  @keyframes chevron-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
   .attach-wrap { overflow: hidden; max-height: 0; transition: max-height 0.25s ease; }
   .attach-wrap.open { max-height: 2000px; }
 
   /* SAYFALAMA */
   .pagination-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 14px 0; flex-wrap: wrap; }
-  .page-size-select { width: auto; padding: 6px 10px; font-size: 12.5px; border-radius: 8px; }
+  .page-size-select { width: auto; padding: 6px 10px; font-size: 12.5px; }
   .page-nav { display: flex; align-items: center; gap: 8px; }
   .page-nav button {
-    background: var(--paper); color: var(--ink); border: 1px solid var(--line); padding: 6px 12px;
+    background: var(--paper); color: var(--ink); border: none; padding: 6px 12px;
     border-radius: 20px; font-size: 12.5px; font-weight: 600; cursor: pointer;
   }
   .page-nav button:disabled { opacity: 0.35; cursor: default; }
-  .page-nav .page-info { font-size: 12.5px; color: #FFFFFF; }
-  .list-item .li-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--muted); }
-  .list-item .li-time { font-size: 10.5px; color: var(--muted); }
+  .page-nav .page-info { font-size: 12.5px; color: var(--muted); }
+  .list-item .li-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #888; }
+  .list-item .li-time { font-size: 10.5px; color: #999; }
   .list-item .li-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 14.5px; margin: 0 0 2px; }
-  .list-item .li-body { font-size: 12.5px; color: #475569; line-height: 1.45; margin: 0; }
-  .list-item .li-phone { font-family: 'Fraunces', serif; font-weight: 700; font-size: 16px; color: var(--primary-blue); text-decoration: none; }
-  .list-empty { color: #FFFFFF; font-size: 13px; text-align: center; padding: 18px; }
+  .list-item .li-body { font-size: 12.5px; color: #555; line-height: 1.45; margin: 0; }
+  .list-item .li-phone { font-family: 'Fraunces', serif; font-weight: 700; font-size: 16px; color: var(--clay); text-decoration: none; }
+  .list-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 18px; }
 
-  /* MANŞET */
+  /* MANŞET (öne çıkan duyuru carousel'i) */
   .manset-wrap { margin-bottom: 18px; }
   .manset-nav { display: flex; align-items: center; gap: 10px; }
   .manset-nav-btn {
-    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #FFFFFF;
+    background: rgba(255,255,255,0.08); border: 1px solid var(--line); color: var(--paper);
     width: 34px; height: 34px; min-width: 34px; border-radius: 50%; font-size: 17px; cursor: pointer;
     flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: background 0.15s ease;
   }
-  .manset-nav-btn:hover { background: rgba(255,255,255,0.25); }
+  .manset-nav-btn:hover { background: rgba(255,255,255,0.16); }
   .manset-card {
     flex: 1; position: relative; border-radius: 14px; overflow: hidden; padding: 26px 24px;
     min-height: 150px; display: flex; flex-direction: column; justify-content: center;
-    color: #fff; cursor: pointer; box-shadow: 0 14px 32px rgba(0,0,0,0.15);
-    background: linear-gradient(135deg, var(--manset-c1, var(--primary-blue)), var(--manset-c2, #005AA7));
+    color: #fff; cursor: pointer; box-shadow: 0 14px 32px rgba(0,0,0,0.35);
+    background: linear-gradient(135deg, var(--manset-c1, var(--ink)), var(--manset-c2, #000));
     transition: transform 0.15s ease;
+    animation: manset-fade-in 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .manset-card::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.16) 45%, transparent 60%);
+    background-size: 220% 100%; background-position: 130% 0;
+    animation: manset-sheen 2.6s ease-out 0.15s 1;
+  }
+  @keyframes manset-fade-in {
+    from { opacity: 0; transform: translateY(10px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes manset-sheen {
+    from { background-position: 130% 0; }
+    to { background-position: -30% 0; }
   }
   .manset-card:hover { transform: translateY(-2px); }
   .manset-tag {
@@ -322,11 +333,11 @@
     margin-bottom: 12px; width: fit-content;
   }
   .manset-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 20px; margin: 0 0 8px; line-height: 1.25; }
-  .manset-date { font-size: 12px; opacity: 0.85; }
+  .manset-date { font-size: 12px; opacity: 0.82; }
   .manset-dots { display: flex; gap: 6px; justify-content: center; margin-top: 12px; }
-  .manset-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.4); cursor: pointer; border: none; padding: 0; }
-  .manset-dot.active { background: #FFFFFF; transform: scale(1.35); }
-  .li-detay-link { font-size: 11.5px; color: var(--primary-blue); font-weight: 600; cursor: pointer; margin-top: 6px; display: inline-block; }
+  .manset-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.28); cursor: pointer; border: none; padding: 0; transition: background 0.2s ease, transform 0.2s ease; }
+  .manset-dot.active { background: var(--paper); transform: scale(1.35); }
+  .li-detay-link { font-size: 11.5px; color: var(--clay); font-weight: 600; cursor: pointer; margin-top: 6px; display: inline-block; }
 
   /* DUYURU DETAY POPUP */
   #duyuruDetayOverlay .toast-box { max-width: 440px; text-align: left; position: relative; }
@@ -343,101 +354,112 @@
   .btn-share:hover { opacity: 0.85; }
 
   #splash {
-    position: fixed; inset: 0; background: var(--primary-blue); display: flex;
+    position: fixed; inset: 0; background: var(--ink); display: flex;
     align-items: center; justify-content: center; z-index: 999; transition: opacity 0.6s ease;
   }
-  #splash img { width: 110px; height: 110px; border-radius: 50%; }
+  #splash img { width: 110px; height: 110px; animation: splash-blink 1.4s ease-in-out infinite; border-radius: 50%; }
+  @keyframes splash-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
   #splash.hide { opacity: 0; pointer-events: none; }
 
   #notifBanner {
     display: none; max-width: 640px; margin: 0 auto 20px; padding: 20px 22px;
-    border-radius: 12px; font-family: 'Inter', sans-serif; color: #fff;
+    border-radius: 4px; font-family: 'Inter', sans-serif; color: #fff;
     box-shadow: 0 8px 20px rgba(0,0,0,0.25);
   }
   #notifBanner.show { display: block; }
   #notifBanner .tag { display: block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; margin-bottom: 8px; }
   #notifBanner .btitle { font-family: 'Fraunces', serif; font-size: 24px; line-height: 1.2; font-weight: 700; margin: 0 0 8px; }
   #notifBanner .bbody { font-size: 14px; line-height: 1.5; margin: 0; opacity: 0.95; }
-  #notifBanner.acil { background: linear-gradient(135deg, #FF7A29, #F36F21); }
+  #notifBanner.acil { background: linear-gradient(135deg, #E0972C, #B5674A); }
 
   .site-footer {
-    position: fixed; left: 0; right: 0; bottom: 0; background: #FFFFFF;
-    border-top: 1px solid #E2E8F0; text-align: center; padding: 10px 12px;
-    font-size: 11.5px; z-index: 50; box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--ink);
+    border-top: 1px solid var(--line); text-align: center; padding: 10px 12px;
+    font-size: 11.5px; z-index: 50;
   }
-  .site-footer a { color: var(--muted); text-decoration: none; font-weight: 600; }
-  .site-footer a:hover { color: var(--primary-blue); }
+  .site-footer a { color: var(--muted); text-decoration: none; }
+  .site-footer a:hover { color: var(--paper); }
   .site-footer .fdot { color: var(--line); margin: 0 6px; }
 
   /* ONBOARDING WIZARD STYLES */
   .wizard-overlay {
-    position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8); z-index: 1000;
-    display: flex; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(4px);
+    position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 1000;
+    display: flex; align-items: center; justify-content: center; padding: 16px;
   }
   .wizard-card {
     background: var(--paper); color: var(--ink); max-width: 500px; width: 100%;
-    border-radius: 16px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 1px solid var(--line);
+    border-radius: 6px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border: 2px solid var(--amber);
   }
   .wizard-step { display: none; }
   .wizard-step.active { display: block; }
   .step-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
-  .dot { width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #ccc; }
   .dot.active { background: var(--amber); width: 24px; border-radius: 10px; }
-  .guide-box { background: #F8FAFC; border: 1px solid var(--line); padding: 12px; border-radius: 8px; font-size: 12.5px; color: #475569; margin: 12px 0; text-align: left; line-height: 1.5; }
+  .guide-box { background: #FAF5E9; border: 1px solid #E6D7B8; padding: 12px; border-radius: 4px; font-size: 12.5px; color: #555; margin: 12px 0; text-align: left; line-height: 1.5; }
 
   /* TAKVİM */
   .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-  .cal-nav button { background: #f1f5f9; color: var(--ink); padding: 8px 14px; font-size: 13px; font-weight: 600; border-radius: 8px; }
-  .cal-nav .cal-title { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 700; color: var(--ink); }
+  .cal-nav button { background: var(--paper); color: var(--ink); padding: 8px 14px; font-size: 13px; font-weight: 600; }
+  .cal-nav .cal-title { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 700; color: var(--paper); }
   .cal-view-toggle { display: flex; gap: 6px; margin-bottom: 16px; }
-  .cal-view-toggle button { background: #f1f5f9; color: var(--muted); padding: 7px 16px; font-size: 12.5px; border-radius: 20px; font-weight: 600; }
-  .cal-view-toggle button.active { background: var(--primary-blue); color: #fff; }
+  .cal-view-toggle button { background: rgba(255,255,255,0.12); color: var(--paper); padding: 7px 16px; font-size: 12.5px; border-radius: 20px; font-weight: 600; }
+  .cal-view-toggle button.active { background: var(--amber); color: var(--ink); }
   .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-  .cal-dow { text-align: center; font-size: 11px; font-weight: 700; color: var(--muted); padding: 4px 0; letter-spacing: 0.05em; text-transform: uppercase; }
+  .cal-dow { text-align: center; font-size: 11px; font-weight: 700; color: var(--paper); opacity: 0.6; padding: 4px 0; letter-spacing: 0.05em; text-transform: uppercase; }
   .cal-day {
     aspect-ratio: 1; border-radius: 8px; padding: 6px; cursor: pointer; position: relative;
-    background: #fff; color: var(--ink); box-shadow: 0 2px 6px rgba(0,0,0,0.06); border: 1px solid var(--line);
+    background: var(--paper); color: var(--ink); box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
     display: flex; align-items: flex-start; justify-content: flex-start;
   }
-  .cal-day:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,0.1); }
-  .cal-day.empty { background: transparent; box-shadow: none; border: none; cursor: default; }
+  .cal-day:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,0.25); }
+  .cal-day.empty { background: transparent; box-shadow: none; cursor: default; }
   .cal-day.empty:hover { transform: none; }
-  .cal-day.today { outline: 2px solid var(--amber); outline-offset: 1px; }
-  .cal-day.weekend { background: #f8fafc; }
+  .cal-day.today { outline: 2.5px solid var(--amber); outline-offset: 1px; }
+  .cal-day.weekend { background: #EFE7D6; }
   .cal-day.holiday { background: #FDECEA; }
+  .cal-day.note-holiday { border: 2px solid #B03030; }
   .cal-day .cd-num { font-family: 'Fraunces', serif; font-weight: 700; font-size: 15px; }
   .cal-day .cd-dot { position: absolute; bottom: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 0 2px var(--paper); }
-  .cal-day .cd-holiday-dot { position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: #D93838; }
+  .cal-day .cd-holiday-dot { position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: #D93838; box-shadow: 0 0 0 2px var(--paper); animation: cd-blink 2.2s ease-in-out infinite; }
+  @keyframes cd-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
   .cal-cat-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: #fff; }
   .cal-year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-  .cal-mini-month { background: #fff; border-radius: 8px; padding: 12px; cursor: pointer; color: var(--ink); box-shadow: 0 2px 6px rgba(0,0,0,0.06); border: 1px solid var(--line); }
+  .cal-mini-month { background: var(--paper); border-radius: 8px; padding: 12px; cursor: pointer; color: var(--ink); box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: transform 0.15s ease; }
+  .cal-mini-month:hover { transform: translateY(-2px); }
+  .cal-mini-month .cmm-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+  .cal-mini-month .cmm-count { font-size: 11px; color: var(--clay); font-weight: 600; }
   .cal-search-box { display: flex; gap: 8px; margin-bottom: 16px; }
   .cal-search-box input { flex: 1; }
-  .toast-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.7); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
+  .toast-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
   .toast-overlay.show { display: flex; }
-  .toast-box { background: var(--paper); color: var(--ink); border-radius: 16px; padding: 26px 24px; max-width: 360px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 1px solid var(--line); }
+  .toast-box { background: var(--paper); color: var(--ink); border-radius: 8px; padding: 26px 24px; max-width: 360px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
   .toast-box .ttitle { font-family: 'Fraunces', serif; font-weight: 700; font-size: 17px; margin-bottom: 8px; }
 
+  /* İŞLER içindeki alt sekme (İşler / Takvim) */
   .isler-subtabs { display: flex; gap: 6px; margin-bottom: 18px; }
-  .isler-subtabs button { background: rgba(255,255,255,0.15); color: #FFFFFF; padding: 8px 18px; font-size: 13px; font-weight: 600; border-radius: 20px; }
-  .isler-subtabs button.active { background: #FFFFFF; color: var(--primary-blue); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .isler-subtabs button { background: rgba(255,255,255,0.08); color: var(--paper); padding: 8px 18px; font-size: 13px; font-weight: 600; border-radius: 20px; }
+  .isler-subtabs button.active { background: var(--amber); color: var(--ink); }
 </style>
 </head>
 <body>
 <div id="toastContainer"></div>
 
-<div id="splash"><img src="/icon-192.png" alt="Amasya İl Müdürlüğü" class="sway-logo" style="border-radius:50%;"></div>
+<div id="splash"><img src="/icon-192.png" alt="Amasya İl Müdürlüğü" class="sway-logo"></div>
 <div id="notifBanner"></div>
 
-<!-- KVKK AYDINLATMA METNİ MODALI[cite: 2] -->
-<div id="kvkkModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.7); z-index:2000; align-items:center; justify-content:center; padding:16px; backdrop-filter:blur(4px);">
-  <div style="background:var(--paper); color:var(--ink); max-width:520px; width:100%; max-height:85vh; overflow-y:auto; border-radius:16px; padding:24px; border:1px solid var(--line);">
+<!-- ADIM ADIM KURULUM VE GÖRSEL MARKA AYAR SİHİRBAZI -->
+<!-- KVKK AYDINLATMA METNİ MODALI -->
+<div id="kvkkModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:2000; align-items:center; justify-content:center; padding:16px;">
+  <div style="background:var(--paper); color:var(--ink); max-width:520px; width:100%; max-height:85vh; overflow-y:auto; border-radius:8px; padding:24px;">
     <h2 style="font-family:'Fraunces',serif; font-size:18px; margin:0 0 14px;">KVKK Aydınlatma Metni</h2>
     <div style="font-size:13px; line-height:1.7; color:#333;">
       <p><b>Veri Sorumlusu:</b> Amasya Çevre, Şehircilik ve İklim Değişikliği İl Müdürlüğü.</p>
       <p><b>İşlenen Kişisel Veriler:</b> Ad-soyad, telefon numarası, e-posta adresi, kan grubu, profil fotoğrafı, cihaz kimliği, uygulama içi sohbet mesajları ve bildirim okuma zaman bilgisi.</p>
       <p><b>İşleme Amacı:</b> Bu veriler yalnızca kurum içi acil duyuru, bilgilendirme, iç iletişim (sohbet) ve acil durumlarda (kan grubu bilgisi gibi) personele hızlı ulaşım amacıyla işlenir. Herhangi bir ticari amaçla kullanılmaz, üçüncü taraflarla paylaşılmaz.</p>
+      <p><b>Hukuki Sebep:</b> 6698 sayılı Kişisel Verilerin Korunması Kanunu'nun 5. maddesi kapsamında açık rızanız ve kurumun meşru menfaati.</p>
+      <p><b>Saklama Süresi:</b> Verileriniz, uygulamayı kullandığınız süre boyunca ve kurumsal gereklilikler doğrultusunda saklanır; talebiniz halinde silinir.</p>
+      <p><b>Haklarınız:</b> KVKK'nın 11. maddesi uyarınca kişisel verilerinizin işlenip işlenmediğini öğrenme, işlenmişse bilgi talep etme, düzeltilmesini veya silinmesini isteme haklarına sahipsiniz. Bu haklarınızı kullanmak için kurum Bilgi İşlem Sorumlusu ile iletişime geçebilirsiniz.</p>
     </div>
     <button type="button" class="btn-primary" id="kvkkCloseBtn" style="width:100%; margin-top:16px;">Kapat</button>
   </div>
@@ -452,14 +474,17 @@
       <div class="dot" id="dot4"></div>
     </div>
 
+    <!-- ADIM 1: UYGULAMA İNDİR (tarayıcı) / KURULUM ÖZETİ (APK) -->
     <div class="wizard-step active" id="step1">
+
+      <!-- Tarayıcıdan (PWA) açılıyorsa: indirme rehberi -->
       <div id="step1-download">
         <div style="font-size:36px; text-align:center; margin-bottom:8px;">📱</div>
         <h2 style="text-align:center; margin:0 0 8px;">Adım 1: Uygulamayı İndir</h2>
         <p style="font-size:13px; color:#555; text-align:center;">Duyuruların cebinize anında düşmesi için uygulamayı telefonunuza ekleyin.</p>
 
         <div id="pwaInstallContainer" style="display:none; text-align:center; margin:16px 0;">
-          <button class="btn-primary" id="btnPwaInstall" style="width:100%; padding:12px; font-size:15px;">
+          <button class="btn-primary" id="btnPwaInstall" style="width:100%; padding:12px; font-size:15px; background:var(--sage);">
             📥 Uygulamayı Telefona Yükle
           </button>
         </div>
@@ -467,19 +492,35 @@
         <div class="guide-box" id="iosPwaNotice" style="display:none;">
           <b>iPhone (Safari) Kullanıcıları:</b><br>
           1. Alt menüdeki <b>Paylaş (⬆️)</b> simgesine dokunun.<br>
-          2. Açılan listeden <b>"Ana Ekrana Ekle"</b> seçeneğini seçin.
+          2. Açılan listeden <b>"Ana Ekrana Ekle"</b> seçeneğini seçin.<br>
+          3. Ardından uygulamayı ana ekrandan açın.
         </div>
       </div>
 
+      <!-- Kurulu APK içinden açılıyorsa: kurulum sırasında görülen uyarıların özeti -->
       <div id="step1-installed" style="display:none;">
         <div style="font-size:36px; text-align:center; margin-bottom:8px;">✅</div>
         <h2 style="text-align:center; margin:0 0 8px;">Kurulumu Başarıyla Tamamladınız</h2>
-        <p style="font-size:13px; color:#555; text-align:center; margin-bottom:14px;">Kurulum sırasında karşınıza çıkan uyarılar normaldir[cite: 2].</p>
+        <p style="font-size:13px; color:#555; text-align:center; margin-bottom:14px;">Kurulum sırasında karşınıza çıkan uyarıları merak ettiyseniz — hepsi normal, işte kısaca nedenleri:</p>
+
+        <div class="guide-box" style="margin-bottom:10px;">
+          <b>🛡️ "Bilinmeyen uygulama engellendi"</b><br>
+          Play Store dışından gelen tüm dosyalar için Android'in standart uyarısıdır — WhatsApp'tan gelen her belgede de aynısını görürsünüz.
+        </div>
+        <div class="guide-box" style="margin-bottom:10px;">
+          <b>🛡️ "Google Play Protect" uyarısı</b><br>
+          Google, henüz Play Store'da yayınlanmamış her uygulama için bu uyarıyı gösterir. Zararlı olduğu anlamına gelmez, sadece "tanımıyorum" demektir.
+        </div>
+        <div class="guide-box">
+          <b>🔒 Verileriniz güvende</b><br>
+          Uygulama yalnızca duyuru bildirimlerini almak için çalışır. <b>Uzman Salih ÖZGEN</b> imzasıyla onaylanmıştır.
+        </div>
       </div>
 
       <button class="btn-primary" id="btnNext1" style="width:100%; margin-top:12px;">Devam Et (2/4) ➔</button>
     </div>
 
+    <!-- ADIM 2: PROFİL BİLGİSİ -->
     <div class="wizard-step" id="step2">
       <div style="font-size:36px; text-align:center; margin-bottom:8px;">👤</div>
       <h2 style="text-align:center; margin:0 0 8px;">Adım 2: Profilinizi Yazın</h2>
@@ -491,13 +532,16 @@
 
       <label style="display:flex; align-items:flex-start; gap:8px; margin-top:16px; cursor:pointer; text-transform:none; letter-spacing:normal; font-weight:400; font-size:12.5px; color:#555;">
         <input type="checkbox" id="wizKvkkConsent" style="margin-top:2px; flex-shrink:0;">
-        <span><a href="#" id="kvkkLinkOpen" style="color:var(--primary-blue); font-weight:600; text-decoration:underline;">KVKK Aydınlatma Metni</a>'ni okudum, kabul ediyorum. *</span>
+        <span>
+          <a href="#" id="kvkkLinkOpen" style="color:var(--clay); font-weight:600; text-decoration:underline;">KVKK Aydınlatma Metni</a>'ni okudum, kişisel verilerimin (ad, telefon, e-posta, kan grubu) yalnızca kurum içi duyuru ve iletişim amacıyla işlenmesini kabul ediyorum. *
+        </span>
       </label>
 
       <button class="btn-primary" id="btnNext2" style="width:100%; margin-top:16px;">Kaydet ve Devam Et ➔</button>
       <div id="kvkkWarning" style="display:none; color:var(--clay); font-size:12px; margin-top:8px; text-align:center;">Devam etmek için KVKK metnini onaylamanız gerekiyor.</div>
     </div>
 
+    <!-- ADIM 3: BİLDİRİM VE MARKA BAZLI SES REHBERİ -->
     <div class="wizard-step" id="step3">
       <div style="font-size:36px; text-align:center; margin-bottom:8px;"><span class="sway-logo">🔔</span></div>
       <h2 style="text-align:center; margin:0 0 8px;">Adım 3: Bildirim & Ses İzni</h2>
@@ -510,19 +554,56 @@
         <button type="button" class="btn-primary" onclick="showBrand('iphone')" style="flex:1; font-size:12px; padding:6px;">iPhone</button>
       </div>
 
-      <div id="brand-samsung" class="brand-guide guide-box"><b>Samsung Ayarı:</b> Bildirimleri ve sesli uyarıları aktif edin[cite: 2].</div>
-      <div id="brand-xiaomi" class="brand-guide guide-box" style="display:none;"><b>Xiaomi Ayarı:</b> Kilit ekranı bildirimlerini ve pil kısıtlamasız modu seçin[cite: 2].</div>
-      <div id="brand-iphone" class="brand-guide guide-box" style="display:none;"><b>iPhone Ayarı:</b> Safari paylaşımdan ana ekrana ekleyin[cite: 2].</div>
+      <div id="brand-samsung" class="brand-guide guide-box">
+        <b>Samsung Ayarı:</b><br>
+        1. Bildirime basılı tutun > ⚙️ <b>Ayarlar</b>'a basın.<br>
+        2. <b>"Sesli ve Ekranda Göster"</b> seçeneğini seçin.<br>
+        3. Kilit Ekranı Bildirimleri'ni <b>"İçeriği Göster"</b> yapın.
+      </div>
 
-      <button class="btn-primary" id="btnGrantPush" style="width:100%; padding:12px; font-size:15px;">🔔 Bildirimlere Şimdi İzin Ver</button>
+      <div id="brand-xiaomi" class="brand-guide guide-box" style="display:none;">
+        <b>Xiaomi / Redmi Ayarı:</b><br>
+        1. <i>Ayarlar > Uygulamalar > Chrome</i> yoluna gidin.<br>
+        2. <b>Bildirimler</b> kısmından <i>"Kilit Ekranı"</i> ve <i>"Sesi Çal"</i> izinlerini açın.<br>
+        3. Pil Tasarrufu'nu <b>"Kısıtlama Yok"</b> yapın.
+      </div>
+
+      <div id="brand-iphone" class="brand-guide guide-box" style="display:none;">
+        <b>iPhone (iOS) Ayarı:</b><br>
+        1. Safari alt menüsünden <b>Paylaş (⬆️) > Ana Ekrana Ekle</b> deyin.<br>
+        2. Ana ekrandan uygulamayı açıp izin verin.<br>
+        3. <i>Ayarlar > Bildirimler > Müdürlük Duyuru</i> altından Sesler'i açın.
+      </div>
+
+      <button class="btn-primary" id="btnGrantPush" style="width:100%; padding:12px; font-size:15px; background:var(--amber);">
+        🔔 Bildirimlere Şimdi İzin Ver
+      </button>
+
+      <div id="permFailedNotice" style="display:none; margin-top:14px; background:#FBEFE0; border:1.5px solid var(--amber); border-radius:6px; padding:12px 14px;">
+        <div style="font-size:13px; font-weight:700; margin-bottom:4px;">⚠️ Otomatik izin penceresi açılmadı</div>
+        <div style="font-size:12.5px; color:#555; margin-bottom:10px;">Bazı telefonlarda bu normal. Sizi ayar ekranına yönlendirmeyi deniyoruz — açılmazsa Ayarlar &gt; Uygulamalar &gt; Amasya CSB Acil Duyuru &gt; Bildirimler'e girip elle açın.</div>
+        <button type="button" class="btn-primary" onclick="tryOpenAndroidNotifSettings()" style="width:100%; font-size:12.5px; padding:8px; margin-bottom:8px;">⚙️ Ayarları Açmayı Tekrar Dene</button>
+        <button type="button" class="btn-success" id="permRetryBtn" style="width:100%; font-size:12.5px; padding:8px;">✓ Ayardan Açtım, Devam Et</button>
+      </div>
     </div>
 
+    <!-- ADIM 4: SES VE KİLİT EKRANI TESTİ -->
     <div class="wizard-step" id="step4">
       <div style="font-size:36px; text-align:center; margin-bottom:8px;">🧪</div>
       <h2 style="text-align:center; margin:0 0 8px;">Adım 4: Sesi ve Bildirimi Test Et</h2>
-      <button class="btn-success" id="wizTestSound" style="width:100%; margin-bottom:10px; padding:10px;">🔊 Sesi Test Et</button>
-      <button class="btn-warning" id="wizTestLock" style="width:100%; margin-bottom:16px; padding:10px;">🧪 Test Bildirimi At</button>
-      <button class="btn-primary" id="btnFinishWizard" style="width:100%;">✅ Kurulumu Tamamla</button>
+      <p style="font-size:13px; color:#555; text-align:center;">Kurulum tamamlandı! Sesi ve kilit ekranı davranışını şimdi test edin.</p>
+
+      <button class="btn-success" id="wizTestSound" style="width:100%; margin-bottom:10px; padding:10px;">
+        🔊 Sesi Test Et (3 Defa Çalar)
+      </button>
+      
+      <button class="btn-warning" id="wizTestLock" style="width:100%; margin-bottom:16px; padding:10px;">
+        🧪 3 Sn Sonra Test Bildirimi At (Ekranı Kilitle)
+      </button>
+
+      <button class="btn-primary" id="btnFinishWizard" style="width:100%; background:var(--ink);">
+        ✅ Kurulumu Tamamla ve Giriş Yap
+      </button>
     </div>
   </div>
 </div>
@@ -534,11 +615,11 @@
       <h1>Duyurular</h1>
     </div>
     <div style="display:flex; align-items:center; gap:10px;">
-      <select id="themeSelect" style="background:rgba(255,255,255,0.2); color:#FFFFFF; border:1px solid rgba(255,255,255,0.3); border-radius:20px; font-size:11px; padding:4px 8px; font-weight:600;">
-        <option value="klasik" style="color:#000;">🎨 Varsayılan</option>
-        <option value="lacivert" style="color:#000;">🔵 Lacivert</option>
-        <option value="zeytin" style="color:#000;">🟢 Zeytin</option>
-        <option value="bordo" style="color:#000;">🔴 Bordo</option>
+      <select id="themeSelect" style="background:transparent; color:var(--muted); border:1px solid var(--line); border-radius:20px; font-size:11px; padding:4px 8px;">
+        <option value="klasik">🎨 Varsayılan</option>
+        <option value="lacivert">🔵 Lacivert</option>
+        <option value="zeytin">🟢 Zeytin</option>
+        <option value="bordo">🔴 Bordo</option>
       </select>
       <span class="pin-count" id="subCount">— abone</span>
     </div>
@@ -559,8 +640,8 @@
   </div>
 
   <div class="tab-panel active" id="panel-duyurular">
-    <div id="upcomingBox" style="display:none; background:#FFFFFF; border-radius:12px; padding:14px 16px; margin-bottom:16px; border:1px solid var(--line); box-shadow:0 4px 16px var(--paper-shadow);">
-      <div style="font-family:'Fraunces',serif; font-weight:700; font-size:14px; color:var(--ink); margin-bottom:8px;">📅 Yaklaşanlar</div>
+    <div id="upcomingBox" style="display:none; background:rgba(255,255,255,0.06); border-radius:8px; padding:14px 16px; margin-bottom:16px;">
+      <div style="font-family:'Fraunces',serif; font-weight:700; font-size:14px; color:var(--paper); margin-bottom:8px;">📅 Yaklaşanlar</div>
       <div id="upcomingList"></div>
     </div>
     <div class="manset-wrap" id="duyuruManset" style="display:none;"></div>
@@ -659,6 +740,7 @@
     </div>
   </div>
 
+  <!-- DUYURU DETAY POPUP (manşet / listeden ajax ile açılır) -->
   <div class="toast-overlay" id="duyuruDetayOverlay">
     <div class="toast-box">
       <button type="button" class="dd-close" id="duyuruDetayCloseBtn" aria-label="Kapat">✕</button>
@@ -675,13 +757,15 @@
     </div>
   </div>
 
+
+  <!-- PROFİL MODALI -->
   <div class="card" id="profileModal" style="display:none;">
     <div class="card-header"><h2>Profilim</h2><button class="card-close" data-close="profileModal" aria-label="Kapat">✕</button></div>
     <div class="sub">Adınızı girerek okundu kayıtlarında görünmesini sağlayabilirsiniz.</div>
 
     <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
       <img id="profileAvatarPreview" src="" alt="" style="width:64px; height:64px; border-radius:50%; object-fit:cover; background:#eee; display:none; border:2px solid var(--line);">
-      <div id="profileAvatarPlaceholder" style="width:64px; height:64px; border-radius:50%; background:#e2e8f0; display:flex; align-items:center; justify-content:center; font-size:26px; color:#94a3b8;">👤</div>
+      <div id="profileAvatarPlaceholder" style="width:64px; height:64px; border-radius:50%; background:#eee; display:flex; align-items:center; justify-content:center; font-size:26px; color:#aaa;">👤</div>
       <div>
         <input type="file" id="profileAvatarInput" accept="image/png,image/jpeg,image/webp" style="display:none;">
         <button type="button" class="btn-primary" id="profileAvatarBtn" style="font-size:12px; padding:7px 12px;">Fotoğraf Yükle</button>
@@ -694,7 +778,7 @@
     <input type="tel" id="profilePhone" placeholder="Örn: 0555 xxx xx xx">
     <label>E-posta (opsiyonel)</label>
     <input type="text" id="profileEmail" placeholder="Örn: ornek@amasya.gov.tr">
-    <label>Kan Grubu (opsiyonel)</label>
+    <label>Kan Grubu (opsiyonel — acil durumlarda kullanılır)</label>
     <select id="profileBloodType">
       <option value="">Seçiniz</option>
       <option value="A Rh+">A Rh+</option>
@@ -716,6 +800,7 @@
     </div>
   </div>
 
+  <!-- GÖRÜŞ MODALI -->
   <div class="card" id="feedbackModal" style="display:none;">
     <div class="card-header"><h2>Öneri</h2><button class="card-close" data-close="feedbackModal" aria-label="Kapat">✕</button></div>
     <div class="sub">Yönetime iletmek istediğiniz not veya talebiniz:</div>
@@ -727,11 +812,12 @@
     <div class="feedback-msg" id="feedbackModalFeedback"></div>
   </div>
 
+  <!-- SOHBET MODALI -->
   <div class="card" id="chatModal" style="display:none;">
     <div class="card-header"><h2>🗨️ Sohbet</h2><button class="card-close" data-close="chatModal" aria-label="Kapat">✕</button></div>
 
     <div id="chatLockedNotice" style="display:none;">
-      <div class="sub" style="color:var(--clay);">Sohbete katılmak için önce adınızı ve telefon numaranızı kaydetmeniz gerekiyor.</div>
+      <div class="sub" style="color:#b23b3b;">Sohbete katılmak için önce adınızı ve telefon numaranızı kaydetmeniz gerekiyor.</div>
       <button class="btn-primary" id="chatGoProfileBtn" style="width:100%;">👤 Profilime Git</button>
     </div>
 
@@ -752,7 +838,7 @@
       <div id="chatPanelDirect" class="chat-panel" style="display:none;">
         <div id="chatContactList" class="list-empty">Yükleniyor...</div>
         <div id="chatDirectConversation" style="display:none;" class="chat-panel">
-          <button type="button" id="chatBackToContacts" style="background:none;border:none;color:var(--primary-blue);font-size:12px;cursor:pointer;padding:0 0 8px;">← Kişi Listesine Dön</button>
+          <button type="button" id="chatBackToContacts" style="background:none;border:none;color:var(--clay);font-size:12px;cursor:pointer;padding:0 0 8px;">← Kişi Listesine Dön</button>
           <div id="chatDirectTitle" style="font-weight:700;font-size:14px;margin-bottom:8px;"></div>
           <div id="chatDirectMessages" class="chat-box"></div>
           <div class="chat-input-row">
@@ -764,29 +850,32 @@
     </div>
   </div>
 
+  <!-- YEMEK KAYDIM MODALI (self-servis kayıt/giriş + kişisel yemekhane geçmişi) -->
   <div class="card" id="mealsModal" style="display:none;">
     <div class="card-header"><h2>🍽️ Yemek Kaydım</h2><button class="card-close" data-close="mealsModal" aria-label="Kapat">✕</button></div>
 
+    <!-- Adım: Kayıt formu -->
     <div id="mealsStepRegister">
       <div class="sub">Kendi yemekhane geçmişini ve borcunu görebilmek için kişisel e-postanla kayıt ol.</div>
       <div style="background:#eff6ff; border:1px solid #dbeafe; border-radius:10px; padding:10px 12px; font-size:12px; color:#1e40af; margin-bottom:14px;">
-        ℹ️ Yalnızca kişisel <b>Gmail</b> veya <b>Hotmail</b> adresiyle kayıt olabilirsin.
+        ℹ️ Yalnızca kişisel <b>Gmail</b> veya <b>Hotmail</b> adresiyle kayıt olabilirsin. Kurumsal e-postalar kabul edilmiyor.
       </div>
       <label>Adın Soyadın</label>
       <input type="text" id="mealsRegName" placeholder="Örn: Ahmet Yılmaz">
       <label>Telefon Numaran</label>
       <input type="tel" id="mealsRegPhone" placeholder="Örn: 0555 111 22 33">
-      <label>E-posta</label>
+      <label>E-posta (Gmail veya Hotmail)</label>
       <input type="email" id="mealsRegEmail" placeholder="ornek@gmail.com">
       <label>Şifre</label>
       <input type="password" id="mealsRegPass" placeholder="En az 6 karakter">
       <div class="send-row"><button class="btn-primary" id="mealsRegisterBtn" style="width:100%;">Kayıt Ol ve Kod Gönder</button></div>
       <div class="feedback-msg" id="mealsRegFeedback"></div>
       <div style="text-align:center; margin-top:14px; font-size:12.5px; color:#777;">
-        Zaten hesabın var mı? <a href="#" id="mealsGoLoginLink" style="color:var(--primary-blue); font-weight:600;">Giriş yap</a>
+        Zaten hesabın var mı? <a href="#" id="mealsGoLoginLink" style="color:var(--clay); font-weight:600;">Giriş yap</a>
       </div>
     </div>
 
+    <!-- Adım: OTP doğrulama -->
     <div id="mealsStepVerify" style="display:none;">
       <div class="sub">E-postana gönderilen 6 haneli kodu gir.</div>
       <input type="text" id="mealsVerifyCode" maxlength="6" inputmode="numeric" placeholder="000000"
@@ -796,6 +885,7 @@
       <div class="feedback-msg" id="mealsVerifyFeedback"></div>
     </div>
 
+    <!-- Adım: Giriş formu -->
     <div id="mealsStepLogin" style="display:none;">
       <div class="sub">Kayıtlı e-posta ve şifrenle giriş yap.</div>
       <label>E-posta</label>
@@ -805,23 +895,25 @@
       <div class="send-row"><button class="btn-primary" id="mealsLoginBtn" style="width:100%;">Giriş Yap</button></div>
       <div class="feedback-msg" id="mealsLoginFeedback"></div>
       <div style="text-align:center; margin-top:14px; font-size:12.5px; color:#777;">
-        Hesabın yok mu? <a href="#" id="mealsGoRegisterLink" style="color:var(--primary-blue); font-weight:600;">Kayıt ol</a>
+        Hesabın yok mu? <a href="#" id="mealsGoRegisterLink" style="color:var(--clay); font-weight:600;">Kayıt ol</a>
       </div>
     </div>
 
+    <!-- Adım: Kendi kayıtlarım -->
     <div id="mealsStepRecords" style="display:none;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <div class="sub" style="margin:0;" id="mealsRecordsWho"></div>
         <button type="button" id="mealsLogoutBtn" style="background:none; border:1px solid #ccc; color:#888; font-size:11px; padding:5px 10px; border-radius:20px;">Çıkış</button>
       </div>
-      <div id="mealsDebtBox" style="background:var(--primary-blue); color:var(--paper); border-radius:12px; padding:16px; text-align:center; margin-bottom:14px;">
-        <div style="font-size:11px; opacity:0.8; text-transform:uppercase; letter-spacing:0.05em;">Toplam Borç</div>
+      <div id="mealsDebtBox" style="background:var(--ink); color:var(--paper); border-radius:10px; padding:16px; text-align:center; margin-bottom:14px;">
+        <div style="font-size:11px; opacity:0.7; text-transform:uppercase; letter-spacing:0.05em;">Toplam Borç</div>
         <div style="font-family:'Fraunces',serif; font-size:1.8rem; font-weight:700;" id="mealsDebtAmount">—</div>
       </div>
       <div id="mealsRecordsList" class="list-empty">Yükleniyor...</div>
     </div>
   </div>
 
+  <!-- YÖNETİCİ MODALI -->
   <div class="card" id="adminModal" style="display:none;">
     <div class="card-header"><h2>Yönetici Paneli</h2><button class="card-close" data-close="adminModal" aria-label="Kapat">✕</button></div>
     <div id="adminAuthSection">
@@ -911,24 +1003,32 @@
 </footer>
 
 <script>
+// --- OTOMATİK SES KİLİDİ AÇICI (AUTOPLAY UNLOCKER) ---
 let audioUnlocked = false;
 function unlockAudioEngine() {
   if (audioUnlocked) return;
   try {
     const dummy = new Audio('/notify.wav');
     dummy.volume = 0.01;
-    dummy.play().then(() => { dummy.pause(); audioUnlocked = true; }).catch(e => {});
+    dummy.play().then(() => {
+      dummy.pause();
+      audioUnlocked = true;
+      console.log('Ses motoru başarısıyla açıldı.');
+    }).catch(e => console.log('Ses motoru açılamadı:', e));
   } catch(e) {}
 }
+
 document.addEventListener('click', unlockAudioEngine, { once: true });
 document.addEventListener('touchstart', unlockAudioEngine, { once: true });
 
+// --- MARKA AYAR SEÇİMİ ---
 function showBrand(brand) {
   document.querySelectorAll('.brand-guide').forEach(el => el.style.display = 'none');
   const b = document.getElementById('brand-' + brand);
   if (b) b.style.display = 'block';
 }
 
+// --- SEKMELER & TEMA ---
 document.querySelectorAll('.tabs .tab-btn').forEach(btn => {
   if (btn.dataset.tab) {
     btn.addEventListener('click', () => {
@@ -967,6 +1067,7 @@ function getDeviceId() {
   return id;
 }
 
+// --- ŞIK TOAST BİLDİRİMİ ---
 function showToast(message, type) {
   const container = document.getElementById('toastContainer');
   const t = document.createElement('div');
@@ -976,6 +1077,7 @@ function showToast(message, type) {
   setTimeout(() => t.remove(), 2700);
 }
 
+// --- OKUNDU İŞARETLEME ---
 function getReadIds() {
   try { return JSON.parse(localStorage.getItem('readMsgIds') || '[]'); } catch { return []; }
 }
@@ -996,6 +1098,7 @@ async function markAsRead(id, btn) {
   } catch {}
 }
 
+// --- PWA İNDİR / İZİN SİHİRBAZI MANTIĞI ---
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
@@ -1004,8 +1107,13 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-if (isIOS) document.getElementById('iosPwaNotice').style.display = 'block';
+if (isIOS) {
+  document.getElementById('iosPwaNotice').style.display = 'block';
+}
 
+// Uygulama, kurulu APK (TWA) içinden mi açıldı? (tarayıcıdan mı yoksa yüklü uygulamadan mı)
+// Uygulama, kurulu APK (TWA) içinden mi açıldı? (Android'e özel — iOS Ana Ekran modunu bu kapsamın dışında tutuyoruz,
+// çünkü Android'e özel "Bilinmeyen uygulama / Play Protect" mesajları iPhone'da anlamsız kalır)
 const isInstalledApp = !isIOS && (document.referrer.startsWith('android-app://') || window.matchMedia('(display-mode: standalone)').matches);
 if (isInstalledApp) {
   document.getElementById('step1-download').style.display = 'none';
@@ -1026,23 +1134,32 @@ function checkFirstRunWizard() {
   const hasName = localStorage.getItem('selfName');
   if (perm !== 'granted' || !hasName) {
     document.getElementById('wizardModal').style.display = 'flex';
-    if (isInstalledApp && perm === 'default') showWizardStep(3);
-    else showWizardStep(1);
+    // Kurulu APK'da ve izin daha hiç sorulmadıysa: direkt izin adımına atla, isim/adım1'i bekletme.
+    if (isInstalledApp && perm === 'default') {
+      showWizardStep(3);
+    } else {
+      showWizardStep(1);
+    }
   }
 }
 
 document.getElementById('subscribeBtn').addEventListener('click', () => {
   unlockAudioEngine();
   document.getElementById('wizardModal').style.display = 'flex';
-  if (isInstalledApp && Notification.permission === 'default') showWizardStep(3);
-  else showWizardStep(1);
+  if (isInstalledApp && Notification.permission === 'default') {
+    showWizardStep(3);
+  } else {
+    showWizardStep(1);
+  }
 });
 
 document.getElementById('btnPwaInstall').addEventListener('click', async () => {
   if (deferredPrompt) {
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') document.getElementById('pwaInstallContainer').style.display = 'none';
+    if (outcome === 'accepted') {
+      document.getElementById('pwaInstallContainer').style.display = 'none';
+    }
     deferredPrompt = null;
   }
 });
@@ -1067,22 +1184,47 @@ document.getElementById('btnNext2').addEventListener('click', async () => {
       body: JSON.stringify({ deviceId: getDeviceId(), name, phone, kvkkConsent: true, kvkkConsentAt: new Date().toISOString() })
     });
   } catch(e){}
+
+  // İzin bu adımdan önce (kurulu APK akışında) zaten verilmiş olabilir, o zaman direkt bitir.
   showWizardStep(Notification.permission === 'granted' ? 4 : 3);
 });
 
-document.getElementById('kvkkLinkOpen').addEventListener('click', (e) => { e.preventDefault(); document.getElementById('kvkkModal').style.display = 'flex'; });
-document.getElementById('kvkkCloseBtn').addEventListener('click', () => { document.getElementById('kvkkModal').style.display = 'none'; });
+document.getElementById('kvkkLinkOpen').addEventListener('click', (e) => {
+  e.preventDefault();
+  document.getElementById('kvkkModal').style.display = 'flex';
+});
+document.getElementById('kvkkCloseBtn').addEventListener('click', () => {
+  document.getElementById('kvkkModal').style.display = 'none';
+});
 
 document.getElementById('btnGrantPush').addEventListener('click', async () => {
   unlockAudioEngine();
   const ok = await doSubscribe(false);
-  if (ok) showWizardStep(localStorage.getItem('selfName') ? 4 : 2);
+  if (ok) {
+    // Kurulu APK akışında izin adımı isimden ÖNCE geldiyse, şimdi ismi soralım.
+    showWizardStep(localStorage.getItem('selfName') ? 4 : 2);
+  } else {
+    // İzin penceresi hiç çıkmadıysa ya da reddedildiyse: doğrudan ayar ekranına götürmeyi dene.
+    document.getElementById('permFailedNotice').style.display = 'block';
+    if (isInstalledApp) tryOpenAndroidNotifSettings();
+  }
+});
+
+document.getElementById('permRetryBtn').addEventListener('click', async () => {
+  const ok = await doSubscribe(false);
+  if (ok) {
+    document.getElementById('permFailedNotice').style.display = 'none';
+    showWizardStep(localStorage.getItem('selfName') ? 4 : 2);
+  }
 });
 
 document.getElementById('wizTestSound').addEventListener('click', () => playNotifSound());
 document.getElementById('wizTestLock').addEventListener('click', () => triggerLockTest());
-document.getElementById('btnFinishWizard').addEventListener('click', () => { document.getElementById('wizardModal').style.display = 'none'; });
+document.getElementById('btnFinishWizard').addEventListener('click', () => {
+  document.getElementById('wizardModal').style.display = 'none';
+});
 
+// --- PUSH VE DÜĞMELER ---
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -1099,7 +1241,10 @@ async function refreshCount() {
 }
 
 async function doSubscribe(silent) {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return false;
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    if (!silent) alert('Bu tarayıcı push bildirimi desteklemiyor.');
+    return false;
+  }
   const permission = silent ? Notification.permission : await Notification.requestPermission();
   if (permission !== 'granted') return false;
   const reg = await navigator.serviceWorker.register('/sw.js');
@@ -1119,35 +1264,75 @@ if ('Notification' in window && Notification.permission === 'granted') doSubscri
 setTimeout(checkFirstRunWizard, 1600);
 refreshCount();
 
+// --- SES DÖNGÜSÜ (TAM 3 DEFA ÇALAR) ---
 function playNotifSound() {
   try {
     let count = 0;
     const audio = new Audio('/notify.wav');
     audio.volume = 1.0;
+
     const playOnce = () => {
       count++;
       audio.currentTime = 0;
-      audio.play().catch(e => {});
+      audio.play().then(() => {
+        console.log('Ses çalıyor:', count);
+      }).catch(e => console.log('Ses çalma engellendi:', e));
     };
-    audio.addEventListener('ended', () => { if (count < 3) playOnce(); });
+
+    audio.addEventListener('ended', () => {
+      if (count < 3) playOnce();
+    });
+
     playOnce();
-  } catch (e) {}
+  } catch (e) { console.log('Ses hatası:', e); }
 }
 
+function showNotifBanner(category, title, body) {
+  const el = document.getElementById('notifBanner');
+  if (!el) return;
+  el.className = 'show ' + (category || 'genel');
+  const tagNames = { acil: 'ACİL DUYURU', yemek: 'YEMEK LİSTESİ', vefat: 'VEFAT', dogum: 'DOĞUM', genel: 'DUYURU' };
+  el.innerHTML = `<div class="tag">${tagNames[category] || tagNames.genel}</div><div class="btitle">${title || ''}</div><div class="bbody">${body || ''}</div>`;
+  playNotifSound();
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'NOTIF_OPENED') {
+      showNotifBanner(event.data.category, event.data.title, event.data.body);
+      loadHistory();
+    }
+  });
+}
+
+// --- İÇERİK YÜKLEME ---
 const catNames = { acil: 'Acil', yemek: 'Yemek Listesi', vefat: 'Vefat', dogum: 'Doğum', genel: 'Genel' };
 function formatTime(iso) { return new Date(iso).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); }
 function esc(s) { return (s || '').replace(/</g, '&lt;'); }
 
 const TR_MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 
+// --- RESMİ TATİLLER (2026-2027, doğrulanmış kaynaklardan) ---
 const TR_HOLIDAYS_FIXED = [
-  { m: 1, d: 1, name: 'Yılbaşı' }, { m: 4, d: 23, name: 'Ulusal Egemenlik ve Çocuk Bayramı' },
-  { m: 5, d: 1, name: 'Emek ve Dayanışma Günü' }, { m: 5, d: 19, name: "Atatürk'ü Anma, Gençlik ve Spor Bayramı" },
-  { m: 7, d: 15, name: 'Demokrasi ve Millî Birlik Günü' }, { m: 8, d: 30, name: 'Zafer Bayramı' }, { m: 10, d: 29, name: 'Cumhuriyet Bayramı' },
+  { m: 1, d: 1, name: 'Yılbaşı' },
+  { m: 4, d: 23, name: 'Ulusal Egemenlik ve Çocuk Bayramı' },
+  { m: 5, d: 1, name: 'Emek ve Dayanışma Günü' },
+  { m: 5, d: 19, name: "Atatürk'ü Anma, Gençlik ve Spor Bayramı" },
+  { m: 7, d: 15, name: 'Demokrasi ve Millî Birlik Günü' },
+  { m: 8, d: 30, name: 'Zafer Bayramı' },
+  { m: 10, d: 29, name: 'Cumhuriyet Bayramı' },
 ];
 const TR_HOLIDAYS_RELIGIOUS = {
-  '2026-03-19': 'Ramazan Bayramı Arifesi', '2026-03-20': 'Ramazan Bayramı (1. Gün)', '2026-03-21': 'Ramazan Bayramı (2. Gün)', '2026-03-22': 'Ramazan Bayramı (3. Gün)',
-  '2026-05-26': 'Kurban Bayramı Arifesi', '2026-05-27': 'Kurban Bayramı (1. Gün)', '2026-05-28': 'Kurban Bayramı (2. Gün)', '2026-05-29': 'Kurban Bayramı (3. Gün)', '2026-05-30': 'Kurban Bayramı (4. Gün)', '2026-10-28': 'Cumhuriyet Bayramı Arifesi',
+  '2026-03-19': 'Ramazan Bayramı Arifesi', '2026-03-20': 'Ramazan Bayramı (1. Gün)',
+  '2026-03-21': 'Ramazan Bayramı (2. Gün)', '2026-03-22': 'Ramazan Bayramı (3. Gün)',
+  '2026-05-26': 'Kurban Bayramı Arifesi', '2026-05-27': 'Kurban Bayramı (1. Gün)',
+  '2026-05-28': 'Kurban Bayramı (2. Gün)', '2026-05-29': 'Kurban Bayramı (3. Gün)',
+  '2026-05-30': 'Kurban Bayramı (4. Gün)', '2026-10-28': 'Cumhuriyet Bayramı Arifesi',
+  '2027-03-08': 'Ramazan Bayramı Arifesi', '2027-03-09': 'Ramazan Bayramı (1. Gün)',
+  '2027-03-10': 'Ramazan Bayramı (2. Gün)', '2027-03-11': 'Ramazan Bayramı (3. Gün)',
+  '2027-05-15': 'Kurban Bayramı Arifesi', '2027-05-16': 'Kurban Bayramı (1. Gün)',
+  '2027-05-17': 'Kurban Bayramı (2. Gün)', '2027-05-18': 'Kurban Bayramı (3. Gün)',
+  '2027-05-19': 'Kurban Bayramı (4. Gün)', '2027-10-28': 'Cumhuriyet Bayramı Arifesi',
 };
 function getHolidayName(dateKey) {
   if (TR_HOLIDAYS_RELIGIOUS[dateKey]) return TR_HOLIDAYS_RELIGIOUS[dateKey];
@@ -1156,22 +1341,25 @@ function getHolidayName(dateKey) {
   return fixed ? fixed.name : null;
 }
 
+// --- TAKVİM KATEGORİLERİ ---
 const CAL_CATEGORIES = {
-  genel: { label: 'Genel', color: '#0077C8' },
-  toplanti: { label: 'Toplantı', color: '#10B981' },
-  hatirlatma: { label: 'Hatırlatma', color: '#F36F21' },
-  etkinlik: { label: 'Etkinlik', color: '#F59E0B' },
+  genel: { label: 'Genel', color: '#7A2331' },
+  toplanti: { label: 'Toplantı', color: '#6B8F71' },
+  hatirlatma: { label: 'Hatırlatma', color: '#E0972C' },
+  etkinlik: { label: 'Etkinlik', color: '#C9A24B' },
 };
 
 function renderAttachment(att) {
   if (!att) return '';
-  if (att.type === 'image') return `<a href="${att.url}" target="_blank"><img src="${att.url}" style="max-width:100%;border-radius:8px;margin-top:8px;display:block;"></a>`;
-  return `<a href="${att.url}" target="_blank" style="display:inline-block;margin-top:8px;font-size:12px;color:var(--primary-blue);font-weight:600;">📄 ${esc(att.name || 'Dosyayı Aç')}</a>`;
+  if (att.type === 'image') return `<a href="${att.url}" target="_blank"><img src="${att.url}" style="max-width:100%;border-radius:4px;margin-top:8px;display:block;"></a>`;
+  return `<a href="${att.url}" target="_blank" style="display:inline-block;margin-top:8px;font-size:12px;color:var(--clay);font-weight:600;">📄 ${esc(att.name || 'Dosyayı Aç')}</a>`;
 }
 
 let activeAdminPassword = '';
+
 let historyPage = 1;
 let historyPageSize = parseInt(localStorage.getItem('historyPageSize') || '10', 10);
+
 let historyItemsCache = [];
 
 async function loadHistory() {
@@ -1208,6 +1396,7 @@ async function loadHistory() {
             <div class="li-body">${esc(m.body)}</div>
             <div class="attach-wrap" id="attach-${m.id}">${renderAttachment(m.attachment)}</div>
             <span class="li-detay-link" data-detay-id="${m.id}">🔎 Detay / Paylaş</span>
+            ${activeAdminPassword ? `<div style="margin-top:8px;"><span class="reads-badge" onclick="showReads('${m.id}')">👁 Okundu Bilgisi</span> <button class="btn-danger" onclick="deleteMessage('${m.id}')">Sil</button></div>` : ''}
           </div>
         </div>
       `;
@@ -1245,17 +1434,18 @@ document.getElementById('historyPrevBtn').addEventListener('click', () => { if (
 document.getElementById('historyNextBtn').addEventListener('click', () => { historyPage++; loadHistory(); });
 loadHistory();
 
+// ---------- MANŞET (öne çıkan duyuru carousel'i) ----------
 let mansetItems = [];
 let mansetIdx = 0;
 let mansetTimer = null;
 
 function mansetColors(cat) {
   const map = {
-    acil: ['#FF7A29', '#F36F21'],
-    yemek: ['#10B981', '#059669'],
-    vefat: ['#64748B', '#334155'],
-    dogum: ['#F59E0B', '#D97706'],
-    genel: ['#0077C8', '#005AA7'],
+    acil: ['#E0972C', '#B5674A'],
+    yemek: ['#6B8F71', '#3E5C43'],
+    vefat: ['#4A4A52', '#1F2430'],
+    dogum: ['#C9A24B', '#8A6D2F'],
+    genel: ['#7A2331', '#5A1622'],
   };
   return map[cat] || map.genel;
 }
@@ -1265,6 +1455,7 @@ async function loadManset() {
     const res = await fetch('/api/messages?page=1&pageSize=8');
     const data = await res.json();
     mansetItems = data.messages || [];
+    historyItemsCache = historyItemsCache.concat(mansetItems).filter((m, i, arr) => arr.findIndex(x => x.id === m.id) === i);
   } catch { mansetItems = []; }
   mansetIdx = 0;
   renderManset();
@@ -1283,15 +1474,15 @@ function renderManset() {
   const [c1, c2] = mansetColors(m.category);
   wrap.innerHTML = `
     <div class="manset-nav">
-      ${mansetItems.length > 1 ? '<button type="button" class="manset-nav-btn" id="mansetPrevBtn">‹</button>' : ''}
+      ${mansetItems.length > 1 ? '<button type="button" class="manset-nav-btn" id="mansetPrevBtn" aria-label="Önceki">‹</button>' : ''}
       <div class="manset-card" style="--manset-c1:${c1}; --manset-c2:${c2};" id="mansetCard">
         <span class="manset-tag">${catNames[m.category] || 'Genel'}</span>
         <div class="manset-title">${esc(m.title)}</div>
         <div class="manset-date">📅 ${formatTime(m.time)}</div>
       </div>
-      ${mansetItems.length > 1 ? '<button type="button" class="manset-nav-btn" id="mansetNextBtn">›</button>' : ''}
+      ${mansetItems.length > 1 ? '<button type="button" class="manset-nav-btn" id="mansetNextBtn" aria-label="Sonraki">›</button>' : ''}
     </div>
-    ${mansetItems.length > 1 ? `<div class="manset-dots">${mansetItems.map((_, i) => `<button type="button" class="manset-dot ${i === mansetIdx ? 'active' : ''}" data-dot-idx="${i}"></button>`).join('')}</div>` : ''}
+    ${mansetItems.length > 1 ? `<div class="manset-dots">${mansetItems.map((_, i) => `<button type="button" class="manset-dot ${i === mansetIdx ? 'active' : ''}" data-dot-idx="${i}" aria-label="Duyuru ${i + 1}"></button>`).join('')}</div>` : ''}
   `;
   document.getElementById('mansetCard').addEventListener('click', () => openDuyuruDetay(m.id));
   const prevBtn = document.getElementById('mansetPrevBtn');
@@ -1302,9 +1493,12 @@ function renderManset() {
     d.addEventListener('click', () => { mansetIdx = parseInt(d.dataset.dotIdx, 10); renderManset(); });
   });
 }
+
 loadManset();
 
+// ---------- DUYURU DETAY POPUP (ajax) ----------
 let duyuruDetayCurrent = null;
+
 async function openDuyuruDetay(id) {
   const m = historyItemsCache.find(x => x.id === id);
   if (!m) return;
@@ -1316,7 +1510,9 @@ async function openDuyuruDetay(id) {
   document.getElementById('duyuruDetayMeta').textContent = '📅 ' + formatTime(m.time) + (m.editedAt ? ' · düzenlendi' : '');
   document.getElementById('duyuruDetayBody').textContent = m.body;
   document.getElementById('duyuruDetayAttach').innerHTML = renderAttachment(m.attachment);
-  document.getElementById('duyuruDetayReadInfo').textContent = `👁 ${(m.reads && m.reads.length) || 0} kişi okudu`;
+
+  const readCount = (m.reads && m.reads.length) || 0;
+  document.getElementById('duyuruDetayReadInfo').textContent = `👁 ${readCount} kişi okudu`;
 
   const isRead = getReadIds().includes(m.id);
   const readBtn = document.getElementById('duyuruDetayReadBtn');
@@ -1328,11 +1524,19 @@ async function openDuyuruDetay(id) {
     readBtn.disabled = true;
     const listBtn = document.querySelector(`[data-read-id="${m.id}"]`);
     if (listBtn) { listBtn.classList.add('done'); listBtn.innerHTML = '✓ Okundu'; }
+    const cur = historyItemsCache.find(x => x.id === m.id);
+    if (cur) {
+      cur.reads = cur.reads || [];
+      document.getElementById('duyuruDetayReadInfo').textContent = `👁 ${cur.reads.length} kişi okudu`;
+    }
   };
+
   document.getElementById('duyuruDetayOverlay').classList.add('show');
 }
 
-document.getElementById('duyuruDetayCloseBtn').addEventListener('click', () => document.getElementById('duyuruDetayOverlay').classList.remove('show'));
+document.getElementById('duyuruDetayCloseBtn').addEventListener('click', () => {
+  document.getElementById('duyuruDetayOverlay').classList.remove('show');
+});
 document.getElementById('duyuruDetayOverlay').addEventListener('click', (e) => {
   if (e.target.id === 'duyuruDetayOverlay') document.getElementById('duyuruDetayOverlay').classList.remove('show');
 });
@@ -1344,11 +1548,16 @@ document.getElementById('duyuruDetayShareBtn').addEventListener('click', async (
   if (navigator.share) {
     try { await navigator.share({ title: m.title, text: shareText }); } catch {}
   } else {
-    try { await navigator.clipboard.writeText(shareText); showToast('Duyuru panoya kopyalandı.', 'ok'); } catch {}
+    try {
+      await navigator.clipboard.writeText(shareText);
+      showToast('Duyuru metni panoya kopyalandı.', 'ok');
+    } catch {
+      showToast('Paylaşım desteklenmiyor, metni elle kopyalayın.', 'err');
+    }
   }
 });
 
-async function loadReadOnlyList(endpoint, listId, emptyText, renderItem) {
+async function loadReadOnlyList(endpoint, listId, emptyText, renderItem, allowToggle) {
   const listEl = document.getElementById(listId);
   try {
     const res = await fetch(endpoint);
@@ -1356,16 +1565,23 @@ async function loadReadOnlyList(endpoint, listId, emptyText, renderItem) {
     if (!data.items || data.items.length === 0) { listEl.className = 'list-empty'; listEl.textContent = emptyText; return; }
     listEl.className = '';
     listEl.innerHTML = data.items.map(renderItem).join('');
+    if (allowToggle) {
+      listEl.querySelectorAll('[data-toggle-id]').forEach(c => c.addEventListener('change', async () => {
+        try { await fetch(endpoint + '/' + c.dataset.toggleId + '/toggle', { method: 'POST' }); } catch {}
+      }));
+    }
   } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
 }
 
+// --- YEMEKHANE MENÜSÜ (haftalık, salt okunur — ekleme admin panelinden yapılır) ---
 const DISH_LABELS = ['Çorba', 'Ana Yemek', 'Yardımcı Yemek', 'Tatlı / Ekstra'];
 const DISH_ICONS = ['🍲', '🍗', '🍚', '🍰'];
 const TR_DOW_NAMES = ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
+
 let menuAllItems = [];
 let menuWeekStart = (() => {
   const d = new Date();
-  const dow = (d.getDay() + 6) % 7;
+  const dow = (d.getDay() + 6) % 7; // Pzt=0
   d.setDate(d.getDate() - dow);
   d.setHours(0,0,0,0);
   return d;
@@ -1400,25 +1616,38 @@ function renderMenuWeek() {
       '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">' +
         '<span style="font-family:\'Fraunces\',serif; font-weight:700; font-size:14px;">' + TR_DOW_NAMES[i] + ' — ' + d.getDate() + ' ' + TR_MONTHS[d.getMonth()] + (isToday ? ' <span style="color:var(--amber); font-size:11px;">(Bugün)</span>' : '') + '</span>' +
       '</div>' +
-      (holidayName ? '<div style="font-size:11.5px; color:var(--clay); margin-bottom:6px;">🎉 ' + esc(holidayName) + '</div>' : '') +
-      (item ? '<div style="display:grid; grid-template-columns:1fr 1fr; gap:6px 14px;">' + item.dishes.map((dish, idx) => dish ? '<div style="font-size:12.5px; color:#475569;">' + DISH_ICONS[idx] + ' ' + esc(dish) + '</div>' : '').join('') + '</div>' : '<div style="font-size:12px; color:#999;">Menü henüz girilmedi.</div>') +
+      (holidayName ? '<div style="font-size:11.5px; color:var(--clay); margin-bottom:6px;">🎉 ' + esc(holidayName) + ' — yemekhane kapalı olabilir</div>' : '') +
+      (item
+        ? '<div style="display:grid; grid-template-columns:1fr 1fr; gap:6px 14px;">' +
+            item.dishes.map((dish, idx) => dish ? '<div style="font-size:12.5px; color:#444;">' + DISH_ICONS[idx] + ' ' + esc(dish) + '</div>' : '').join('') +
+          '</div>'
+        : '<div style="font-size:12px; color:#999;">Menü henüz girilmedi.</div>') +
     '</div>';
   }
   cardsEl.innerHTML = html;
 }
 
-document.getElementById('menuPrevWeekBtn').addEventListener('click', () => { menuWeekStart.setDate(menuWeekStart.getDate() - 7); renderMenuWeek(); });
-document.getElementById('menuNextWeekBtn').addEventListener('click', () => { menuWeekStart.setDate(menuWeekStart.getDate() + 7); renderMenuWeek(); });
+document.getElementById('menuPrevWeekBtn').addEventListener('click', () => {
+  menuWeekStart.setDate(menuWeekStart.getDate() - 7);
+  renderMenuWeek();
+});
+document.getElementById('menuNextWeekBtn').addEventListener('click', () => {
+  menuWeekStart.setDate(menuWeekStart.getDate() + 7);
+  renderMenuWeek();
+});
+
 loadMenuData();
 
+
 loadReadOnlyList('/api/phones', 'phonesList', 'Henüz telefon eklenmedi.', p => `
-  <div class="list-item"><div class="li-main"><div class="li-title">${esc(p.name)}</div><a class="li-phone" href="tel:${esc(p.number)}">${esc(p.number)}</a>${renderAttachment(p.attachment)}</div></div>
+  <div class="list-item"><div class="li-main"><div class="li-title">${esc(p.name)}</div><a class="li-phone" href="tel:${esc(p.number)}">${esc(p.number)}</a>${renderAttachment(p.attachment)}${activeAdminPassword ? `<div style="margin-top:6px;"><button class="btn-danger" onclick="deleteGeneric('phones','${p.id}')">Sil</button></div>`:''}</div></div>
 `);
 
 loadReadOnlyList('/api/tasks', 'tasksList', 'Henüz görev eklenmedi.', t => `
-  <div class="list-item ${t.done ? 'done' : ''}"><input type="checkbox" class="checkbox" data-toggle-id="${t.id}" ${t.done ? 'checked' : ''}><div class="li-main"><div class="li-title">${esc(t.text)}</div>${renderAttachment(t.attachment)}</div></div>
-`);
+  <div class="list-item ${t.done ? 'done' : ''}"><input type="checkbox" class="checkbox" data-toggle-id="${t.id}" ${t.done ? 'checked' : ''}><div class="li-main"><div class="li-title">${esc(t.text)}</div>${renderAttachment(t.attachment)}${activeAdminPassword ? `<div style="margin-top:6px;"><button class="btn-danger" onclick="deleteGeneric('tasks','${t.id}')">Sil</button></div>`:''}</div></div>
+`, true);
 
+// --- TAKVİM (salt okunur — ekleme/silme admin panelinden yapılır) ---
 const TR_DOWS = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
 let calAllItems = [];
 let calCurrentDate = new Date();
@@ -1444,26 +1673,30 @@ async function loadUpcomingBox() {
     const res = await fetch('/api/calendar');
     const data = await res.json();
     const items = data.items || [];
-    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const in7 = new Date(today); in7.setDate(in7.getDate() + 7);
-    const upcoming = items.filter(i => { const d = new Date(i.date + 'T00:00:00'); return d >= today && d <= in7; }).sort((a, b) => a.date.localeCompare(b.date));
+    const upcoming = items
+      .filter(i => { const d = new Date(i.date + 'T00:00:00'); return d >= today && d <= in7; })
+      .sort((a, b) => a.date.localeCompare(b.date));
     const box = document.getElementById('upcomingBox');
     const list = document.getElementById('upcomingList');
     if (upcoming.length === 0) { box.style.display = 'none'; return; }
     list.innerHTML = upcoming.map(u => {
       const d = new Date(u.date + 'T00:00:00');
       const cat = CAL_CATEGORIES[u.category] || CAL_CATEGORIES.genel;
-      return '<div style="display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--line); font-size:12.5px; color:var(--ink);">' +
+      const holidayName = getHolidayName(u.date);
+      return '<div style="display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.08); font-size:12.5px; color:var(--paper);">' +
         '<span style="font-weight:700; min-width:60px;">' + d.getDate() + ' ' + TR_MONTHS[d.getMonth()].slice(0,3) + '</span>' +
         '<span class="cal-cat-badge" style="background:' + cat.color + ';">' + cat.label + '</span>' +
         '<span style="opacity:0.9;">' + esc(u.text) + '</span>' +
+        (holidayName ? '<span style="opacity:0.6; font-size:11px;">🎉 ' + esc(holidayName) + '</span>' : '') +
       '</div>';
     }).join('');
     box.style.display = 'block';
   } catch {}
 }
 loadUpcomingBox();
-
 function renderCalendarCurrentView() { if (calCurrentView === 'month') renderCalMonth(); else renderCalYear(); }
 
 function renderCalMonth() {
@@ -1482,14 +1715,16 @@ function renderCalMonth() {
     const notes = calNotesForDate(key);
     const isToday = key === todayKey;
     const holidayName = getHolidayName(key);
-    const dow = new Date(y, m, d).getDay();
+    const dow = new Date(y, m, d).getDay(); // 0=Paz,6=Cmt
     const isWeekend = dow === 0 || dow === 6;
+    const hasNotesAndHoliday = notes.length > 0 && holidayName;
     const dotColor = notes.length ? ((CAL_CATEGORIES[notes[0].category] || CAL_CATEGORIES.genel).color) : null;
     const classes = ['cal-day'];
     if (isToday) classes.push('today');
     if (holidayName) classes.push('holiday');
     if (isWeekend) classes.push('weekend');
-    html += '<div class="' + classes.join(' ') + '" data-day-key="' + key + '">' +
+    if (hasNotesAndHoliday) classes.push('note-holiday');
+    html += '<div class="' + classes.join(' ') + '" data-day-key="' + key + '" title="' + (holidayName ? esc(holidayName) : '') + '">' +
       '<div class="cd-num">' + d + '</div>' +
       (holidayName ? '<div class="cd-holiday-dot"></div>' : '') +
       (dotColor ? '<div class="cd-dot" style="background:' + dotColor + ';"></div>' : '') +
@@ -1506,7 +1741,7 @@ function renderCalYear() {
   let html = '';
   for (let m = 0; m < 12; m++) {
     const count = calAllItems.filter(i => i.date.startsWith(y + '-' + calPad2(m + 1))).length;
-    html += '<div class="cal-mini-month" data-mini-month="' + m + '"><div class="cmm-title">' + TR_MONTHS[m] + '</div><div class="cmm-count" style="color:var(--primary-blue);">' + (count > 0 ? count + ' not' : 'Not yok') + '</div></div>';
+    html += '<div class="cal-mini-month" data-mini-month="' + m + '"><div class="cmm-title">' + TR_MONTHS[m] + '</div><div class="cmm-count">' + (count > 0 ? count + ' not' : 'Not yok') + '</div></div>';
   }
   grid.innerHTML = html;
   grid.querySelectorAll('[data-mini-month]').forEach(el => el.addEventListener('click', () => {
@@ -1542,7 +1777,7 @@ function openCalDay(dateKey) {
   const notes = calNotesForDate(dateKey);
   const el = document.getElementById('calDayNotesList');
   el.innerHTML = notes.length === 0
-    ? '<div class="list-empty" style="color:var(--muted);">Bu güne ait not yok.</div>'
+    ? '<div class="list-empty">Bu güne ait not yok.</div>'
     : notes.map(n => {
         const cat = CAL_CATEGORIES[n.category] || CAL_CATEGORIES.genel;
         return '<div class="list-item" style="margin-bottom:8px;"><div class="li-main">' +
@@ -1559,7 +1794,7 @@ document.getElementById('calSearchBtn').addEventListener('click', () => {
   const resEl = document.getElementById('calSearchResults');
   if (!q) { resEl.style.display = 'none'; return; }
   const matches = calAllItems.filter(i => i.text.toLocaleLowerCase('tr').includes(q));
-  resEl.innerHTML = matches.length === 0 ? '<div class="list-empty" style="color:var(--muted);">Sonuç bulunamadı.</div>' : matches.map(m => {
+  resEl.innerHTML = matches.length === 0 ? '<div class="list-empty">Sonuç bulunamadı.</div>' : matches.map(m => {
     const d = new Date(m.date + 'T00:00:00');
     const cat = CAL_CATEGORIES[m.category] || CAL_CATEGORIES.genel;
     return '<div class="list-item" data-goto-date="' + m.date + '" style="cursor:pointer;"><div class="li-main"><div class="li-top"><span class="li-tag">' + d.getDate() + ' ' + TR_MONTHS[d.getMonth()] + ' ' + d.getFullYear() + '</span><span class="cal-cat-badge" style="background:' + cat.color + ';">' + cat.label + '</span></div><div class="li-body">' + esc(m.text) + '</div></div></div>';
@@ -1574,10 +1809,12 @@ document.getElementById('calSearchBtn').addEventListener('click', () => {
   }));
   resEl.style.display = 'block';
 });
+document.getElementById('calSearchInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('calSearchBtn').click(); });
 
 renderCalMonth();
 loadCalendar();
 
+// --- Takvim / İşler alt sekme geçişi ---
 document.getElementById('islerSubTabTasks').addEventListener('click', () => {
   document.getElementById('islerSubTabTasks').classList.add('active');
   document.getElementById('islerSubTabCalendar').classList.remove('active');
@@ -1591,6 +1828,7 @@ document.getElementById('islerSubTabCalendar').addEventListener('click', () => {
   document.getElementById('islerSubPanelTasks').style.display = 'none';
 });
 
+// --- MODALLAR VE TEST ---
 function openModal(modalId) {
   ['profileModal', 'feedbackModal', 'adminModal', 'chatModal', 'mealsModal'].forEach(id => {
     if (id !== modalId) {
@@ -1610,13 +1848,20 @@ function closeModal(modalId) {
   if (m.style.display === 'none') return;
   m.classList.remove('anim-open');
   m.classList.add('anim-close');
-  setTimeout(() => { m.style.display = 'none'; m.classList.remove('anim-close'); }, 200);
+  setTimeout(() => {
+    m.style.display = 'none';
+    m.classList.remove('anim-close');
+  }, 200);
 }
 function toggleModal(modalId) {
   const m = document.getElementById(modalId);
-  if (m.style.display !== 'none') closeModal(modalId); else openModal(modalId);
+  const showing = m.style.display !== 'none';
+  if (showing) closeModal(modalId);
+  else openModal(modalId);
 }
-document.querySelectorAll('.card-close').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.close)));
+document.querySelectorAll('.card-close').forEach(btn => {
+  btn.addEventListener('click', () => closeModal(btn.dataset.close));
+});
 
 document.getElementById('testSoundBtn').addEventListener('click', () => { unlockAudioEngine(); playNotifSound(); });
 
@@ -1626,7 +1871,13 @@ async function triggerLockTest() {
   const reg = await navigator.serviceWorker.ready;
   alert('3 saniye içinde test bildirimi gönderilecek. Lütfen hemen ekranınızı kilitleyin!');
   setTimeout(() => {
-    reg.showNotification('🚨 TEST BİLDİRİMİ', { body: 'Bu kilit ekranı ve ses test mesajıdır.', icon: '/icon-192.png', requireInteraction: true, silent: false });
+    reg.showNotification('🚨 TEST BİLDİRİMİ', {
+      body: 'Bu kilit ekranı ve ses test mesajıdır.',
+      icon: '/icon-192.png',
+      vibrate: [800, 100, 800, 100, 800, 100, 800],
+      requireInteraction: true,
+      silent: false
+    });
   }, 3000);
 }
 document.getElementById('testLockBtn').addEventListener('click', triggerLockTest);
@@ -1638,9 +1889,25 @@ document.getElementById('profileLink').addEventListener('click', async (e) => {
   document.getElementById('profilePhone').value = localStorage.getItem('selfPhone') || '';
   document.getElementById('profileEmail').value = localStorage.getItem('selfEmail') || '';
   document.getElementById('profileBloodType').value = localStorage.getItem('selfBloodType') || '';
+  // Sunucudan güncel profili (avatar dahil) çek
+  try {
+    const res = await fetch('/api/self-profile/' + getDeviceId());
+    const data = await res.json();
+    if (data.profile) {
+      if (data.profile.email) document.getElementById('profileEmail').value = data.profile.email;
+      if (data.profile.bloodType) document.getElementById('profileBloodType').value = data.profile.bloodType;
+      if (data.profile.avatar) {
+        const img = document.getElementById('profileAvatarPreview');
+        img.src = data.profile.avatar; img.style.display = 'block';
+        document.getElementById('profileAvatarPlaceholder').style.display = 'none';
+      }
+    }
+  } catch {}
 });
 
-document.getElementById('profileAvatarBtn').addEventListener('click', () => document.getElementById('profileAvatarInput').click());
+document.getElementById('profileAvatarBtn').addEventListener('click', () => {
+  document.getElementById('profileAvatarInput').click();
+});
 document.getElementById('profileAvatarInput').addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -1656,7 +1923,7 @@ document.getElementById('profileAvatarInput').addEventListener('change', async (
     img.src = data.avatar; img.style.display = 'block';
     document.getElementById('profileAvatarPlaceholder').style.display = 'none';
     fb.textContent = 'Fotoğraf güncellendi.'; fb.className = 'feedback-msg ok';
-  } catch (err) { fb.textContent = err.message; fb.className = 'feedback-msg err'; }
+  } catch (err) { fb.textContent = err.message || 'Fotoğraf yüklenemedi.'; fb.className = 'feedback-msg err'; }
 });
 
 document.getElementById('profileSaveBtn').addEventListener('click', async () => {
@@ -1687,13 +1954,18 @@ document.getElementById('feedbackSendBtn').addEventListener('click', async () =>
   } catch { showToast('Gönderilemedi.', 'err'); }
 });
 
-// SOHBET VE DİĞER FONKSİYONLAR EKSİKSİZ KORUNDU
+// --- SOHBET ---
 let chatGeneralPoll = null;
 let chatDirectPoll = null;
 let presencePoll = null;
-let currentChatContact = null;
-function hasCompleteProfile() { return !!(localStorage.getItem('selfName') && localStorage.getItem('selfPhone')); }
+let currentChatContact = null; // { deviceId, name }
+
+function hasCompleteProfile() {
+  return !!(localStorage.getItem('selfName') && localStorage.getItem('selfPhone'));
+}
+
 function escChat(s) { return (s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function escChatAttr(s) { return escChat(s).replace(/"/g, '&quot;'); }
 function chatTime(iso) { return new Date(iso).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }); }
 
 let chatGeneralEditingId = null;
@@ -1702,9 +1974,9 @@ let chatDirectEditingId = null;
 function chatReadTick(m, scope) {
   if (scope === 'general') {
     const n = (m.reads || []).length;
-    return n > 0 ? ` <span class="cb-tick read">✓✓</span>` : ' <span class="cb-tick">✓</span>';
+    return n > 0 ? ` <span class="cb-tick read" title="${n} kişi gördü">✓✓</span>` : ' <span class="cb-tick" title="Gönderildi">✓</span>';
   }
-  return m.read ? ' <span class="cb-tick read">✓✓</span>' : ' <span class="cb-tick">✓</span>';
+  return m.read ? ' <span class="cb-tick read" title="Görüldü">✓✓</span>' : ' <span class="cb-tick" title="Gönderildi">✓</span>';
 }
 
 function renderChatMessages(container, messages, isMine, scope, editingId) {
@@ -1712,31 +1984,100 @@ function renderChatMessages(container, messages, isMine, scope, editingId) {
   container.innerHTML = messages.map(m => {
     const mine = isMine(m);
     const name = m.name || m.fromName || '';
+
     if (mine && editingId === m.id) {
       return `<div class="chat-bubble mine chat-bubble-editing" data-msg-id="${m.id}">
-        <input type="text" class="chat-edit-input" id="chatEditInput-${scope}-${m.id}" value="${escChat(m.text)}" maxlength="1000">
+        <input type="text" class="chat-edit-input" id="chatEditInput-${scope}-${m.id}" value="${escChatAttr(m.text)}" maxlength="1000">
         <div class="cb-edit-actions">
-          <button type="button" class="cb-action-btn" onclick="saveEditChatMsg('${scope}','${m.id}')">✓ Kaydet</button>
-          <button type="button" class="cb-action-btn" onclick="cancelEditChatMsg('${scope}')">✕</button>
+          <button type="button" class="cb-action-btn" onclick="saveEditChatMsg('${scope}','${m.id}')" title="Kaydet">✓ Kaydet</button>
+          <button type="button" class="cb-action-btn" onclick="cancelEditChatMsg('${scope}')" title="Vazgeç">✕</button>
         </div>
       </div>`;
     }
+
     const readTick = mine ? chatReadTick(m, scope) : '';
-    const actions = mine ? `<div class="cb-actions"><button type="button" class="cb-action-btn" onclick="startEditChatMsg('${scope}','${m.id}')">✏️</button><button type="button" class="cb-action-btn" onclick="deleteOwnChatMsg('${scope}','${m.id}')">🗑️</button></div>` : '';
+    const actions = mine ? `<div class="cb-actions">
+        <button type="button" class="cb-action-btn" onclick="startEditChatMsg('${scope}','${m.id}')" title="Düzenle">✏️</button>
+        <button type="button" class="cb-action-btn" onclick="deleteOwnChatMsg('${scope}','${m.id}')" title="Sil">🗑️</button>
+      </div>` : '';
+
     return `<div class="chat-bubble ${mine ? 'mine' : 'theirs'}" data-msg-id="${m.id}">
       ${!mine ? `<div class="cb-name">${escChat(name)}</div>` : ''}
       <div>${escChat(m.text)}</div>
       <div class="cb-time">${chatTime(m.time)}${m.editedAt ? ' · düzenlendi' : ''}${readTick}</div>
       ${actions}
     </div>`;
-  }).join('') || '<div style="text-align:center;color:#999;font-size:12px;padding:20px 0;">Henüz mesaj yok.</div>';
+  }).join('') || '<div style="text-align:center;color:#999;font-size:12px;padding:20px 0;">Henüz mesaj yok. İlk mesajı sen yaz!</div>';
   if (wasAtBottom || messages.length <= 1) container.scrollTop = container.scrollHeight;
+
+  const editEl = editingId && document.getElementById('chatEditInput-' + scope + '-' + editingId);
+  if (editEl) {
+    editEl.focus();
+    editEl.setSelectionRange(editEl.value.length, editEl.value.length);
+    editEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') saveEditChatMsg(scope, editingId);
+      if (e.key === 'Escape') cancelEditChatMsg(scope);
+    });
+  }
+}
+
+function startEditChatMsg(scope, id) {
+  if (scope === 'general') chatGeneralEditingId = id; else chatDirectEditingId = id;
+  if (scope === 'general') loadGeneralChat(); else loadDirectChat();
+}
+function cancelEditChatMsg(scope) {
+  if (scope === 'general') chatGeneralEditingId = null; else chatDirectEditingId = null;
+  if (scope === 'general') loadGeneralChat(); else loadDirectChat();
+}
+async function saveEditChatMsg(scope, id) {
+  const input = document.getElementById('chatEditInput-' + scope + '-' + id);
+  const text = input.value.trim();
+  if (!text) return;
+  try {
+    const url = scope === 'general' ? '/api/chat/general/' + id : '/api/chat/direct/' + id;
+    const res = await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), text }) });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Güncellenemedi'); return; }
+  } catch { alert('Güncellenemedi.'); }
+  if (scope === 'general') chatGeneralEditingId = null; else chatDirectEditingId = null;
+  if (scope === 'general') loadGeneralChat(); else loadDirectChat();
+}
+async function deleteOwnChatMsg(scope, id) {
+  if (!confirm('Bu mesajı silmek istediğine emin misin?')) return;
+  try {
+    const url = scope === 'general' ? '/api/chat/general/' + id : '/api/chat/direct/' + id;
+    const res = await fetch(url, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId() }) });
+    if (!res.ok) { const d = await res.json(); alert(d.error || 'Silinemedi'); return; }
+  } catch { alert('Silinemedi.'); }
+  if (scope === 'general') loadGeneralChat(); else loadDirectChat();
+}
+
+async function markGeneralRead(ids) {
+  if (!ids.length) return;
+  try { await fetch('/api/chat/general/read-bulk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), ids }) }); } catch {}
+}
+async function markDirectRead(ids) {
+  if (!ids.length) return;
+  try { await fetch('/api/chat/direct/read-bulk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), ids }) }); } catch {}
 }
 
 async function sendPresenceHeartbeat() {
   if (!hasCompleteProfile()) return;
   try { await fetch('/api/presence', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId() }) }); } catch {}
 }
+
+// Sohbet açıkken bile telefon arka plana düşünce (ekran kilitlendi, başka uygulamaya geçildi)
+// "hayattayım" sinyalini durdur — yoksa kişi saatlerdir uygulamayı görmese bile "Çevrimiçi" görünmeye devam eder.
+// Öne gelince hemen bir sinyal daha at ve pollamayı yeniden başlat.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    if (presencePoll) { clearInterval(presencePoll); presencePoll = null; }
+  } else if (document.visibilityState === 'visible' && hasCompleteProfile()) {
+    sendPresenceHeartbeat();
+    if (presencePoll) clearInterval(presencePoll);
+    presencePoll = setInterval(sendPresenceHeartbeat, 45000);
+  }
+});
 
 async function loadGeneralChat() {
   try {
@@ -1745,6 +2086,8 @@ async function loadGeneralChat() {
     const messages = data.messages || [];
     const myId = getDeviceId();
     renderChatMessages(document.getElementById('chatGeneralMessages'), messages, m => m.deviceId === myId, 'general', chatGeneralEditingId);
+    const unreadIds = messages.filter(m => m.deviceId !== myId && !(m.reads || []).includes(myId)).map(m => m.id);
+    markGeneralRead(unreadIds);
   } catch {}
 }
 
@@ -1754,15 +2097,21 @@ async function sendGeneralChat() {
   if (!text) return;
   input.value = '';
   try {
-    await fetch('/api/chat/general', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), text }) });
+    const res = await fetch('/api/chat/general', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), text }) });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Gönderilemedi'); return; }
     loadGeneralChat();
-  } catch {}
+  } catch { alert('Gönderilemedi.'); }
 }
 
 function formatLastSeen(ts) {
   if (!ts) return '';
-  const d = new Date(ts); const now = new Date(); const time = d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+  const d = new Date(ts);
+  const now = new Date();
+  const time = d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
   if (d.toDateString() === now.toDateString()) return time;
+  const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+  if (d.toDateString() === yesterday.toDateString()) return 'dün ' + time;
   return d.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' }) + ' ' + time;
 }
 
@@ -1771,14 +2120,25 @@ async function loadContacts() {
   try {
     const res = await fetch('/api/chat/contacts?deviceId=' + encodeURIComponent(getDeviceId()));
     const data = await res.json();
-    if (!data.contacts || data.contacts.length === 0) { el.className = 'list-empty'; el.textContent = 'Henüz başka kullanıcı yok.'; return; }
+    if (!data.contacts || data.contacts.length === 0) {
+      el.className = 'list-empty'; el.textContent = 'Henüz profilini tamamlamış başka kullanıcı yok.'; return;
+    }
     el.className = '';
     el.innerHTML = data.contacts.map(c => {
-      const statusHtml = c.online ? 'Çevrimiçi' : (c.lastSeen ? `<i>Son görülme: ${formatLastSeen(c.lastSeen)}</i>` : 'Çevrimdışı');
-      return `<div class="contact-row" onclick="openDirectChat('${c.deviceId}', '${escChat(c.name).replace(/'/g, "\\'")}')">
-        <div class="contact-avatar">${(c.name || '?').charAt(0).toUpperCase()}${c.online ? '<span class="contact-online-dot"></span>' : ''}</div>
-        <div><div class="contact-name">${escChat(c.name)}</div><div class="contact-status">${statusHtml}</div></div>
-      </div>`;
+      const statusHtml = c.online
+        ? 'Çevrimiçi'
+        : (c.lastSeen ? `<i>Son görülme: ${formatLastSeen(c.lastSeen)}</i>` : 'Çevrimdışı');
+      return `
+      <div class="contact-row" onclick="openDirectChat('${c.deviceId}', '${escChat(c.name).replace(/'/g, "\\'")}')">
+        <div class="contact-avatar">${c.avatar ? `<img src="${c.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : (c.name || '?').charAt(0).toUpperCase()}
+          ${c.online ? '<span class="contact-online-dot"></span>' : ''}
+        </div>
+        <div>
+          <div class="contact-name">${escChat(c.name)}</div>
+          <div class="contact-status">${statusHtml}</div>
+        </div>
+      </div>
+    `;
     }).join('');
   } catch { el.className = 'list-empty'; el.textContent = 'Yüklenemedi.'; }
 }
@@ -1809,6 +2169,8 @@ async function loadDirectChat() {
     const messages = data.messages || [];
     const myId = getDeviceId();
     renderChatMessages(document.getElementById('chatDirectMessages'), messages, m => m.fromDeviceId === myId, 'direct', chatDirectEditingId);
+    const unreadIds = messages.filter(m => m.toDeviceId === myId && !m.read).map(m => m.id);
+    markDirectRead(unreadIds);
   } catch {}
 }
 
@@ -1819,9 +2181,14 @@ async function sendDirectChat() {
   if (!text) return;
   input.value = '';
   try {
-    await fetch('/api/chat/direct', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), toDeviceId: currentChatContact.deviceId, text }) });
+    const res = await fetch('/api/chat/direct', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deviceId: getDeviceId(), toDeviceId: currentChatContact.deviceId, text })
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Gönderilemedi'); return; }
     loadDirectChat();
-  } catch {}
+  } catch { alert('Gönderilemedi.'); }
 }
 
 document.getElementById('chatGeneralSendBtn').addEventListener('click', sendGeneralChat);
@@ -1836,7 +2203,8 @@ document.getElementById('chatTabGeneral').addEventListener('click', () => {
   document.getElementById('chatPanelDirect').style.display = 'none';
   if (chatDirectPoll) { clearInterval(chatDirectPoll); chatDirectPoll = null; }
   loadGeneralChat();
-  if (chatGeneralPoll) clearInterval(chatGeneralPoll); chatGeneralPoll = setInterval(loadGeneralChat, 4000);
+  if (chatGeneralPoll) clearInterval(chatGeneralPoll);
+  chatGeneralPoll = setInterval(loadGeneralChat, 4000);
 });
 
 document.getElementById('chatTabDirect').addEventListener('click', () => {
@@ -1851,7 +2219,10 @@ document.getElementById('chatTabDirect').addEventListener('click', () => {
   loadContacts();
 });
 
-document.getElementById('chatGoProfileBtn').addEventListener('click', () => { closeModal('chatModal'); document.getElementById('profileLink').click(); });
+document.getElementById('chatGoProfileBtn').addEventListener('click', () => {
+  closeModal('chatModal');
+  document.getElementById('profileLink').click();
+});
 
 document.getElementById('chatLink').addEventListener('click', (e) => {
   e.preventDefault();
@@ -1860,14 +2231,27 @@ document.getElementById('chatLink').addEventListener('click', (e) => {
     document.getElementById('chatLockedNotice').style.display = 'none';
     document.getElementById('chatUnlocked').style.display = 'block';
     sendPresenceHeartbeat();
-    if (presencePoll) clearInterval(presencePoll); presencePoll = setInterval(sendPresenceHeartbeat, 45000);
+    if (presencePoll) clearInterval(presencePoll);
+    presencePoll = setInterval(sendPresenceHeartbeat, 45000);
     loadGeneralChat();
-    if (chatGeneralPoll) clearInterval(chatGeneralPoll); chatGeneralPoll = setInterval(loadGeneralChat, 4000);
+    if (chatGeneralPoll) clearInterval(chatGeneralPoll);
+    chatGeneralPoll = setInterval(loadGeneralChat, 4000);
   } else {
     document.getElementById('chatLockedNotice').style.display = 'block';
     document.getElementById('chatUnlocked').style.display = 'none';
   }
 });
+
+// Sohbet kapatılınca polling'i durdur
+document.querySelectorAll('.card-close').forEach(btn => {
+  if (btn.dataset.close === 'chatModal') {
+    btn.addEventListener('click', () => {
+      if (chatGeneralPoll) { clearInterval(chatGeneralPoll); chatGeneralPoll = null; }
+      if (chatDirectPoll) { clearInterval(chatDirectPoll); chatDirectPoll = null; }
+    });
+  }
+});
+
 
 let selectedCategory = 'genel';
 document.getElementById('catRow').addEventListener('click', (e) => {
@@ -1875,6 +2259,7 @@ document.getElementById('catRow').addEventListener('click', (e) => {
   document.querySelectorAll('#catRow .cat-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active'); selectedCategory = btn.dataset.cat;
 });
+
 
 document.getElementById('adminLoginBtn').addEventListener('click', async () => {
   const pass = document.getElementById('adminGlobalPassword').value.trim();
@@ -1899,21 +2284,64 @@ Object.keys(admTabs).forEach(key => {
     });
     document.getElementById('admTab' + key.charAt(0).toUpperCase() + key.slice(1)).classList.add('active');
     document.getElementById(admTabs[key]).style.display = 'block';
+    if (key === 'inbox') loadAdminInbox();
+    if (key === 'devices') loadAdminDevices();
+    if (key === 'stats') loadAdminStats();
   });
 });
+
+async function loadAdminStats() {
+  const sumEl = document.getElementById('adminStatsSummary');
+  const perMsgEl = document.getElementById('adminStatsPerMessage');
+  try {
+    const res = await fetch('/api/stats?password=' + encodeURIComponent(activeAdminPassword));
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Yüklenemedi');
+    sumEl.className = '';
+    sumEl.innerHTML = `
+      <div class="admin-box" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div><div style="font-size:22px;font-weight:700;">${data.totalSubscribers}</div><div style="font-size:11px;color:#888;">Toplam Abone</div></div>
+        <div><div style="font-size:22px;font-weight:700;">${data.namedDevices}</div><div style="font-size:11px;color:#888;">Adını Girmiş Kişi</div></div>
+        <div><div style="font-size:22px;font-weight:700;">${data.todaysMessages}</div><div style="font-size:11px;color:#888;">Bugün Gönderilen Duyuru</div></div>
+        <div><div style="font-size:22px;font-weight:700;">${data.totalMessages}</div><div style="font-size:11px;color:#888;">Toplam Duyuru</div></div>
+        <div><div style="font-size:22px;font-weight:700;">${data.todaysFeedback}</div><div style="font-size:11px;color:#888;">Bugünkü Görüş/Öneri</div></div>
+        <div><div style="font-size:22px;font-weight:700;">${data.totalFeedback}</div><div style="font-size:11px;color:#888;">Toplam Görüş/Öneri</div></div>
+      </div>`;
+
+    if (!data.perMessage || data.perMessage.length === 0) {
+      perMsgEl.className = 'list-empty'; perMsgEl.textContent = 'Henüz duyuru yok.';
+    } else {
+      perMsgEl.className = '';
+      perMsgEl.innerHTML = data.perMessage.map(m => `
+        <div class="admin-box">
+          <div style="font-size:11px;color:#888;">${formatTime(m.time)} · ${catNames[m.category] || 'Genel'}</div>
+          <div style="font-size:13px;margin:4px 0;"><b>${esc(m.title)}</b></div>
+          <div style="font-size:12px;color:var(--clay);cursor:pointer;" onclick="showReads('${m.id}')">👁 ${m.readCount} kişi okudu — detay için tıklayın</div>
+        </div>
+      `).join('');
+    }
+  } catch (err) {
+    sumEl.className = 'list-empty'; sumEl.textContent = err.message;
+    perMsgEl.className = ''; perMsgEl.innerHTML = '';
+  }
+}
 
 document.getElementById('doSendBtn').addEventListener('click', async () => {
   const title = document.getElementById('sendTitle').value.trim();
   const body = document.getElementById('sendBody').value.trim();
   const fileInput = document.getElementById('sendAttachment');
   const fb = document.getElementById('sendFeedback');
+
   if (!title || !body) { fb.textContent = 'Başlık ve mesaj zorunludur.'; fb.className = 'feedback-msg err'; return; }
+
   const formData = new FormData();
   formData.append('password', activeAdminPassword);
   formData.append('category', selectedCategory);
   formData.append('title', title);
   formData.append('body', body);
   if (fileInput.files[0]) formData.append('attachment', fileInput.files[0]);
+
+  fb.textContent = 'Gönderiliyor...'; fb.className = 'feedback-msg';
   try {
     const res = await fetch('/api/send', { method: 'POST', body: formData });
     const data = await res.json();
@@ -1936,11 +2364,15 @@ document.getElementById('doAddItemBtn').addEventListener('click', async () => {
   const f2 = document.getElementById('itemField2').value.trim();
   const fileInput = document.getElementById('itemAttachment');
   const fb = document.getElementById('itemFeedback');
+
   if (!f1) { fb.textContent = 'Gerekli alanları doldurun.'; fb.className = 'feedback-msg err'; return; }
+
   const formData = new FormData();
   formData.append('password', activeAdminPassword);
-  if (type === 'phones') { formData.append('name', f1); formData.append('number', f2); } else { formData.append('text', f1); }
+  if (type === 'phones') { formData.append('name', f1); formData.append('number', f2); }
+  else { formData.append('text', f1); }
   if (fileInput.files[0]) formData.append('attachment', fileInput.files[0]);
+
   try {
     const res = await fetch(`/api/${type}`, { method: 'POST', body: formData });
     if (!res.ok) throw new Error('Eklenemedi');
@@ -1949,6 +2381,243 @@ document.getElementById('doAddItemBtn').addEventListener('click', async () => {
     location.reload();
   } catch (err) { fb.textContent = err.message; fb.className = 'feedback-msg err'; }
 });
+
+async function loadAdminInbox() {
+  const el = document.getElementById('adminFeedbackList');
+  try {
+    const res = await fetch(`/api/feedback?password=${encodeURIComponent(activeAdminPassword)}`);
+    const data = await res.json();
+    if (!data.items || data.items.length === 0) { el.className = 'list-empty'; el.textContent = 'Gelen mesaj yok.'; return; }
+    el.className = '';
+    el.innerHTML = data.items.map(i => `
+      <div class="admin-box">
+        <div style="font-size:11px;color:#888;">${formatTime(i.time)} - <b>${esc(i.name || 'İsimsiz')}</b></div>
+        <div style="font-size:13px;margin-top:4px;color:#222;">${esc(i.text)}</div>
+      </div>
+    `).join('');
+  } catch { el.className = 'list-empty'; el.textContent = 'Yüklenemedi.'; }
+}
+
+async function loadAdminDevices() {
+  const el = document.getElementById('adminDeviceList');
+  try {
+    const res = await fetch('/api/devices');
+    const data = await res.json();
+    if (!data.devices || data.devices.length === 0) { el.className = 'list-empty'; el.textContent = 'Kayıtlı cihaz yok.'; return; }
+    el.className = '';
+    el.innerHTML = data.devices.map(d => `
+      <div class="admin-box">
+        <div style="font-size:11px;color:#888;">Cihaz ID: ...${d.deviceId.slice(-6)}${d.email ? ' · ' + esc(d.email) : ''}${d.bloodType ? ' · Kan: ' + esc(d.bloodType) : ''}</div>
+        <div style="font-size:12px;margin:4px 0;">Mevcut İsim: <b>${esc(d.name || d.suggestedName || 'Tanımlanmamış')}</b>${d.suggestedPhone ? ' · Tel: ' + esc(d.suggestedPhone) : ''}</div>
+        <div style="display:flex;gap:6px;margin-bottom:8px;">
+          <input type="text" id="dev_${d.deviceId}" placeholder="Yeni İsim Ata" style="font-size:12px;padding:4px 6px;">
+          <button class="btn-primary" style="padding:4px 8px;font-size:12px;" onclick="assignDevName('${d.deviceId}')">Kaydet</button>
+        </div>
+        <button type="button" class="btn-warning" style="padding:5px 10px;font-size:12px;" onclick="togglePersonalMsg('${d.deviceId}')">📩 Kişiye Özel Mesaj Gönder</button>
+        <div id="pm_${d.deviceId}" style="display:none;margin-top:8px;padding-top:8px;border-top:1px dashed #ddd;">
+          <input type="text" id="pmTitle_${d.deviceId}" placeholder="Başlık (örn: Yemekhane Borcu)" style="font-size:12px;padding:6px;margin-bottom:6px;">
+          <textarea id="pmBody_${d.deviceId}" placeholder="Mesaj..." style="font-size:12px;padding:6px;min-height:50px;margin-bottom:6px;"></textarea>
+          <button class="btn-primary" style="padding:5px 10px;font-size:12px;" onclick="sendPersonalMsg('${d.deviceId}')">Sadece Bu Kişiye Gönder</button>
+          <div class="feedback-msg" id="pmFeedback_${d.deviceId}"></div>
+        </div>
+      </div>
+    `).join('');
+  } catch { el.className = 'list-empty'; el.textContent = 'Yüklenemedi.'; }
+}
+
+function togglePersonalMsg(deviceId) {
+  const box = document.getElementById('pm_' + deviceId);
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+async function sendPersonalMsg(deviceId) {
+  const title = document.getElementById('pmTitle_' + deviceId).value.trim();
+  const body = document.getElementById('pmBody_' + deviceId).value.trim();
+  const fb = document.getElementById('pmFeedback_' + deviceId);
+  if (!title || !body) { fb.textContent = 'Başlık ve mesaj zorunlu.'; fb.className = 'feedback-msg err'; return; }
+  try {
+    const res = await fetch('/api/send-to', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: activeAdminPassword, deviceId, title, body, category: 'genel' })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Gönderilemedi');
+    fb.textContent = `Gönderildi (${data.sent} cihaza ulaştı).`; fb.className = 'feedback-msg ok';
+    document.getElementById('pmTitle_' + deviceId).value = '';
+    document.getElementById('pmBody_' + deviceId).value = '';
+  } catch (err) { fb.textContent = err.message; fb.className = 'feedback-msg err'; }
+}
+
+async function assignDevName(deviceId) {
+  const val = document.getElementById('dev_' + deviceId).value.trim();
+  if (!val) return;
+  try {
+    await fetch('/api/devices/name', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: activeAdminPassword, deviceId, name: val })
+    });
+    alert('İsim atandı.'); loadAdminDevices();
+  } catch { alert('Atanamadı.'); }
+}
+
+async function showReads(msgId) {
+  try {
+    const res = await fetch(`/api/messages/${msgId}/reads`);
+    const data = await res.json();
+    const names = data.reads.map(r => r.name).join('\n') || 'Henüz kimse okumadı.';
+    alert(`Okuyanlar (${data.reads.length}/${data.totalSubscribers}):\n\n` + names);
+  } catch { alert('Okuma bilgisi alınamadı.'); }
+}
+
+async function deleteMessage(id) {
+  if (!confirm('Bu duyuruyu silmek istediğinize emin misiniz?')) return;
+  try {
+    await fetch('/api/messages/' + id, { method: 'DELETE', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ password: activeAdminPassword }) });
+    loadHistory();
+  } catch { alert('Silinemedi.'); }
+}
+
+async function deleteGeneric(type, id) {
+  if (!confirm('Silmek istediğinize emin misiniz?')) return;
+  try {
+    await fetch(`/api/${type}/${id}`, { method: 'DELETE', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ password: activeAdminPassword }) });
+    location.reload();
+  } catch { alert('Silinemedi.'); }
+}
+
+// ---------- YEMEK KAYDIM (self-servis kayıt / giriş / OTP / kişisel yemekhane geçmişi) ----------
+function mealsGetToken() { return localStorage.getItem('mealsToken') || ''; }
+function mealsSetToken(t) { if (t) localStorage.setItem('mealsToken', t); else localStorage.removeItem('mealsToken'); }
+let mealsPendingEmail = '';
+
+function mealsShowStep(step) {
+  ['mealsStepRegister', 'mealsStepVerify', 'mealsStepLogin', 'mealsStepRecords'].forEach(id => {
+    document.getElementById(id).style.display = (id === step) ? 'block' : 'none';
+  });
+}
+
+document.getElementById('mealsLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  openModal('mealsModal');
+  if (mealsGetToken()) { mealsShowStep('mealsStepRecords'); mealsLoadRecords(); }
+  else { mealsShowStep('mealsStepRegister'); }
+});
+
+document.getElementById('mealsGoLoginLink').addEventListener('click', (e) => { e.preventDefault(); mealsShowStep('mealsStepLogin'); });
+document.getElementById('mealsGoRegisterLink').addEventListener('click', (e) => { e.preventDefault(); mealsShowStep('mealsStepRegister'); });
+
+document.getElementById('mealsRegisterBtn').addEventListener('click', async () => {
+  const adSoyad = document.getElementById('mealsRegName').value.trim();
+  const telefon = document.getElementById('mealsRegPhone').value.trim();
+  const email = document.getElementById('mealsRegEmail').value.trim();
+  const sifre = document.getElementById('mealsRegPass').value;
+  const fb = document.getElementById('mealsRegFeedback');
+  if (!adSoyad || !telefon || !email || !sifre) { fb.textContent = 'Tüm alanları doldurun.'; fb.className = 'feedback-msg err'; return; }
+  const btn = document.getElementById('mealsRegisterBtn');
+  btn.disabled = true; fb.textContent = 'Gönderiliyor...'; fb.className = 'feedback-msg';
+  try {
+    const res = await fetch('/api/self-register', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adSoyad, telefon, email, sifre })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Kayıt olunamadı.');
+    mealsPendingEmail = email;
+    fb.textContent = ''; fb.className = 'feedback-msg';
+    mealsShowStep('mealsStepVerify');
+  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
+  finally { btn.disabled = false; }
+});
+
+document.getElementById('mealsVerifyBtn').addEventListener('click', async () => {
+  const kod = document.getElementById('mealsVerifyCode').value.trim();
+  const fb = document.getElementById('mealsVerifyFeedback');
+  if (!kod) { fb.textContent = 'Kodu girin.'; fb.className = 'feedback-msg err'; return; }
+  const btn = document.getElementById('mealsVerifyBtn');
+  btn.disabled = true; fb.textContent = 'Doğrulanıyor...'; fb.className = 'feedback-msg';
+  try {
+    const res = await fetch('/api/self-verify', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: mealsPendingEmail, kod })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Doğrulanamadı.');
+    fb.textContent = 'E-posta doğrulandı! Şimdi giriş yapabilirsin.'; fb.className = 'feedback-msg ok';
+    document.getElementById('mealsLoginEmail').value = mealsPendingEmail;
+    setTimeout(() => mealsShowStep('mealsStepLogin'), 900);
+  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
+  finally { btn.disabled = false; }
+});
+
+document.getElementById('mealsResendBtn').addEventListener('click', async () => {
+  const fb = document.getElementById('mealsVerifyFeedback');
+  try {
+    const res = await fetch('/api/self-resend', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: mealsPendingEmail })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Gönderilemedi.');
+    fb.textContent = 'Yeni kod gönderildi.'; fb.className = 'feedback-msg ok';
+  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
+});
+
+document.getElementById('mealsLoginBtn').addEventListener('click', async () => {
+  const email = document.getElementById('mealsLoginEmail').value.trim();
+  const sifre = document.getElementById('mealsLoginPass').value;
+  const fb = document.getElementById('mealsLoginFeedback');
+  if (!email || !sifre) { fb.textContent = 'E-posta ve şifre gerekli.'; fb.className = 'feedback-msg err'; return; }
+  const btn = document.getElementById('mealsLoginBtn');
+  btn.disabled = true; fb.textContent = 'Giriş yapılıyor...'; fb.className = 'feedback-msg';
+  try {
+    const res = await fetch('/api/self-login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, sifre })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Giriş yapılamadı.');
+    mealsSetToken(data.token);
+    fb.textContent = ''; fb.className = 'feedback-msg';
+    mealsShowStep('mealsStepRecords');
+    mealsLoadRecords();
+  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
+  finally { btn.disabled = false; }
+});
+
+document.getElementById('mealsLogoutBtn').addEventListener('click', () => {
+  mealsSetToken(null);
+  mealsShowStep('mealsStepLogin');
+});
+
+async function mealsLoadRecords() {
+  const listEl = document.getElementById('mealsRecordsList');
+  const whoEl = document.getElementById('mealsRecordsWho');
+  const debtEl = document.getElementById('mealsDebtAmount');
+  listEl.className = 'list-empty'; listEl.textContent = 'Yükleniyor...';
+  try {
+    const res = await fetch('/api/my-meals', { headers: { 'Authorization': 'Bearer ' + mealsGetToken() } });
+    const data = await res.json();
+    if (res.status === 401) { mealsSetToken(null); mealsShowStep('mealsStepLogin'); return; }
+    if (!data.ok) { listEl.textContent = data.error || 'Kayıtlar alınamadı.'; return; }
+
+    whoEl.textContent = `${data.adSoyad || ''}${data.birim ? ' · ' + data.birim : ''}`;
+    debtEl.textContent = (data.toplamBorc || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₺';
+
+    if (!data.kayitlar || data.kayitlar.length === 0) {
+      listEl.className = 'list-empty'; listEl.textContent = 'Henüz yemek kaydın yok.'; return;
+    }
+    listEl.className = '';
+    listEl.innerHTML = data.kayitlar.map(k => {
+      const tarih = new Date(k.tarih + 'T00:00:00').toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
+      const durumRenk = k.odemeDurumu === 'Borçlu' ? 'var(--clay)' : 'var(--sage)';
+      return `<div class="list-item"><div class="li-main">
+          <div class="li-top"><span class="li-time">${tarih}</span><span style="font-size:10px;font-weight:700;color:${durumRenk};">${esc(k.odemeDurumu || '')}</span></div>
+          <div class="li-title">${esc(k.yemek || 'Menü bilgisi yok')}</div>
+          <div class="li-body">Kendi: ${k.kendi} ${k.misafir ? '· Misafir: ' + k.misafir : ''} · Tutar: ${(k.tutar || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</div>
+        </div></div>`;
+    }).join('');
+  } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
+}
 </script>
 </body>
 </html>
