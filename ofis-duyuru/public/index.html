@@ -295,6 +295,49 @@
   .list-item .li-phone { font-family: 'Fraunces', serif; font-weight: 700; font-size: 16px; color: var(--clay); text-decoration: none; }
   .list-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 18px; }
 
+  /* MANŞET (öne çıkan duyuru carousel'i) */
+  .manset-wrap { margin-bottom: 18px; }
+  .manset-nav { display: flex; align-items: center; gap: 10px; }
+  .manset-nav-btn {
+    background: rgba(255,255,255,0.08); border: 1px solid var(--line); color: var(--paper);
+    width: 34px; height: 34px; min-width: 34px; border-radius: 50%; font-size: 17px; cursor: pointer;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: background 0.15s ease;
+  }
+  .manset-nav-btn:hover { background: rgba(255,255,255,0.16); }
+  .manset-card {
+    flex: 1; position: relative; border-radius: 14px; overflow: hidden; padding: 26px 24px;
+    min-height: 150px; display: flex; flex-direction: column; justify-content: center;
+    color: #fff; cursor: pointer; box-shadow: 0 14px 32px rgba(0,0,0,0.35);
+    background: linear-gradient(135deg, var(--manset-c1, var(--ink)), var(--manset-c2, #000));
+    transition: transform 0.15s ease;
+  }
+  .manset-card:hover { transform: translateY(-2px); }
+  .manset-tag {
+    display: inline-block; background: rgba(255,255,255,0.2); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 11px; border-radius: 20px;
+    margin-bottom: 12px; width: fit-content;
+  }
+  .manset-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 20px; margin: 0 0 8px; line-height: 1.25; }
+  .manset-date { font-size: 12px; opacity: 0.82; }
+  .manset-dots { display: flex; gap: 6px; justify-content: center; margin-top: 12px; }
+  .manset-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.28); cursor: pointer; border: none; padding: 0; }
+  .manset-dot.active { background: var(--paper); }
+  .li-detay-link { font-size: 11.5px; color: var(--clay); font-weight: 600; cursor: pointer; margin-top: 6px; display: inline-block; }
+
+  /* DUYURU DETAY POPUP */
+  #duyuruDetayOverlay .toast-box { max-width: 440px; text-align: left; position: relative; }
+  .dd-close { position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 18px; color: #999; cursor: pointer; line-height: 1; }
+  .dd-close:hover { color: var(--ink); }
+  .dd-tag { display: inline-block; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #fff; padding: 3px 10px; border-radius: 20px; margin-bottom: 10px; }
+  .dd-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 19px; margin: 0 0 6px; color: var(--ink); }
+  .dd-meta { font-size: 11.5px; color: #999; margin-bottom: 14px; }
+  .dd-body { font-size: 14px; line-height: 1.6; color: #333; margin-bottom: 8px; white-space: pre-wrap; }
+  .dd-read-info { font-size: 12px; color: #888; margin: 12px 0 4px; }
+  .dd-actions { display: flex; gap: 8px; margin-top: 16px; }
+  .dd-actions button { flex: 1; }
+  .btn-share { background: var(--sage); color: #fff; }
+  .btn-share:hover { opacity: 0.85; }
+
   #splash {
     position: fixed; inset: 0; background: var(--ink); display: flex;
     align-items: center; justify-content: center; z-index: 999; transition: opacity 0.6s ease;
@@ -586,6 +629,7 @@
       <div style="font-family:'Fraunces',serif; font-weight:700; font-size:14px; color:var(--paper); margin-bottom:8px;">📅 Yaklaşanlar</div>
       <div id="upcomingList"></div>
     </div>
+    <div class="manset-wrap" id="duyuruManset" style="display:none;"></div>
     <div class="list-section">
       <h3>Son Duyurular</h3>
       <div id="historyList" class="list-empty">Yükleniyor...</div>
@@ -678,6 +722,23 @@
       <div id="calDayHolidayBanner" style="display:none; background:#FDECEA; color:#B03030; font-size:12.5px; font-weight:700; padding:8px 12px; border-radius:6px; margin-bottom:10px; text-align:center;"></div>
       <div id="calDayNotesList" style="margin:14px 0; max-height:280px; overflow-y:auto;"></div>
       <button class="btn-danger" id="calDayCloseBtn" style="width:100%; margin-top:10px;">Kapat</button>
+    </div>
+  </div>
+
+  <!-- DUYURU DETAY POPUP (manşet / listeden ajax ile açılır) -->
+  <div class="toast-overlay" id="duyuruDetayOverlay">
+    <div class="toast-box">
+      <button type="button" class="dd-close" id="duyuruDetayCloseBtn" aria-label="Kapat">✕</button>
+      <div id="duyuruDetayTag" class="dd-tag"></div>
+      <div id="duyuruDetayTitle" class="dd-title"></div>
+      <div id="duyuruDetayMeta" class="dd-meta"></div>
+      <div id="duyuruDetayBody" class="dd-body"></div>
+      <div id="duyuruDetayAttach"></div>
+      <div id="duyuruDetayReadInfo" class="dd-read-info"></div>
+      <div class="dd-actions">
+        <button type="button" class="btn-primary" id="duyuruDetayReadBtn"></button>
+        <button type="button" class="btn-share" id="duyuruDetayShareBtn">🔗 Paylaş</button>
+      </div>
     </div>
   </div>
 
@@ -1219,6 +1280,8 @@ let activeAdminPassword = '';
 let historyPage = 1;
 let historyPageSize = parseInt(localStorage.getItem('historyPageSize') || '10', 10);
 
+let historyItemsCache = [];
+
 async function loadHistory() {
   const listEl = document.getElementById('historyList');
   const pagRow = document.getElementById('historyPagination');
@@ -1234,6 +1297,7 @@ async function loadHistory() {
       pagRow.style.display = total > historyPageSize ? 'flex' : 'none';
     } else {
       listEl.className = '';
+      historyItemsCache = historyItemsCache.concat(data.messages).filter((m, i, arr) => arr.findIndex(x => x.id === m.id) === i);
       const readIds = getReadIds();
       listEl.innerHTML = data.messages.map(m => {
         const isRead = readIds.includes(m.id);
@@ -1248,9 +1312,10 @@ async function loadHistory() {
                 ${m.attachment ? `<button type="button" class="li-toggle" data-toggle-attach="${m.id}" aria-label="Detayı göster">▾</button>` : ''}
               </span>
             </div>
-            <div class="li-title" ${m.attachment ? `style="cursor:pointer;" data-toggle-attach="${m.id}"` : ''}>${esc(m.title)}</div>
+            <div class="li-title" style="cursor:pointer;" data-detay-id="${m.id}">${esc(m.title)}</div>
             <div class="li-body">${esc(m.body)}</div>
             <div class="attach-wrap" id="attach-${m.id}">${renderAttachment(m.attachment)}</div>
+            <span class="li-detay-link" data-detay-id="${m.id}">🔎 Detay / Paylaş</span>
             ${activeAdminPassword ? `<div style="margin-top:8px;"><span class="reads-badge" onclick="showReads('${m.id}')">👁 Okundu Bilgisi</span> <button class="btn-danger" onclick="deleteMessage('${m.id}')">Sil</button></div>` : ''}
           </div>
         </div>
@@ -1265,6 +1330,9 @@ async function loadHistory() {
       });
       listEl.querySelectorAll('[data-read-id]').forEach(btn => {
         btn.addEventListener('click', () => markAsRead(btn.dataset.readId, btn));
+      });
+      listEl.querySelectorAll('[data-detay-id]').forEach(el => {
+        el.addEventListener('click', () => openDuyuruDetay(el.dataset.detayId));
       });
 
       const totalPages = Math.max(1, Math.ceil(total / historyPageSize));
@@ -1285,6 +1353,129 @@ document.getElementById('historyPageSize').addEventListener('change', (e) => {
 document.getElementById('historyPrevBtn').addEventListener('click', () => { if (historyPage > 1) { historyPage--; loadHistory(); } });
 document.getElementById('historyNextBtn').addEventListener('click', () => { historyPage++; loadHistory(); });
 loadHistory();
+
+// ---------- MANŞET (öne çıkan duyuru carousel'i) ----------
+let mansetItems = [];
+let mansetIdx = 0;
+let mansetTimer = null;
+
+function mansetColors(cat) {
+  const map = {
+    acil: ['#E0972C', '#B5674A'],
+    yemek: ['#6B8F71', '#3E5C43'],
+    vefat: ['#4A4A52', '#1F2430'],
+    dogum: ['#C9A24B', '#8A6D2F'],
+    genel: ['#7A2331', '#5A1622'],
+  };
+  return map[cat] || map.genel;
+}
+
+async function loadManset() {
+  try {
+    const res = await fetch('/api/messages?page=1&pageSize=8');
+    const data = await res.json();
+    mansetItems = data.messages || [];
+    historyItemsCache = historyItemsCache.concat(mansetItems).filter((m, i, arr) => arr.findIndex(x => x.id === m.id) === i);
+  } catch { mansetItems = []; }
+  mansetIdx = 0;
+  renderManset();
+  if (mansetTimer) clearInterval(mansetTimer);
+  if (mansetItems.length > 1) {
+    mansetTimer = setInterval(() => { mansetIdx = (mansetIdx + 1) % mansetItems.length; renderManset(); }, 6000);
+  }
+}
+
+function renderManset() {
+  const wrap = document.getElementById('duyuruManset');
+  if (!wrap) return;
+  if (mansetItems.length === 0) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  const m = mansetItems[mansetIdx];
+  const [c1, c2] = mansetColors(m.category);
+  wrap.innerHTML = `
+    <div class="manset-nav">
+      ${mansetItems.length > 1 ? '<button type="button" class="manset-nav-btn" id="mansetPrevBtn" aria-label="Önceki">‹</button>' : ''}
+      <div class="manset-card" style="--manset-c1:${c1}; --manset-c2:${c2};" id="mansetCard">
+        <span class="manset-tag">${catNames[m.category] || 'Genel'}</span>
+        <div class="manset-title">${esc(m.title)}</div>
+        <div class="manset-date">📅 ${formatTime(m.time)}</div>
+      </div>
+      ${mansetItems.length > 1 ? '<button type="button" class="manset-nav-btn" id="mansetNextBtn" aria-label="Sonraki">›</button>' : ''}
+    </div>
+    ${mansetItems.length > 1 ? `<div class="manset-dots">${mansetItems.map((_, i) => `<button type="button" class="manset-dot ${i === mansetIdx ? 'active' : ''}" data-dot-idx="${i}" aria-label="Duyuru ${i + 1}"></button>`).join('')}</div>` : ''}
+  `;
+  document.getElementById('mansetCard').addEventListener('click', () => openDuyuruDetay(m.id));
+  const prevBtn = document.getElementById('mansetPrevBtn');
+  const nextBtn = document.getElementById('mansetNextBtn');
+  if (prevBtn) prevBtn.addEventListener('click', () => { mansetIdx = (mansetIdx - 1 + mansetItems.length) % mansetItems.length; renderManset(); });
+  if (nextBtn) nextBtn.addEventListener('click', () => { mansetIdx = (mansetIdx + 1) % mansetItems.length; renderManset(); });
+  wrap.querySelectorAll('[data-dot-idx]').forEach(d => {
+    d.addEventListener('click', () => { mansetIdx = parseInt(d.dataset.dotIdx, 10); renderManset(); });
+  });
+}
+
+loadManset();
+
+// ---------- DUYURU DETAY POPUP (ajax) ----------
+let duyuruDetayCurrent = null;
+
+async function openDuyuruDetay(id) {
+  const m = historyItemsCache.find(x => x.id === id);
+  if (!m) return;
+  duyuruDetayCurrent = m;
+  const [c1] = mansetColors(m.category);
+  document.getElementById('duyuruDetayTag').textContent = catNames[m.category] || 'Genel';
+  document.getElementById('duyuruDetayTag').style.background = c1;
+  document.getElementById('duyuruDetayTitle').textContent = m.title;
+  document.getElementById('duyuruDetayMeta').textContent = '📅 ' + formatTime(m.time) + (m.editedAt ? ' · düzenlendi' : '');
+  document.getElementById('duyuruDetayBody').textContent = m.body;
+  document.getElementById('duyuruDetayAttach').innerHTML = renderAttachment(m.attachment);
+
+  const readCount = (m.reads && m.reads.length) || 0;
+  document.getElementById('duyuruDetayReadInfo').textContent = `👁 ${readCount} kişi okudu`;
+
+  const isRead = getReadIds().includes(m.id);
+  const readBtn = document.getElementById('duyuruDetayReadBtn');
+  readBtn.textContent = isRead ? '✓ Okundu' : '👁 Okudum';
+  readBtn.disabled = isRead;
+  readBtn.onclick = async () => {
+    await markAsRead(m.id);
+    readBtn.textContent = '✓ Okundu';
+    readBtn.disabled = true;
+    const listBtn = document.querySelector(`[data-read-id="${m.id}"]`);
+    if (listBtn) { listBtn.classList.add('done'); listBtn.innerHTML = '✓ Okundu'; }
+    const cur = historyItemsCache.find(x => x.id === m.id);
+    if (cur) {
+      cur.reads = cur.reads || [];
+      document.getElementById('duyuruDetayReadInfo').textContent = `👁 ${cur.reads.length} kişi okudu`;
+    }
+  };
+
+  document.getElementById('duyuruDetayOverlay').classList.add('show');
+}
+
+document.getElementById('duyuruDetayCloseBtn').addEventListener('click', () => {
+  document.getElementById('duyuruDetayOverlay').classList.remove('show');
+});
+document.getElementById('duyuruDetayOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'duyuruDetayOverlay') document.getElementById('duyuruDetayOverlay').classList.remove('show');
+});
+
+document.getElementById('duyuruDetayShareBtn').addEventListener('click', async () => {
+  const m = duyuruDetayCurrent;
+  if (!m) return;
+  const shareText = `📢 ${m.title}\n\n${m.body}`;
+  if (navigator.share) {
+    try { await navigator.share({ title: m.title, text: shareText }); } catch {}
+  } else {
+    try {
+      await navigator.clipboard.writeText(shareText);
+      showToast('Duyuru metni panoya kopyalandı.', 'ok');
+    } catch {
+      showToast('Paylaşım desteklenmiyor, metni elle kopyalayın.', 'err');
+    }
+  }
+});
 
 async function loadReadOnlyList(endpoint, listId, emptyText, renderItem, allowToggle) {
   const listEl = document.getElementById(listId);
