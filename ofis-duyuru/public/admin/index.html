@@ -131,6 +131,29 @@
   .toast-box .ticon { font-size: 34px; margin-bottom: 10px; }
   .toast-box .ttitle { font-family: 'Fraunces', serif; font-weight: 700; font-size: 17px; margin-bottom: 8px; }
   .toast-box .tmsg { font-size: 13.5px; color: #555; line-height: 1.5; margin-bottom: 18px; }
+
+  /* TAKVİM */
+  .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .cal-nav button { background: var(--ink); color: var(--paper); padding: 8px 14px; font-size: 13px; }
+  .cal-nav .cal-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; }
+  .cal-view-toggle { display: flex; gap: 6px; margin-bottom: 16px; }
+  .cal-view-toggle button { background: #eee; color: #555; padding: 6px 14px; font-size: 12.5px; border-radius: 20px; }
+  .cal-view-toggle button.active { background: var(--ink); color: var(--paper); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-dow { text-align: center; font-size: 11px; font-weight: 700; color: #999; padding: 4px 0; }
+  .cal-day { aspect-ratio: 1; border: 1px solid #e5e2d8; border-radius: 6px; padding: 4px; cursor: pointer; position: relative; font-size: 12px; color: var(--ink); transition: background 0.15s ease; }
+  .cal-day:hover { background: #f5f3ee; }
+  .cal-day.empty { border: none; cursor: default; }
+  .cal-day.today { border-color: var(--amber); border-width: 2px; }
+  .cal-day .cd-num { font-weight: 700; }
+  .cal-day .cd-dot { position: absolute; bottom: 4px; right: 4px; width: 7px; height: 7px; border-radius: 50%; background: var(--clay); }
+  .cal-year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+  .cal-mini-month { background: #f7f5f0; border-radius: 6px; padding: 10px; cursor: pointer; }
+  .cal-mini-month:hover { background: #efece0; }
+  .cal-mini-month .cmm-title { font-weight: 700; font-size: 12.5px; margin-bottom: 6px; }
+  .cal-mini-month .cmm-count { font-size: 11px; color: var(--clay); }
+  .cal-search-box { display: flex; gap: 8px; margin-bottom: 16px; }
+  .cal-search-box input { flex: 1; }
 </style>
 </head>
 <body>
@@ -173,6 +196,7 @@
       <div class="dash-card" data-view="ozelmesaj"><div class="icon">📩</div><div class="label">Kişiye Özel Mesaj</div><div class="count"></div></div>
       <div class="dash-card" data-view="sohbetdenetim"><div class="icon">🛡️</div><div class="label">Sohbet Denetimi</div><div class="count" id="countSohbet"></div></div>
       <div class="dash-card" data-view="personel"><div class="icon">👥</div><div class="label">Personel Ekle</div><div class="count" id="countPersonel"></div></div>
+      <div class="dash-card" data-view="takvim"><div class="icon">📅</div><div class="label">Takvim</div><div class="count" id="countTakvim"></div></div>
     </div>
   </div>
 
@@ -347,6 +371,54 @@
       <div id="personelPagination"></div>
     </div>
   </div>
+
+  <div class="view" id="view-takvim">
+    <a class="back-link" data-back>← Panele Dön</a>
+    <div class="card">
+      <h2>Takvim</h2>
+      <div class="sub">Bir güne tıklayıp not/etkinlik ekle. Bu takvim ana sitede herkese görünür.</div>
+      <div class="cal-search-box">
+        <input type="text" id="calSearchInput" placeholder="Notlarda ara...">
+        <button class="btn-primary" id="calSearchBtn">Ara</button>
+      </div>
+      <div id="calSearchResults" style="display:none; margin-bottom:16px;"></div>
+
+      <div class="cal-view-toggle">
+        <button type="button" id="calViewMonthBtn" class="active">Aylık</button>
+        <button type="button" id="calViewYearBtn">Yıllık</button>
+      </div>
+
+      <div id="calMonthView">
+        <div class="cal-nav">
+          <button type="button" id="calPrevBtn">← Önceki</button>
+          <span class="cal-title" id="calMonthTitle"></span>
+          <button type="button" id="calNextBtn">Sonraki →</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+
+      <div id="calYearView" style="display:none;">
+        <div class="cal-nav">
+          <button type="button" id="calPrevYearBtn">← Önceki Yıl</button>
+          <span class="cal-title" id="calYearTitle"></span>
+          <button type="button" id="calNextYearBtn">Sonraki Yıl →</button>
+        </div>
+        <div class="cal-year-grid" id="calYearGrid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-overlay" id="calDayOverlay">
+  <div class="toast-box" style="max-width:420px; text-align:left;">
+    <div class="ttitle" id="calDayTitle" style="text-align:center;"></div>
+    <div id="calDayNotesList" style="margin:14px 0; max-height:240px; overflow-y:auto;"></div>
+    <label>Yeni Not</label>
+    <textarea id="calNewNoteText" style="min-height:70px;" placeholder="Bu güne not ekle..."></textarea>
+    <button class="btn-primary" id="calAddNoteBtn" style="width:100%; margin-top:10px;">Ekle</button>
+    <div class="feedback-msg" id="calDayFeedback"></div>
+    <button class="btn-danger" id="calDayCloseBtn" style="width:100%; margin-top:10px;">Kapat</button>
+  </div>
 </div>
 
 <script>
@@ -362,7 +434,7 @@ async function showDashboard() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
   loadHistory(); loadNotes(); loadPhones(); loadTasks(); loadDevices(); loadFeedback();
-  loadStats(); loadPmDeviceList(); loadModGeneral(); loadModDirect(); loadManualPersonnel();
+  loadStats(); loadPmDeviceList(); loadModGeneral(); loadModDirect(); loadManualPersonnel(); loadCalendar();
 }
 
 document.getElementById('loginBtn').addEventListener('click', async () => {
@@ -1178,6 +1250,206 @@ async function deleteManualPersonnel(deviceId) {
     loadManualPersonnel();
   } catch { alert('Silinemedi.'); }
 }
+
+// ---------- TAKVİM ----------
+const TR_MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+const TR_DOWS = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
+
+let calAllItems = [];
+let calCurrentDate = new Date();
+let calCurrentView = 'month'; // 'month' | 'year'
+let calSelectedDay = null;
+
+function calPad2(n) { return String(n).padStart(2, '0'); }
+function calDateKey(y, m, d) { return y + '-' + calPad2(m + 1) + '-' + calPad2(d); }
+function calDaysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
+function calFirstWeekday(y, m) { return (new Date(y, m, 1).getDay() + 6) % 7; }
+
+async function loadCalendar() {
+  try {
+    const res = await fetch('/api/calendar');
+    const data = await res.json();
+    calAllItems = data.items || [];
+    document.getElementById('countTakvim').textContent = calAllItems.length + ' not';
+  } catch {}
+  renderCalendarCurrentView();
+}
+
+function calNotesForDate(dateKey) {
+  return calAllItems.filter(i => i.date === dateKey);
+}
+
+function renderCalendarCurrentView() {
+  if (calCurrentView === 'month') renderCalMonth(); else renderCalYear();
+}
+
+function renderCalMonth() {
+  const y = calCurrentDate.getFullYear();
+  const m = calCurrentDate.getMonth();
+  document.getElementById('calMonthTitle').textContent = TR_MONTHS[m] + ' ' + y;
+
+  const grid = document.getElementById('calGrid');
+  let html = TR_DOWS.map(d => '<div class="cal-dow">' + d + '</div>').join('');
+
+  const firstWd = calFirstWeekday(y, m);
+  const totalDays = calDaysInMonth(y, m);
+  const today = new Date();
+  const todayKey = calDateKey(today.getFullYear(), today.getMonth(), today.getDate());
+
+  for (let i = 0; i < firstWd; i++) html += '<div class="cal-day empty"></div>';
+  for (let d = 1; d <= totalDays; d++) {
+    const key = calDateKey(y, m, d);
+    const notes = calNotesForDate(key);
+    const isToday = key === todayKey;
+    html += '<div class="cal-day' + (isToday ? ' today' : '') + '" data-day-key="' + key + '">' +
+      '<div class="cd-num">' + d + '</div>' +
+      (notes.length ? '<div class="cd-dot"></div>' : '') +
+    '</div>';
+  }
+  grid.innerHTML = html;
+  grid.querySelectorAll('[data-day-key]').forEach(el => {
+    el.addEventListener('click', () => openCalDay(el.dataset.dayKey));
+  });
+}
+
+function renderCalYear() {
+  const y = calCurrentDate.getFullYear();
+  document.getElementById('calYearTitle').textContent = String(y);
+  const grid = document.getElementById('calYearGrid');
+  let html = '';
+  for (let m = 0; m < 12; m++) {
+    const count = calAllItems.filter(i => i.date.startsWith(y + '-' + calPad2(m + 1))).length;
+    html += '<div class="cal-mini-month" data-mini-month="' + m + '">' +
+      '<div class="cmm-title">' + TR_MONTHS[m] + '</div>' +
+      '<div class="cmm-count">' + (count > 0 ? count + ' not' : 'Not yok') + '</div>' +
+    '</div>';
+  }
+  grid.innerHTML = html;
+  grid.querySelectorAll('[data-mini-month]').forEach(el => {
+    el.addEventListener('click', () => {
+      calCurrentDate = new Date(y, parseInt(el.dataset.miniMonth, 10), 1);
+      switchCalView('month');
+    });
+  });
+}
+
+function switchCalView(view) {
+  calCurrentView = view;
+  document.getElementById('calMonthView').style.display = view === 'month' ? 'block' : 'none';
+  document.getElementById('calYearView').style.display = view === 'year' ? 'block' : 'none';
+  document.getElementById('calViewMonthBtn').classList.toggle('active', view === 'month');
+  document.getElementById('calViewYearBtn').classList.toggle('active', view === 'year');
+  renderCalendarCurrentView();
+}
+document.getElementById('calViewMonthBtn').addEventListener('click', () => switchCalView('month'));
+document.getElementById('calViewYearBtn').addEventListener('click', () => switchCalView('year'));
+
+document.getElementById('calPrevBtn').addEventListener('click', () => {
+  calCurrentDate = new Date(calCurrentDate.getFullYear(), calCurrentDate.getMonth() - 1, 1);
+  renderCalMonth();
+});
+document.getElementById('calNextBtn').addEventListener('click', () => {
+  calCurrentDate = new Date(calCurrentDate.getFullYear(), calCurrentDate.getMonth() + 1, 1);
+  renderCalMonth();
+});
+document.getElementById('calPrevYearBtn').addEventListener('click', () => {
+  calCurrentDate = new Date(calCurrentDate.getFullYear() - 1, calCurrentDate.getMonth(), 1);
+  renderCalYear();
+});
+document.getElementById('calNextYearBtn').addEventListener('click', () => {
+  calCurrentDate = new Date(calCurrentDate.getFullYear() + 1, calCurrentDate.getMonth(), 1);
+  renderCalYear();
+});
+
+function openCalDay(dateKey) {
+  calSelectedDay = dateKey;
+  const d = new Date(dateKey + 'T00:00:00');
+  document.getElementById('calDayTitle').textContent = d.getDate() + ' ' + TR_MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+  renderCalDayNotes();
+  document.getElementById('calNewNoteText').value = '';
+  document.getElementById('calDayFeedback').textContent = '';
+  document.getElementById('calDayOverlay').classList.add('show');
+}
+
+function renderCalDayNotes() {
+  const notes = calNotesForDate(calSelectedDay);
+  const el = document.getElementById('calDayNotesList');
+  if (notes.length === 0) { el.innerHTML = '<div class="list-empty">Bu güne ait not yok.</div>'; return; }
+  el.innerHTML = notes.map(n =>
+    '<div class="list-item" style="margin-bottom:8px;"><div class="li-main">' +
+      '<div class="li-body">' + esc(n.text) + (n.editedAt ? ' <i style="font-size:10px;color:#999;">(düzenlendi)</i>' : '') + '</div>' +
+    '</div><button class="btn-danger" data-del-cal-note="' + n.id + '" style="font-size:11px;">Sil</button></div>'
+  ).join('');
+  el.querySelectorAll('[data-del-cal-note]').forEach(b => b.addEventListener('click', () => deleteCalNote(b.dataset.delCalNote)));
+}
+
+document.getElementById('calAddNoteBtn').addEventListener('click', async () => {
+  const text = document.getElementById('calNewNoteText').value.trim();
+  const fb = document.getElementById('calDayFeedback');
+  if (!text) { fb.textContent = 'Not boş olamaz.'; fb.className = 'feedback-msg err'; return; }
+  try {
+    const res = await fetch('/api/calendar', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: getAdminPassword(), date: calSelectedDay, text })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Eklenemedi');
+    calAllItems.push(data.item);
+    document.getElementById('calNewNoteText').value = '';
+    fb.textContent = 'Eklendi.'; fb.className = 'feedback-msg ok';
+    renderCalDayNotes();
+    renderCalendarCurrentView();
+    document.getElementById('countTakvim').textContent = calAllItems.length + ' not';
+  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
+});
+
+async function deleteCalNote(id) {
+  if (!confirm('Bu notu silmek istediğine emin misin?')) return;
+  try {
+    const res = await fetch('/api/calendar/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: getAdminPassword() }) });
+    if (!res.ok) { const d = await res.json(); alert(d.error || 'Silinemedi'); return; }
+    calAllItems = calAllItems.filter(i => i.id !== id);
+    renderCalDayNotes();
+    renderCalendarCurrentView();
+    document.getElementById('countTakvim').textContent = calAllItems.length + ' not';
+  } catch { alert('Silinemedi.'); }
+}
+
+document.getElementById('calDayCloseBtn').addEventListener('click', () => {
+  document.getElementById('calDayOverlay').classList.remove('show');
+});
+
+document.getElementById('calSearchBtn').addEventListener('click', () => {
+  const q = document.getElementById('calSearchInput').value.trim().toLocaleLowerCase('tr');
+  const resEl = document.getElementById('calSearchResults');
+  if (!q) { resEl.style.display = 'none'; return; }
+  const matches = calAllItems.filter(i => i.text.toLocaleLowerCase('tr').includes(q));
+  if (matches.length === 0) {
+    resEl.innerHTML = '<div class="list-empty">Sonuç bulunamadı.</div>';
+  } else {
+    resEl.innerHTML = matches.map(m => {
+      const d = new Date(m.date + 'T00:00:00');
+      return '<div class="list-item" data-goto-date="' + m.date + '" style="cursor:pointer;"><div class="li-main">' +
+        '<div class="li-top"><span class="li-tag">' + d.getDate() + ' ' + TR_MONTHS[d.getMonth()] + ' ' + d.getFullYear() + '</span></div>' +
+        '<div class="li-body">' + esc(m.text) + '</div>' +
+      '</div></div>';
+    }).join('');
+    resEl.querySelectorAll('[data-goto-date]').forEach(el => {
+      el.addEventListener('click', () => {
+        const dt = new Date(el.dataset.gotoDate + 'T00:00:00');
+        calCurrentDate = new Date(dt.getFullYear(), dt.getMonth(), 1);
+        switchCalView('month');
+        resEl.style.display = 'none';
+        document.getElementById('calSearchInput').value = '';
+        setTimeout(() => openCalDay(el.dataset.gotoDate), 100);
+      });
+    });
+  }
+  resEl.style.display = 'block';
+});
+document.getElementById('calSearchInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('calSearchBtn').click(); });
+
+renderCalMonth();
 </script>
 </body>
 </html>
