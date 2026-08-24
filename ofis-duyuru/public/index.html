@@ -74,7 +74,7 @@
   }
 
   .bell-status-container {
-    display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;
   }
 
   .bell-status {
@@ -83,7 +83,7 @@
     border-radius: 20px; border: 1px solid var(--line); box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   }
 
-  /* HOŞGELDİN / ÜYE OL ALANI (RESİM 5 KIRMIZI BÖLGE) */
+  /* KULLANICI KARŞILAMA / GİRİŞ ROZETİ (RESİM 5 KIRMIZI BÖLGE DÜZELTMESİ) */
   .user-welcome-badge {
     display: inline-flex; align-items: center; gap: 6px; background: var(--paper);
     color: var(--ink); font-size: 12px; font-weight: 600; padding: 6px 14px;
@@ -135,30 +135,30 @@
   }
   .card-close:hover { color: var(--ink); background: rgba(0,0,0,0.06); transform: rotate(90deg); }
 
-  /* RASTGELE POPUP AÇILIŞ / KAPANIŞ EFEKTLERİ (RESİM 1 & RESİM 2) */
-  @keyframes anim-zoom-in { from { opacity: 0; transform: scale(0.75); } to { opacity: 1; transform: scale(1); } }
-  @keyframes anim-zoom-out { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.75); } }
+  /* DİNAMİK RASTGELE POP-UP AÇILIŞ/KAPANIŞ EFEKTLERİ (RESİM 1 & RESİM 2) */
+  @keyframes anim-zoom-in { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
+  @keyframes anim-zoom-out { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.7); } }
 
-  @keyframes anim-slide-in { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes anim-slide-out { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(40px); } }
+  @keyframes anim-slide-in { from { opacity: 0; transform: translateY(45px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes anim-slide-out { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(45px); } }
 
-  @keyframes anim-flip-in { from { opacity: 0; transform: rotateX(-30deg) scale(0.9); } to { opacity: 1; transform: rotateX(0) scale(1); } }
-  @keyframes anim-flip-out { from { opacity: 1; transform: rotateX(0) scale(1); } to { opacity: 0; transform: rotateX(30deg) scale(0.9); } }
+  @keyframes anim-flip-in { from { opacity: 0; transform: rotateX(-35deg) scale(0.9); } to { opacity: 1; transform: rotateX(0) scale(1); } }
+  @keyframes anim-flip-out { from { opacity: 1; transform: rotateX(0) scale(1); } to { opacity: 0; transform: rotateX(35deg) scale(0.9); } }
 
   @keyframes anim-bounce-in {
-    0% { opacity: 0; transform: scale(0.4); }
-    60% { opacity: 1; transform: scale(1.04); }
-    80% { transform: scale(0.96); }
+    0% { opacity: 0; transform: scale(0.3); }
+    60% { opacity: 1; transform: scale(1.05); }
+    80% { transform: scale(0.95); }
     100% { transform: scale(1); }
   }
   @keyframes anim-bounce-out {
     0% { transform: scale(1); }
-    30% { transform: scale(1.04); }
-    100% { opacity: 0; transform: scale(0.4); }
+    30% { transform: scale(1.05); }
+    100% { opacity: 0; transform: scale(0.3); }
   }
 
-  @keyframes anim-rotate-in { from { opacity: 0; transform: rotate(-6deg) scale(0.85); } to { opacity: 1; transform: rotate(0) scale(1); } }
-  @keyframes anim-rotate-out { from { opacity: 1; transform: rotate(0) scale(1); } to { opacity: 0; transform: rotate(6deg) scale(0.85); } }
+  @keyframes anim-rotate-in { from { opacity: 0; transform: rotate(-8deg) scale(0.8); } to { opacity: 1; transform: rotate(0) scale(1); } }
+  @keyframes anim-rotate-out { from { opacity: 1; transform: rotate(0) scale(1); } to { opacity: 0; transform: rotate(8deg) scale(0.8); } }
 
   /* SOHBET MODALI */
   #chatModal {
@@ -206,6 +206,9 @@
   .cat-btn { background: #fff; border: 1.5px solid #cbd5e1; color: #555; font-size: 12px; padding: 6px 12px; border-radius: 20px; }
   .cat-btn.active[data-cat="genel"] { background: var(--primary-blue); color: #fff; border-color: var(--primary-blue); }
   .cat-btn.active[data-cat="acil"] { background: var(--amber); color: #fff; border-color: var(--amber); }
+  .cat-btn.active[data-cat="yemek"] { background: var(--sage); color: #fff; border-color: var(--sage); }
+  .cat-btn.active[data-cat="vefat"] { background: var(--clay); color: #fff; border-color: var(--clay); }
+  .cat-btn.active[data-cat="dogum"] { background: var(--gold); color: #fff; border-color: var(--gold); }
 
   .send-row { margin-top: 18px; display: flex; align-items: center; gap: 12px; }
   .feedback-msg { font-size: 13px; margin-top: 10px; min-height: 18px; }
@@ -229,9 +232,9 @@
   .li-read-btn:hover { border-color: var(--sage); color: var(--sage); }
   .li-read-btn.done { background: var(--sage); border-color: var(--sage); color: #fff; cursor: default; }
 
-  /* GÜNCELLENDİ: BAŞLIK RENGİ SAYFA ZEMİNİNDE OKUNACAK ŞEKİLDE KOYU LACİVERT / SİYAH (VAR(--INK)) YAPILDI (RESİM 3 & 4 DÜZELTMESİ) */
-  .list-section h3 { font-family: 'Fraunces', serif; font-size: 16px; margin: 0 0 12px; color: var(--ink); font-weight: 700; }
-  
+  /* GÜNCELLENDİ: SAYFA ZEMİNİNDEKİ "SON DUYURULAR" OKUNABİLİRLİK DÜZELTMESİ (RESİM 3 & 4) */
+  .list-section h3 { font-family: 'Fraunces', serif; font-size: 17px; margin: 0 0 12px; color: var(--ink); font-weight: 700; }
+
   .list-item {
     background: var(--paper); color: var(--ink); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; box-shadow: 0 4px 16px rgba(0, 102, 178, 0.06);
     border-left: 5px solid var(--primary-blue); display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
@@ -262,16 +265,16 @@
   .list-item .li-phone { font-family: 'Fraunces', serif; font-weight: 700; font-size: 16px; color: var(--primary-blue); text-decoration: none; }
   .list-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 18px; }
 
-  /* MANŞET OK İŞARETLERİ VE YAZI STİLLERİ (RESİM 3 DÜZELTMESİ) */
+  /* GÜNCELLENDİ: MANŞET YÖN OKLARI KOYU VE BELİRGİN BORDERLI (RESİM 3 DÜZELTMESİ) */
   .manset-wrap { margin-bottom: 18px; }
   .manset-nav { display: flex; align-items: center; gap: 10px; }
   .manset-nav-btn {
-    background: rgba(15, 23, 42, 0.45); border: 1.5px solid rgba(255, 255, 255, 0.85); color: #FFFFFF;
+    background: rgba(15, 23, 42, 0.55); border: 1.5px solid rgba(255, 255, 255, 0.9); color: #FFFFFF;
     width: 38px; height: 38px; min-width: 38px; border-radius: 50%; font-size: 20px; font-weight: 700; cursor: pointer;
     flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.25); backdrop-filter: blur(4px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3); backdrop-filter: blur(4px);
   }
-  .manset-nav-btn:hover { background: var(--amber); border-color: #FFFFFF; transform: scale(1.1); }
+  .manset-nav-btn:hover { background: var(--amber); border-color: #FFFFFF; transform: scale(1.12); }
   .manset-card {
     flex: 1; position: relative; border-radius: 14px; overflow: hidden; padding: 22px 20px;
     min-height: 140px; display: flex; flex-direction: column; justify-content: center;
@@ -348,6 +351,36 @@
   .dot.active { background: var(--amber); width: 24px; border-radius: 10px; }
   .guide-box { background: #F8FAFC; border: 1px solid var(--line); padding: 12px; border-radius: 8px; font-size: 12.5px; color: #475569; margin: 12px 0; text-align: left; line-height: 1.5; }
 
+  /* TAKVİM */
+  .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .cal-nav button { background: #f1f5f9; color: var(--ink); padding: 8px 14px; font-size: 13px; font-weight: 600; border-radius: 8px; }
+  .cal-nav .cal-title { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 700; color: var(--ink); }
+  .cal-view-toggle { display: flex; gap: 6px; margin-bottom: 16px; }
+  .cal-view-toggle button { background: #f1f5f9; color: var(--muted); padding: 7px 16px; font-size: 12.5px; border-radius: 20px; font-weight: 600; }
+  .cal-view-toggle button.active { background: var(--primary-blue); color: #fff; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .cal-dow { text-align: center; font-size: 11px; font-weight: 700; color: var(--muted); padding: 4px 0; letter-spacing: 0.05em; text-transform: uppercase; }
+  .cal-day {
+    aspect-ratio: 1; border-radius: 8px; padding: 6px; cursor: pointer; position: relative;
+    background: #fff; color: var(--ink); box-shadow: 0 2px 6px rgba(0,0,0,0.06); border: 1px solid var(--line);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    display: flex; align-items: flex-start; justify-content: flex-start;
+  }
+  .cal-day:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,0.1); }
+  .cal-day.empty { background: transparent; box-shadow: none; border: none; cursor: default; }
+  .cal-day.today { outline: 2px solid var(--amber); outline-offset: 1px; }
+  .cal-day.weekend { background: #f8fafc; }
+  .cal-day.holiday { background: #FDECEA; }
+  .cal-day.note-holiday { border: 2px solid #B03030; }
+  .cal-day .cd-num { font-family: 'Fraunces', serif; font-weight: 700; font-size: 15px; }
+  .cal-day .cd-dot { position: absolute; bottom: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 0 2px var(--paper); }
+  .cal-day .cd-holiday-dot { position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: #D93838; }
+  .cal-cat-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: #fff; }
+  .cal-year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+  .cal-mini-month { background: #fff; border-radius: 8px; padding: 12px; cursor: pointer; color: var(--ink); box-shadow: 0 2px 6px rgba(0,0,0,0.06); border: 1px solid var(--line); }
+  .cal-search-box { display: flex; gap: 8px; margin-bottom: 16px; }
+  .cal-search-box input { flex: 1; }
+
   .toast-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.7); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
   .toast-overlay.show { display: flex; }
   .toast-box { background: var(--paper); color: var(--ink); border-radius: 16px; padding: 24px 20px; max-width: 380px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 1px solid var(--line); }
@@ -371,7 +404,10 @@
     <div style="font-size:13px; line-height:1.7; color:#333;">
       <p><b>Veri Sorumlusu:</b> Amasya Çevre, Şehircilik ve İklim Değişikliği İl Müdürlüğü.</p>
       <p><b>İşlenen Kişisel Veriler:</b> Ad-soyad, telefon numarası, e-posta adresi, kan grubu, profil fotoğrafı, cihaz kimliği, uygulama içi sohbet mesajları ve bildirim okuma zaman bilgisi.</p>
-      <p><b>İşleme Amacı:</b> Bu veriler yalnızca kurum içi acil duyuru, bilgilendirme, iç iletişim ve personele hızlı ulaşım amacıyla işlenir.</p>
+      <p><b>İşleme Amacı:</b> Bu veriler yalnızca kurum içi acil duyuru, bilgilendirme, iç iletişim (sohbet) ve acil durumlarda personele hızlı ulaşım amacıyla işlenir. Herhangi bir ticari amaçla kullanılmaz, üçüncü taraflarla paylaşılmaz.</p>
+      <p><b>Hukuki Sebep:</b> 6698 sayılı Kişisel Verilerin Korunması Kanunu'nun 5. maddesi kapsamında açık rızanız ve kurumun meşru menfaati.</p>
+      <p><b>Saklama Süresi:</b> Verileriniz, uygulamayı kullandığınız süre boyunca ve kurumsal gereklilikler doğrultusunda saklanır; talebiniz halinde silinir.</p>
+      <p><b>Haklarınız:</b> KVKK'nın 11. maddesi uyarınca kişisel verilerinizin işlenip işlenmediğini öğrenme, işlenmişse bilgi talep etme, düzeltilmesini veya silinmesini isteme haklarına sahipsiniz.</p>
     </div>
     <button type="button" class="btn-primary" id="kvkkCloseBtn" style="width:100%; margin-top:16px;">Kapat</button>
   </div>
@@ -387,6 +423,7 @@
       <div class="dot" id="dot4"></div>
     </div>
 
+    <!-- ADIM 1: UYGULAMA İNDİR -->
     <div class="wizard-step active" id="step1">
       <div id="step1-download">
         <div style="font-size:36px; text-align:center; margin-bottom:8px;">📱</div>
@@ -406,6 +443,7 @@
       <button class="btn-primary" id="btnNext1" style="width:100%; margin-top:12px;">Devam Et (2/4) ➔</button>
     </div>
 
+    <!-- ADIM 2: PROFİL BİLGİSİ -->
     <div class="wizard-step" id="step2">
       <div style="font-size:36px; text-align:center; margin-bottom:8px;">👤</div>
       <h2 style="text-align:center; margin:0 0 8px;">Adım 2: Profilinizi Yazın</h2>
@@ -421,12 +459,14 @@
       <div id="kvkkWarning" style="display:none; color:var(--clay); font-size:12px; margin-top:8px; text-align:center;">KVKK metnini onaylamanız gerekiyor.</div>
     </div>
 
+    <!-- ADIM 3: BİLDİRİM İZNİ -->
     <div class="wizard-step" id="step3">
       <div style="font-size:36px; text-align:center; margin-bottom:8px;"><span class="sway-logo">🔔</span></div>
       <h2 style="text-align:center; margin:0 0 8px;">Adım 3: Bildirim & Ses İzni</h2>
       <button class="btn-primary" id="btnGrantPush" style="width:100%; padding:12px; font-size:15px; margin-top:16px;">🔔 Bildirimlere İzin Ver</button>
     </div>
 
+    <!-- ADIM 4: TEST -->
     <div class="wizard-step" id="step4">
       <div style="font-size:36px; text-align:center; margin-bottom:8px;">🧪</div>
       <h2 style="text-align:center; margin:0 0 8px;">Adım 4: Sesi ve Bildirimi Test Et</h2>
@@ -460,7 +500,7 @@
     <button class="btn-primary" id="subscribeBtn">Bildirim Kurulumunu Başlat</button>
   </div>
 
-  <!-- ÜST BİLDİRİM & HOŞGELDİN/ÜYE OL ALANI (RESİM 5 DÜZELTMESİ) -->
+  <!-- BİLDİRİM & HOŞGELDİN/ÜYE OL ALANI (RESİM 5 KIRMIZI BÖLGE DÜZELTMESİ) -->
   <div class="bell-status-container">
     <div class="bell-status" id="bellStatus" style="display:none;"><span class="sway-logo">🔔</span> <span>Bildirimler ve Ses Aktif</span></div>
     <div class="user-welcome-badge" id="userWelcomeBadge"></div>
@@ -473,6 +513,7 @@
     <button class="tab-btn" data-tab="isler">Takvim</button>
   </div>
 
+  <!-- SEKMELER 1: DUYURULAR -->
   <div class="tab-panel active" id="panel-duyurular">
     <div id="upcomingBox" style="display:none; background:#FFFFFF; border-radius:12px; padding:14px 16px; margin-bottom:16px; border:1px solid var(--line); box-shadow:0 4px 16px var(--paper-shadow);">
       <div style="font-family:'Fraunces',serif; font-weight:700; font-size:14px; color:var(--ink); margin-bottom:8px;">📅 Yaklaşanlar</div>
@@ -487,6 +528,8 @@
           <option value="10">10 / sayfa</option>
           <option value="20">20 / sayfa</option>
           <option value="30">30 / sayfa</option>
+          <option value="40">40 / sayfa</option>
+          <option value="50">50 / sayfa</option>
         </select>
         <div class="page-nav">
           <button type="button" id="historyPrevBtn">← Önceki</button>
@@ -497,25 +540,83 @@
     </div>
   </div>
 
+  <!-- SEKMELER 2: YEMEKHANE -->
   <div class="tab-panel" id="panel-notlar">
     <div class="isler-subtabs" style="margin-bottom:14px;">
       <button type="button" class="active" id="subTabMenu">📋 Haftalık Menü</button>
       <button type="button" id="subTabMealRecords">🍽️ Yemek Kaydım</button>
     </div>
+
     <div id="subPanelMenu">
       <div class="list-section">
+        <div class="cal-nav">
+          <button type="button" id="menuPrevWeekBtn">← Önceki</button>
+          <span class="cal-title" id="menuWeekTitle" style="font-size:15.5px;">Yemekhane Menüsü</span>
+          <button type="button" id="menuNextWeekBtn">Sonraki →</button>
+        </div>
         <div id="menuWeekCards"></div>
       </div>
     </div>
+
     <div id="subPanelMealRecords" style="display:none;">
       <div class="card" style="box-shadow:none; border:none; padding:0; background:transparent;">
-        <div id="mealsStepRecords">
+        <div id="mealsStepRegister">
+          <div class="sub">Kendi yemekhane geçmişini ve borcunu görebilmek için kişisel e-postanla kayıt ol.</div>
+          <div style="background:#eff6ff; border:1px solid #dbeafe; border-radius:10px; padding:10px 12px; font-size:12px; color:#1e40af; margin-bottom:14px;">
+            ℹ️ Yalnızca kişisel <b>Gmail</b> veya <b>Hotmail</b> adresiyle kayıt olabilirsin.
+          </div>
+          <label>Adın Soyadın</label>
+          <input type="text" id="mealsRegName" placeholder="Örn: Ahmet Yılmaz">
+          <label>Telefon Numaran</label>
+          <input type="tel" id="mealsRegPhone" placeholder="Örn: 0555 111 22 33">
+          <label>E-posta (Gmail veya Hotmail)</label>
+          <input type="email" id="mealsRegEmail" placeholder="ornek@gmail.com">
+          <label>Şifre</label>
+          <input type="password" id="mealsRegPass" placeholder="En az 6 karakter">
+          <div class="send-row"><button class="btn-primary" id="mealsRegisterBtn" style="width:100%;">Kayıt Ol ve Kod Gönder</button></div>
+          <div class="feedback-msg" id="mealsRegFeedback"></div>
+          <div style="text-align:center; margin-top:14px; font-size:12.5px;">
+            Zaten hesabın var mı? <a href="#" id="mealsGoLoginLink" style="color:var(--primary-blue); font-weight:700; text-decoration:underline;">Giriş yap</a>
+          </div>
+        </div>
+
+        <div id="mealsStepVerify" style="display:none;">
+          <div class="sub">E-postana gönderilen 6 haneli kodu gir.</div>
+          <input type="text" id="mealsVerifyCode" maxlength="6" inputmode="numeric" placeholder="000000" style="text-align:center; font-size:1.6rem; letter-spacing:8px; font-weight:800; padding:16px;">
+          <div class="send-row"><button class="btn-primary" id="mealsVerifyBtn" style="width:100%;">Doğrula</button></div>
+          <button type="button" id="mealsResendBtn" style="width:100%; background:none; color:var(--primary-blue); font-weight:600; font-size:12.5px; margin-top:8px;">Kodu Tekrar Gönder</button>
+          <div class="feedback-msg" id="mealsVerifyFeedback"></div>
+        </div>
+
+        <div id="mealsStepLogin" style="display:none;">
+          <div class="sub">Kayıtlı e-posta ve şifrenle giriş yap.</div>
+          <label>E-posta</label>
+          <input type="email" id="mealsLoginEmail" placeholder="ornek@gmail.com">
+          <label>Şifre</label>
+          <input type="password" id="mealsLoginPass" placeholder="Şifren">
+          <div class="send-row"><button class="btn-primary" id="mealsLoginBtn" style="width:100%;">Giriş Yap</button></div>
+          <div class="feedback-msg" id="mealsLoginFeedback"></div>
+          <div style="text-align:center; margin-top:14px; font-size:12.5px;">
+            Hesabın yok mu? <a href="#" id="mealsGoRegisterLink" style="color:var(--primary-blue); font-weight:700; text-decoration:underline;">Kayıt ol</a>
+          </div>
+        </div>
+
+        <div id="mealsStepRecords" style="display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div class="sub" style="margin:0; font-weight:600;" id="mealsRecordsWho"></div>
+            <button type="button" id="mealsLogoutBtn" style="background:#e2e8f0; border:none; color:var(--ink); font-size:11px; padding:5px 10px; border-radius:20px;">Çıkış</button>
+          </div>
+          <div id="mealsDebtBox" style="background:#fff; color:var(--ink); border-radius:12px; padding:16px; text-align:center; margin-bottom:14px; border:1px solid var(--line);">
+            <div style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; font-weight:700;">Toplam Borç</div>
+            <div style="font-family:'Fraunces',serif; font-size:1.8rem; font-weight:700; color:var(--primary-blue);" id="mealsDebtAmount">—</div>
+          </div>
           <div id="mealsRecordsList" class="list-empty">Yükleniyor...</div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- SEKMELER 3: TELEFONLAR -->
   <div class="tab-panel" id="panel-telefonlar">
     <div class="list-section">
       <h3>Acil Durum Telefonları</h3>
@@ -523,10 +624,61 @@
     </div>
   </div>
 
+  <!-- SEKMELER 4: TAKVİM -->
   <div class="tab-panel" id="panel-isler">
-    <div class="list-section">
-      <h3>Takvim & Yapılacaklar</h3>
-      <div id="calMonthView"><div class="cal-grid" id="calGrid"></div></div>
+    <div class="isler-subtabs">
+      <button type="button" class="active" id="islerSubTabCalendar">📅 Takvim</button>
+      <button type="button" id="islerSubTabTasks">✅ İşler</button>
+    </div>
+
+    <div id="islerSubPanelCalendar">
+      <div class="list-section">
+        <h3>Takvim</h3>
+        <div class="cal-search-box">
+          <input type="text" id="calSearchInput" placeholder="Notlarda ara...">
+          <button class="btn-primary" id="calSearchBtn">Ara</button>
+        </div>
+        <div id="calSearchResults" style="display:none; margin-bottom:16px;"></div>
+
+        <div class="cal-view-toggle">
+          <button type="button" id="calViewMonthBtn" class="active">Aylık</button>
+          <button type="button" id="calViewYearBtn">Yıllık</button>
+        </div>
+
+        <div id="calMonthView">
+          <div class="cal-nav">
+            <button type="button" id="calPrevBtn">← Önceki</button>
+            <span class="cal-title" id="calMonthTitle"></span>
+            <button type="button" id="calNextBtn">Sonraki →</button>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
+
+        <div id="calYearView" style="display:none;">
+          <div class="cal-nav">
+            <button type="button" id="calPrevYearBtn">← Önceki Yıl</button>
+            <span class="cal-title" id="calYearTitle"></span>
+            <button type="button" id="calNextYearBtn">Sonraki Yıl →</button>
+          </div>
+          <div class="cal-year-grid" id="calYearGrid"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="islerSubPanelTasks" style="display:none;">
+      <div class="list-section">
+        <h3>Aylık Yapılacak İşler</h3>
+        <div id="tasksList" class="list-empty">Yükleniyor...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-overlay" id="calDayOverlay">
+    <div class="toast-box" style="max-width:420px; text-align:left;">
+      <div class="ttitle" id="calDayTitle" style="text-align:center;"></div>
+      <div id="calDayHolidayBanner" style="display:none; background:#FDECEA; color:#B03030; font-size:12.5px; font-weight:700; padding:8px 12px; border-radius:6px; margin-bottom:10px; text-align:center;"></div>
+      <div id="calDayNotesList" style="margin:14px 0; max-height:280px; overflow-y:auto;"></div>
+      <button class="btn-danger" id="calDayCloseBtn" style="width:100%; margin-top:10px;">Kapat</button>
     </div>
   </div>
 
@@ -547,7 +699,7 @@
     </div>
   </div>
 
-  <!-- PROFİL MODALI (RESİM 1) -->
+  <!-- PROFİL MODALI (RESİM 1 -> RASTGELE AÇILIŞ/KAPANIŞ EFEKTİ İLE) -->
   <div class="card" id="profileModal" style="display:none;">
     <div class="card-header"><h2>Profilim</h2><button class="card-close" data-close="profileModal" aria-label="Kapat">✕</button></div>
     <div class="sub">Adınızı girerek okundu kayıtlarında görünmesini sağlayabilirsiniz.</div>
@@ -589,7 +741,7 @@
     </div>
   </div>
 
-  <!-- ÖNERİ & GÖRÜŞ MODALI (RESİM 2) -->
+  <!-- ÖNERİ & GÖRÜŞ MODALI (RESİM 2 -> LOGO TIKLANINCA RASTGELE AÇILIŞ EFEKTİ İLE) -->
   <div class="card" id="feedbackModal" style="display:none;">
     <div class="card-header"><h2>Öneri & Görüş</h2><button class="card-close" data-close="feedbackModal" aria-label="Kapat">✕</button></div>
     <div class="sub">Yönetime iletmek istediğiniz not veya talebiniz:</div>
@@ -604,17 +756,119 @@
   <!-- SOHBET MODALI -->
   <div class="card" id="chatModal" style="display:none;">
     <div class="card-header"><h2>🗨️ Sohbet</h2><button class="card-close" data-close="chatModal" aria-label="Kapat">✕</button></div>
-    <div id="chatUnlocked">
-      <div id="chatGeneralMessages" class="chat-box"></div>
-      <div class="chat-input-row">
-        <input type="text" id="chatGeneralInput" placeholder="Mesajınızı yazın..." maxlength="1000">
-        <button class="btn-primary" id="chatGeneralSendBtn">Gönder</button>
+
+    <div id="chatLockedNotice" style="display:none;">
+      <div class="sub" style="color:var(--clay);">Sohbete katılmak için önce adınızı ve telefon numaranızı kaydetmeniz gerekiyor.</div>
+      <button class="btn-primary" id="chatGoProfileBtn" style="width:100%;">👤 Profilime Git</button>
+    </div>
+
+    <div id="chatUnlocked" style="display:none;">
+      <div class="tabs" style="margin-bottom:12px;">
+        <button class="tab-btn active" id="chatTabGeneral">Sohbet</button>
+        <button class="tab-btn" id="chatTabDirect">Online Üyeler</button>
+      </div>
+
+      <div id="chatPanelGeneral" class="chat-panel">
+        <div id="chatGeneralMessages" class="chat-box"></div>
+        <div class="chat-input-row">
+          <input type="text" id="chatGeneralInput" placeholder="Mesajınızı yazın..." maxlength="1000">
+          <button class="btn-primary" id="chatGeneralSendBtn">Gönder</button>
+        </div>
+      </div>
+
+      <div id="chatPanelDirect" class="chat-panel" style="display:none;">
+        <div id="chatContactList" class="list-empty">Yükleniyor...</div>
+        <div id="chatDirectConversation" style="display:none;" class="chat-panel">
+          <button type="button" id="chatBackToContacts" style="background:none;border:none;color:var(--primary-blue);font-size:12px;cursor:pointer;padding:0 0 8px;">← Kişi Listesine Dön</button>
+          <div id="chatDirectTitle" style="font-weight:700;font-size:14px;margin-bottom:8px;"></div>
+          <div id="chatDirectMessages" class="chat-box"></div>
+          <div class="chat-input-row">
+            <input type="text" id="chatDirectInput" placeholder="Mesajınızı yazın..." maxlength="1000">
+            <button class="btn-primary" id="chatDirectSendBtn">Gönder</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- YÖNETİCİ MODALI -->
+  <div class="card" id="adminModal" style="display:none;">
+    <div class="card-header"><h2>Yönetici Paneli</h2><button class="card-close" data-close="adminModal" aria-label="Kapat">✕</button></div>
+    <div id="adminAuthSection">
+      <label>Yönetici Şifresi</label>
+      <input type="password" id="adminGlobalPassword" placeholder="Şifrenizi girin">
+      <div class="send-row"><button class="btn-primary" id="adminLoginBtn">Giriş Yap</button></div>
+      <div class="feedback-msg" id="adminAuthFeedback"></div>
+    </div>
+
+    <div id="adminControls" style="display:none;">
+      <div class="tabs" style="margin-top:15px;">
+        <button class="tab-btn active" id="admTabSend">Duyuru Gönder</button>
+        <button class="tab-btn" id="admTabStats">İstatistikler</button>
+        <button class="tab-btn" id="admTabItems">Not/Tel/İş Ekle</button>
+        <button class="tab-btn" id="admTabInbox">Gelen Mesajlar</button>
+        <button class="tab-btn" id="admTabDevices">Cihazlar</button>
+      </div>
+
+      <div id="admPanelSend">
+        <label>Kategori</label>
+        <div class="cat-row" id="catRow">
+          <button type="button" class="cat-btn active" data-cat="genel">Genel</button>
+          <button type="button" class="cat-btn" data-cat="acil">Acil</button>
+          <button type="button" class="cat-btn" data-cat="yemek">Yemek Listesi</button>
+          <button type="button" class="cat-btn" data-cat="vefat">Vefat</button>
+          <button type="button" class="cat-btn" data-cat="dogum">Doğum</button>
+        </div>
+        <label>Başlık</label>
+        <input type="text" id="sendTitle" placeholder="Örn: Yarınki Toplantı Hakkında">
+        <label>Mesaj</label>
+        <textarea id="sendBody" placeholder="Duyuru detayları..."></textarea>
+        <label>Ek Dosya (Görsel / PDF - Opsiyonel)</label>
+        <input type="file" id="sendAttachment" accept="image/jpeg,image/png,application/pdf">
+        <div class="send-row"><button class="btn-primary" id="doSendBtn">Push Bildirimi İle Gönder</button></div>
+        <div class="feedback-msg" id="sendFeedback"></div>
+      </div>
+
+      <div id="admPanelItems" style="display:none;">
+        <label>Eklenilecek Tür</label>
+        <select id="itemTypeSelect">
+          <option value="notes">Not Ekle</option>
+          <option value="phones">Telefon Ekle</option>
+          <option value="tasks">Aylık İş Ekle</option>
+        </select>
+        <label id="itemField1Label">Not Metni</label>
+        <input type="text" id="itemField1" placeholder="Metin girin">
+        <div id="itemField2Wrapper" style="display:none;">
+          <label>Telefon Numarası</label>
+          <input type="text" id="itemField2" placeholder="Örn: 0358 xxx xx xx">
+        </div>
+        <label>Ek Dosya (PDF/Görsel)</label>
+        <input type="file" id="itemAttachment" accept="image/jpeg,image/png,application/pdf">
+        <div class="send-row"><button class="btn-primary" id="doAddItemBtn">Ekle</button></div>
+        <div class="feedback-msg" id="itemFeedback"></div>
+      </div>
+
+      <div id="admPanelInbox" style="display:none;">
+        <h4>Gelen Görüş & Öneriler</h4>
+        <div id="adminFeedbackList" class="list-empty">Yükleniyor...</div>
+      </div>
+
+      <div id="admPanelDevices" style="display:none;">
+        <h4>Kayıtlı Cihazlar & İsim Verme</h4>
+        <div id="adminDeviceList" class="list-empty">Yükleniyor...</div>
+      </div>
+
+      <div id="admPanelStats" style="display:none;">
+        <h4>Günlük İstatistikler</h4>
+        <div id="adminStatsSummary" class="list-empty">Yükleniyor...</div>
+        <h4 style="margin-top:16px;">Duyuru Bazında Okunma</h4>
+        <div id="adminStatsPerMessage" class="list-empty">Yükleniyor...</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ALT MOBİL MENÜ -->
+<!-- ALT MOBİL MENÜ NAVİGASYONU -->
 <nav class="site-footer-nav">
   <button type="button" class="nav-item" id="footerProfileBtn">
     <span class="nav-item-icon">👤</span>
@@ -625,7 +879,7 @@
     <span>Sohbet</span>
   </button>
 
-  <!-- CANLI TURUNCU LOGO BUTONU (RESİM 2 -> ÖNERİ AÇAR) -->
+  <!-- CANLI TURUNCU YUVARLAK LOGOLU ÖNERİ BUTONU (RESİM 2) -->
   <div class="nav-center-wrap">
     <button type="button" class="nav-center-btn" id="footerCenterLogoBtn" title="Öneri / Görüş İlet">
       <img src="/icon-192.png" alt="Öneri" class="sway-logo">
@@ -640,10 +894,12 @@
     <span class="nav-item-icon">📅</span>
     <span>Takvim</span>
   </button>
+  
+  <a href="/admin/" id="adminSecretBtn" style="display:none;">•</a>
 </nav>
 
 <script>
-// --- SES KİLİDİ AÇICI ---
+// --- OTOMATİK SES KİLİDİ AÇICI ---
 let audioUnlocked = false;
 function unlockAudioEngine() {
   if (audioUnlocked) return;
@@ -654,13 +910,14 @@ function unlockAudioEngine() {
   } catch(e) {}
 }
 document.addEventListener('click', unlockAudioEngine, { once: true });
+document.addEventListener('touchstart', unlockAudioEngine, { once: true });
 
 // --- RASTGELE POPUP AÇILIŞ VE KAPANIŞ DİNAMİK EFEKT MOTORU (RESİM 1 & RESİM 2) ---
 const openAnims = ['anim-zoom-in', 'anim-slide-in', 'anim-flip-in', 'anim-bounce-in', 'anim-rotate-in'];
 const closeAnims = ['anim-zoom-out', 'anim-slide-out', 'anim-flip-out', 'anim-bounce-out', 'anim-rotate-out'];
 
 function openModal(modalId) {
-  ['profileModal', 'feedbackModal', 'chatModal'].forEach(id => {
+  ['profileModal', 'feedbackModal', 'adminModal', 'chatModal'].forEach(id => {
     if (id !== modalId) {
       const el = document.getElementById(id);
       if (el) el.style.display = 'none';
@@ -717,7 +974,7 @@ function updateUserWelcomeBadge() {
   }
 }
 
-// SEKMELER
+// SEKMELER & TEMA
 document.querySelectorAll('.tabs .tab-btn').forEach(btn => {
   if (btn.dataset.tab) {
     btn.addEventListener('click', () => {
@@ -729,24 +986,42 @@ document.querySelectorAll('.tabs .tab-btn').forEach(btn => {
   }
 });
 
-// ALT MENÜ BUTONLARI
-document.getElementById('footerProfileBtn').addEventListener('click', () => {
-  toggleModal('profileModal');
-  document.getElementById('profileName').value = localStorage.getItem('selfName') || '';
-  document.getElementById('profilePhone').value = localStorage.getItem('selfPhone') || '';
-  document.getElementById('profileEmail').value = localStorage.getItem('selfEmail') || '';
+// YEMEKHANE ALT SEKMELERİ
+document.getElementById('subTabMenu').addEventListener('click', () => {
+  document.getElementById('subTabMenu').classList.add('active');
+  document.getElementById('subTabMealRecords').classList.remove('active');
+  document.getElementById('subPanelMenu').style.display = 'block';
+  document.getElementById('subPanelMealRecords').style.display = 'none';
+});
+document.getElementById('subTabMealRecords').addEventListener('click', () => {
+  document.getElementById('subTabMealRecords').classList.add('active');
+  document.getElementById('subTabMenu').classList.remove('active');
+  document.getElementById('subPanelMealRecords').style.display = 'block';
+  document.getElementById('subPanelMenu').style.display = 'none';
+  if (mealsGetToken()) { mealsShowStep('mealsStepRecords'); mealsLoadRecords(); }
+  else { mealsShowStep('mealsStepRegister'); }
 });
 
-// RESİM 2: ORTADAKİ LOGO BUTONU ÖNERİ POPUP'INI RASTGELE EFEKTLERLE AÇAR
-document.getElementById('footerCenterLogoBtn').addEventListener('click', () => {
-  toggleModal('feedbackModal');
+const themeSelect = document.getElementById('themeSelect');
+const savedTheme = localStorage.getItem('theme') || 'klasik';
+if (savedTheme !== 'klasik') document.body.setAttribute('data-theme', savedTheme);
+themeSelect.value = savedTheme;
+themeSelect.addEventListener('change', () => {
+  const val = themeSelect.value;
+  if (val === 'klasik') document.body.removeAttribute('data-theme');
+  else document.body.setAttribute('data-theme', val);
+  localStorage.setItem('theme', val);
 });
 
-document.getElementById('footerChatBtn').addEventListener('click', () => toggleModal('chatModal'));
-document.getElementById('footerPhoneBtn').addEventListener('click', () => document.querySelector('[data-tab="telefonlar"]').click());
-document.getElementById('footerCalBtn').addEventListener('click', () => document.querySelector('[data-tab="isler"]').click());
+function getDeviceId() {
+  let id = localStorage.getItem('deviceId');
+  if (!id) {
+    id = (crypto.randomUUID ? crypto.randomUUID() : (Date.now().toString(36) + Math.random().toString(36).slice(2)));
+    localStorage.setItem('deviceId', id);
+  }
+  return id;
+}
 
-// TOAST BİLDİRİMİ
 function showToast(message, type) {
   const container = document.getElementById('toastContainer');
   const t = document.createElement('div');
@@ -756,47 +1031,261 @@ function showToast(message, type) {
   setTimeout(() => t.remove(), 2700);
 }
 
-function esc(s) { return (s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-function formatTime(iso) { return new Date(iso).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); }
+function getReadIds() {
+  try { return JSON.parse(localStorage.getItem('readMsgIds') || '[]'); } catch { return []; }
+}
+function markReadLocally(id) {
+  const ids = getReadIds();
+  if (!ids.includes(id)) { ids.push(id); localStorage.setItem('readMsgIds', JSON.stringify(ids)); }
+}
+async function markAsRead(id, btn) {
+  if (btn && btn.classList.contains('done')) return;
+  markReadLocally(id);
+  if (btn) { btn.classList.add('done'); btn.innerHTML = '✓ Okundu'; }
+  try {
+    await fetch('/api/messages/' + id + '/read', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deviceId: getDeviceId() })
+    });
+    showToast('Okundu olarak kaydedildi.', 'ok');
+  } catch {}
+}
+
+// PWA & SIHIRBAZ
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault(); deferredPrompt = e;
+  document.getElementById('pwaInstallContainer').style.display = 'block';
+});
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+if (isIOS) document.getElementById('iosPwaNotice').style.display = 'block';
+
+const isInstalledApp = !isIOS && (document.referrer.startsWith('android-app://') || window.matchMedia('(display-mode: standalone)').matches);
+if (isInstalledApp) {
+  document.getElementById('step1-download').style.display = 'none';
+  document.getElementById('step1-installed').style.display = 'block';
+}
+
+function showWizardStep(stepNum) {
+  for (let i = 1; i <= 4; i++) {
+    document.getElementById('step' + i).classList.remove('active');
+    document.getElementById('dot' + i).classList.remove('active');
+  }
+  document.getElementById('step' + stepNum).classList.add('active');
+  document.getElementById('dot' + stepNum).classList.add('active');
+}
+
+function checkFirstRunWizard() {
+  const perm = Notification.permission;
+  const hasName = localStorage.getItem('selfName');
+  if (perm !== 'granted' || !hasName) {
+    document.getElementById('wizardModal').style.display = 'flex';
+    if (isInstalledApp && perm === 'default') showWizardStep(3);
+    else showWizardStep(1);
+  }
+}
+
+document.getElementById('subscribeBtn').addEventListener('click', () => {
+  unlockAudioEngine();
+  document.getElementById('wizardModal').style.display = 'flex';
+  if (isInstalledApp && Notification.permission === 'default') showWizardStep(3);
+  else showWizardStep(1);
+});
+
+document.getElementById('btnPwaInstall').addEventListener('click', async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') document.getElementById('pwaInstallContainer').style.display = 'none';
+    deferredPrompt = null;
+  }
+});
+
+document.getElementById('btnNext1').addEventListener('click', () => showWizardStep(2));
+document.getElementById('btnNext2').addEventListener('click', async () => {
+  const name = document.getElementById('wizName').value.trim();
+  const phone = document.getElementById('wizPhone').value.trim();
+  const kvkkOk = document.getElementById('wizKvkkConsent').checked;
+  if (!name) { alert('Lütfen adınızı soyadınızı girin.'); return; }
+  if (!kvkkOk) { document.getElementById('kvkkWarning').style.display = 'block'; return; }
+  document.getElementById('kvkkWarning').style.display = 'none';
+
+  localStorage.setItem('selfName', name);
+  localStorage.setItem('selfPhone', phone);
+  localStorage.setItem('kvkkConsent', 'true');
+  updateUserWelcomeBadge();
+
+  try {
+    await fetch('/api/self-profile', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deviceId: getDeviceId(), name, phone, kvkkConsent: true, kvkkConsentAt: new Date().toISOString() })
+    });
+  } catch(e){}
+
+  showWizardStep(Notification.permission === 'granted' ? 4 : 3);
+});
+
+document.getElementById('kvkkLinkOpen').addEventListener('click', (e) => {
+  e.preventDefault(); document.getElementById('kvkkModal').style.display = 'flex';
+});
+document.getElementById('kvkkCloseBtn').addEventListener('click', () => {
+  document.getElementById('kvkkModal').style.display = 'none';
+});
+
+document.getElementById('btnGrantPush').addEventListener('click', async () => {
+  unlockAudioEngine();
+  const ok = await doSubscribe(false);
+  if (ok) showWizardStep(localStorage.getItem('selfName') ? 4 : 2);
+});
+
+document.getElementById('wizTestSound').addEventListener('click', () => playNotifSound());
+document.getElementById('wizTestLock').addEventListener('click', () => triggerLockTest());
+document.getElementById('btnFinishWizard').addEventListener('click', () => {
+  document.getElementById('wizardModal').style.display = 'none';
+});
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
+
+async function refreshCount() {
+  try {
+    const res = await fetch('/api/subscriber-count');
+    const data = await res.json();
+    document.getElementById('subCount').textContent = data.total + ' abone';
+  } catch { document.getElementById('subCount').textContent = ''; }
+}
+
+async function doSubscribe(silent) {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return false;
+  const permission = silent ? Notification.permission : await Notification.requestPermission();
+  if (permission !== 'granted') return false;
+  const reg = await navigator.serviceWorker.register('/sw.js');
+  let subscription = await reg.pushManager.getSubscription();
+  if (!subscription) {
+    const { publicKey } = await (await fetch('/api/vapid-public-key')).json();
+    subscription = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicKey) });
+  }
+  await fetch('/api/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...subscription.toJSON(), deviceId: getDeviceId() }) });
+  document.getElementById('subscribeCard').style.display = 'none';
+  document.getElementById('bellStatus').style.display = 'inline-flex';
+  refreshCount();
+  return true;
+}
+
+if ('Notification' in window && Notification.permission === 'granted') doSubscribe(true);
+setTimeout(checkFirstRunWizard, 1600);
+refreshCount();
+
+function playNotifSound() {
+  try {
+    let count = 0;
+    const audio = new Audio('/notify.wav'); audio.volume = 1.0;
+    const playOnce = () => { count++; audio.currentTime = 0; audio.play().catch(() => {}); };
+    audio.addEventListener('ended', () => { if (count < 3) playOnce(); });
+    playOnce();
+  } catch (e) {}
+}
 
 const catNames = { acil: 'Acil', yemek: 'Yemek Listesi', vefat: 'Vefat', dogum: 'Doğum', genel: 'Genel' };
+function formatTime(iso) { return new Date(iso).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); }
+function esc(s) { return (s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+const TR_MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+
+function renderAttachment(att) {
+  if (!att) return '';
+  if (att.type === 'image') return `<a href="${att.url}" target="_blank"><img src="${att.url}" style="max-width:100%;border-radius:8px;margin-top:8px;display:block;"></a>`;
+  return `<a href="${att.url}" target="_blank" style="display:inline-block;margin-top:8px;font-size:12px;color:var(--primary-blue);font-weight:600;">📄 ${esc(att.name || 'Dosyayı Aç')}</a>`;
+}
+
+let activeAdminPassword = '';
+let historyPage = 1;
+let historyPageSize = parseInt(localStorage.getItem('historyPageSize') || '10', 10);
 let historyItemsCache = [];
 
 async function loadHistory() {
   const listEl = document.getElementById('historyList');
+  const pagRow = document.getElementById('historyPagination');
+  const pageSizeSelect = document.getElementById('historyPageSize');
+  pageSizeSelect.value = String(historyPageSize);
   try {
-    const res = await fetch('/api/messages?page=1&pageSize=10');
+    const res = await fetch(`/api/messages?page=${historyPage}&pageSize=${historyPageSize}`);
     const data = await res.json();
+    const total = data.total || 0;
     if (!data.messages || data.messages.length === 0) {
-      listEl.className = 'list-empty'; listEl.textContent = 'Henüz duyuru gönderilmedi.';
+      listEl.className = 'list-empty'; listEl.textContent = total === 0 ? 'Henüz duyuru gönderilmedi.' : 'Bu sayfada duyuru yok.';
+      pagRow.style.display = total > historyPageSize ? 'flex' : 'none';
     } else {
       listEl.className = '';
-      historyItemsCache = data.messages;
-      listEl.innerHTML = data.messages.map(m => `
+      historyItemsCache = historyItemsCache.concat(data.messages).filter((m, i, arr) => arr.findIndex(x => x.id === m.id) === i);
+      const readIds = getReadIds();
+      listEl.innerHTML = data.messages.map(m => {
+        const isRead = readIds.includes(m.id);
+        return `
         <div class="list-item ${m.category || 'genel'}">
           <div class="li-main">
             <div class="li-top">
               <span class="li-tag">${catNames[m.category] || 'Genel'}</span>
-              <span class="li-time">${formatTime(m.time)}</span>
+              <span style="display:flex; align-items:center; gap:8px;">
+                <span class="li-time">${formatTime(m.time)}</span>
+                <button type="button" class="li-read-btn ${isRead ? 'done' : ''}" data-read-id="${m.id}">${isRead ? '✓ Okundu' : '👁 Okudum'}</button>
+                ${m.attachment ? `<button type="button" class="li-toggle" data-toggle-attach="${m.id}" aria-label="Detay">▾</button>` : ''}
+              </span>
             </div>
-            <div class="li-title">${esc(m.title)}</div>
+            <div class="li-title" style="cursor:pointer;" data-detay-id="${m.id}">${esc(m.title)}</div>
             <div class="li-body">${esc(m.body)}</div>
+            <div class="attach-wrap" id="attach-${m.id}">${renderAttachment(m.attachment)}</div>
+            <span class="li-detay-link" data-detay-id="${m.id}">🔎 Detay / Paylaş</span>
           </div>
-        </div>
-      `).join('');
+        </div>`;
+      }).join('');
+
+      listEl.querySelectorAll('[data-toggle-attach]').forEach(el => {
+        el.addEventListener('click', () => {
+          const id = el.dataset.toggleAttach;
+          document.getElementById('attach-' + id).classList.toggle('open');
+          listEl.querySelectorAll(`[data-toggle-attach="${id}"].li-toggle`).forEach(btn => btn.classList.toggle('open'));
+        });
+      });
+      listEl.querySelectorAll('[data-read-id]').forEach(btn => {
+        btn.addEventListener('click', () => markAsRead(btn.dataset.readId, btn));
+      });
+      listEl.querySelectorAll('[data-detay-id]').forEach(el => {
+        el.addEventListener('click', () => openDuyuruDetay(el.dataset.detayId));
+      });
+
+      const totalPages = Math.max(1, Math.ceil(total / historyPageSize));
+      pagRow.style.display = total > historyPageSize ? 'flex' : 'none';
+      document.getElementById('historyPageInfo').textContent = `Sayfa ${historyPage} / ${totalPages}`;
+      document.getElementById('historyPrevBtn').disabled = historyPage <= 1;
+      document.getElementById('historyNextBtn').disabled = historyPage >= totalPages;
     }
   } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
 }
 
-// MANŞET (CAROUSEL) - DÜZELTİLMİŞ MANŞET OKLARI
+document.getElementById('historyPageSize').addEventListener('change', (e) => {
+  historyPageSize = parseInt(e.target.value, 10);
+  localStorage.setItem('historyPageSize', String(historyPageSize));
+  historyPage = 1; loadHistory();
+});
+document.getElementById('historyPrevBtn').addEventListener('click', () => { if (historyPage > 1) { historyPage--; loadHistory(); } });
+document.getElementById('historyNextBtn').addEventListener('click', () => { historyPage++; loadHistory(); });
+loadHistory();
+
+// MANŞET (CAROUSEL)
 let mansetItems = [];
 let mansetIdx = 0;
 
 async function loadManset() {
   try {
-    const res = await fetch('/api/messages?page=1&pageSize=5');
+    const res = await fetch('/api/messages?page=1&pageSize=8');
     const data = await res.json();
     mansetItems = data.messages || [];
+    historyItemsCache = historyItemsCache.concat(mansetItems).filter((m, i, arr) => arr.findIndex(x => x.id === m.id) === i);
   } catch { mansetItems = []; }
   renderManset();
 }
@@ -818,36 +1307,81 @@ function renderManset() {
     </div>
     ${mansetItems.length > 1 ? `<div class="manset-dots">${mansetItems.map((_, i) => `<button type="button" class="manset-dot ${i === mansetIdx ? 'active' : ''}" data-dot-idx="${i}"></button>`).join('')}</div>` : ''}
   `;
+  document.getElementById('mansetCard').addEventListener('click', () => openDuyuruDetay(m.id));
   const prevBtn = document.getElementById('mansetPrevBtn');
   const nextBtn = document.getElementById('mansetNextBtn');
-  if (prevBtn) prevBtn.onclick = () => { mansetIdx = (mansetIdx - 1 + mansetItems.length) % mansetItems.length; renderManset(); };
-  if (nextBtn) nextBtn.onclick = () => { mansetIdx = (mansetIdx + 1) % mansetItems.length; renderManset(); };
+  if (prevBtn) prevBtn.addEventListener('click', () => { mansetIdx = (mansetIdx - 1 + mansetItems.length) % mansetItems.length; renderManset(); });
+  if (nextBtn) nextBtn.addEventListener('click', () => { mansetIdx = (mansetIdx + 1) % mansetItems.length; renderManset(); });
 }
+loadManset();
 
-// PROFİL KAYDI
+// DUYURU DETAY POPUP
+async function openDuyuruDetay(id) {
+  const m = historyItemsCache.find(x => x.id === id);
+  if (!m) return;
+  document.getElementById('duyuruDetayTag').textContent = catNames[m.category] || 'Genel';
+  document.getElementById('duyuruDetayTitle').textContent = m.title;
+  document.getElementById('duyuruDetayMeta').textContent = '📅 ' + formatTime(m.time);
+  document.getElementById('duyuruDetayBody').textContent = m.body;
+  document.getElementById('duyuruDetayAttach').innerHTML = renderAttachment(m.attachment);
+  
+  const isRead = getReadIds().includes(m.id);
+  const readBtn = document.getElementById('duyuruDetayReadBtn');
+  readBtn.textContent = isRead ? '✓ Okundu' : '👁 Okudum';
+  readBtn.disabled = isRead;
+  readBtn.onclick = async () => {
+    await markAsRead(m.id);
+    readBtn.textContent = '✓ Okundu'; readBtn.disabled = true;
+  };
+  document.getElementById('duyuruDetayOverlay').classList.add('show');
+}
+document.getElementById('duyuruDetayCloseBtn').addEventListener('click', () => document.getElementById('duyuruDetayOverlay').classList.remove('show'));
+
+// ALT MENÜ BUTONLARI & MODAL TETİKLEYİCİLERİ
+document.getElementById('footerProfileBtn').addEventListener('click', () => {
+  toggleModal('profileModal');
+  document.getElementById('profileName').value = localStorage.getItem('selfName') || '';
+  document.getElementById('profilePhone').value = localStorage.getItem('selfPhone') || '';
+  document.getElementById('profileEmail').value = localStorage.getItem('selfEmail') || '';
+  document.getElementById('profileBloodType').value = localStorage.getItem('selfBloodType') || '';
+});
+
+// RESİM 2: ORTADAKİ LOGO BUTONU ÖNERİ POPUP'INI RASTGELE AÇILIŞ/KAPANIŞ EFEKTİYLE AÇAR
+document.getElementById('footerCenterLogoBtn').addEventListener('click', () => {
+  toggleModal('feedbackModal');
+});
+
+document.getElementById('footerChatBtn').addEventListener('click', () => toggleModal('chatModal'));
+document.getElementById('footerPhoneBtn').addEventListener('click', () => document.querySelector('[data-tab="telefonlar"]').click());
+document.getElementById('footerCalBtn').addEventListener('click', () => document.querySelector('[data-tab="isler"]').click());
+
+// PROFİL KAYDET
 document.getElementById('profileSaveBtn').addEventListener('click', async () => {
   const name = document.getElementById('profileName').value.trim();
   const phone = document.getElementById('profilePhone').value.trim();
   const email = document.getElementById('profileEmail').value.trim();
   const bloodType = document.getElementById('profileBloodType').value;
-  
-  localStorage.setItem('selfName', name);
-  localStorage.setItem('selfPhone', phone);
-  localStorage.setItem('selfEmail', email);
-  localStorage.setItem('selfBloodType', bloodType);
-  
-  updateUserWelcomeBadge();
-  showToast('Profil başarıyla kaydedildi.', 'ok');
-  closeModal('profileModal');
+  try {
+    await fetch('/api/self-profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), name, phone, email, bloodType }) });
+    localStorage.setItem('selfName', name); localStorage.setItem('selfPhone', phone);
+    localStorage.setItem('selfEmail', email); localStorage.setItem('selfBloodType', bloodType);
+    updateUserWelcomeBadge();
+    showToast('Profil kaydedildi.', 'ok');
+    closeModal('profileModal');
+  } catch { showToast('Hata oluştu.', 'err'); }
 });
 
-// ÖNERİ GÖNDERME
-document.getElementById('feedbackSendBtn').addEventListener('click', () => {
+// ÖNERİ GÖNDER
+document.getElementById('feedbackSendBtn').addEventListener('click', async () => {
   const text = document.getElementById('feedbackText').value.trim();
+  const name = document.getElementById('feedbackName').value.trim();
   if (!text) { showToast('Mesaj boş bırakılamaz.', 'err'); return; }
-  document.getElementById('feedbackText').value = '';
-  showToast('Görüşünüz iletildi, teşekkür ederiz.', 'ok');
-  closeModal('feedbackModal');
+  try {
+    await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, name }) });
+    document.getElementById('feedbackText').value = '';
+    showToast('Görüşünüz iletildi, teşekkürler.', 'ok');
+    closeModal('feedbackModal');
+  } catch { showToast('Gönderilemedi.', 'err'); }
 });
 
 window.addEventListener('load', () => {
@@ -855,8 +1389,6 @@ window.addEventListener('load', () => {
     const s = document.getElementById('splash');
     if (s) { s.classList.add('hide'); setTimeout(() => s.remove(), 600); }
   }, 1000);
-  loadHistory();
-  loadManset();
   updateUserWelcomeBadge();
 });
 </script>
