@@ -782,6 +782,7 @@ app.get('/api/chat/contacts', async (req, res) => {
       name: p.name,
       avatar: p.avatar || null,
       online: presence[id] ? (now - presence[id] < 90 * 1000) : false,
+      lastSeen: presence[id] || null,
     }))
     .sort((a, b) => (b.online - a.online) || a.name.localeCompare(b.name, 'tr'));
   res.json({ contacts });
@@ -1221,6 +1222,179 @@ app.delete('/api/calendar/:id', async (req, res) => {
   const items = (await loadJson(CALENDAR_KEY)).filter(i => i.id !== req.params.id);
   await saveJson(CALENDAR_KEY, items);
   res.json({ ok: true });
+});
+
+// ============================================================================
+// KİŞİSEL HESAP (SELF-SERVİS KAYIT) — personelin kendi yemekhane kayıtlarını
+// görebilmesi için. Ad-soyad + telefon + kişisel e-posta (yalnızca gmail.com/
+// hotmail.com — kurumsal adresler kabul edilmez) + şifre ile kayıt olunur,
+// e-postaya 6 haneli kod gönderilir. Doğrulanan hesap, telefon numarasıyla
+// salihozgen.com/yemekhane/anket sistemindeki (PHP+MySQL) personel kaydına
+// "köprü API" üzerinden eşleştirilip kendi yemek geçmişi gösterilir.
+// ============================================================================
+const crypto = require('crypto');
+
+const SELF_ACCOUNTS_KEY = 'self-accounts';
+const SELF_OTP_KEY = 'self-otp-codes';
+const SELF_TOKENS_KEY = 'self-tokens';
+const SELF_ALLOWED_EMAIL_DOMAINS = ['gmail.com', 'hotmail.com'];
+
+// ⚠️ BRIDGE_SECRET, PHP tarafındaki (api_kayitlarim.php) BRIDGE_SECRET ile
+// BİREBİR AYNI olmalı. İkisini de ortam değişkeninden (env) okumak daha güvenli
+// olur, ama bu kod tabanının geri kalanı gibi (ADMIN_PASSWORD vs.) burada da
+// çalışır bir varsayılan değer bırakıyoruz.
+const BRIDGE_SECRET = process.env.BRIDGE_SECRET || 'duyuru-koprusu-2026-cok-gizli-anahtar-degistir';
+const BRIDGE_URL = process.env.BRIDGE_URL || 'https://salihozgen.com/yemekhane/anket/api_kayitlarim.php';
+
+function hashPassword(sifre) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync(sifre, salt, 64).toString('hex');
+  return salt + ':' + hash;
+}
+function verifyPassword(sifre, stored) {
+  const [salt, hash] = (stored || '').split(':');
+  if (!salt || !hash) return false;
+  const testHash = crypto.scryptSync(sifre, salt, 64).toString('hex');
+  const a = Buffer.from(hash, 'hex'), b = Buffer.from(testHash, 'hex');
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+function emailDomainGecerliMi(email) {
+  const m = /^[^@\s]+@([^@\s]+)$/.exec((email || '').trim().toLowerCase());
+  return !!(m && SELF_ALLOWED_EMAIL_DOMAINS.includes(m[1]));
+}
+
+async function selfOtpGonder(email) {
+  const kod = String(Math.floor(100000 + Math.random() * 900000));
+  const codes = await loadJson(SELF_OTP_KEY);
+  codes.push({ email, kod, olusturulma: Date.now(), sonKullanma: Date.now() + 10 * 60 * 1000, kullanildi: false, denemeSayisi: 0 });
+  await saveJson(SELF_OTP_KEY, codes.slice(-500));
+
+  if (!resend) { console.warn('OTP kodu üretildi ama RESEND_API_KEY tanımlı değil, mail gönderilemedi:', email, kod); return false; }
+  try {
+    await resend.emails.send({
+      from: RESEND_FROM,
+      to: email,
+      subject: `Doğrulama Kodunuz: ${kod}`,
+      html: `<div style="font-family:Arial,sans-serif;max-width:400px;margin:0 auto;text-align:center;padding:24px;">
+        <h2 style="color:#4338ca;">Doğrulama Kodunuz</h2>
+        <div style="font-size:2rem;font-weight:800;letter-spacing:8px;color:#4338ca;margin:14px 0;">${kod}</div>
+        <p style="color:#888;font-size:12px;">Bu kod 10 dakika geçerlidir. Bu isteği siz yapmadıysanız bu e-postayı yok sayabilirsiniz.</p>
+      </div>`,
+    });
+    return true;
+  } catch (err) {
+    console.error('OTP mail gönderilemedi (' + email + '):', err.message);
+    return false;
+  }
+}
+
+app.post('/api/self-register', async (req, res) => {
+  const adSoyad = (req.body.adSoyad || '').trim();
+  const telefon = (req.body.telefon || '').trim();
+  const email = (req.body.email || '').trim().toLowerCase();
+  const sifre = req.body.sifre || '';
+
+  if (adSoyad.length < 3) return res.status(400).json({ ok: false, error: 'Adınızı ve soyadınızı eksiksiz girin.' });
+  if (telefon.replace(/\D/g, '').length < 10) return res.status(400).json({ ok: false, error: 'Geçerli bir telefon numarası girin.' });
+  if (!emailDomainGecerliMi(email)) return res.status(400).json({ ok: false, error: 'Yalnızca kişisel Gmail veya Hotmail adresiyle kayıt olabilirsiniz. Kurumsal e-postalar kabul edilmiyor.' });
+  if (sifre.length < 6) return res.status(400).json({ ok: false, error: 'Şifre en az 6 karakter olmalı.' });
+
+  const accounts = await loadJson(SELF_ACCOUNTS_KEY);
+  let acc = accounts.find(a => a.email === email);
+  if (acc && acc.emailDogrulandi) {
+    return res.status(400).json({ ok: false, error: 'Bu e-posta zaten kayıtlı. Giriş yapmayı deneyin.' });
+  }
+  const sifreHash = hashPassword(sifre);
+  if (acc) {
+    acc.adSoyad = adSoyad; acc.telefon = telefon; acc.sifreHash = sifreHash;
+  } else {
+    acc = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), adSoyad, telefon, email, sifreHash, emailDogrulandi: false, olusturulma: new Date().toISOString() };
+    accounts.push(acc);
+  }
+  await saveJson(SELF_ACCOUNTS_KEY, accounts);
+  await selfOtpGonder(email);
+  res.json({ ok: true });
+});
+
+app.post('/api/self-verify', async (req, res) => {
+  const email = (req.body.email || '').trim().toLowerCase();
+  const kod = (req.body.kod || '').trim();
+
+  const codes = await loadJson(SELF_OTP_KEY);
+  const kodKaydi = codes.slice().reverse().find(c => c.email === email && !c.kullanildi);
+  if (!kodKaydi) return res.status(400).json({ ok: false, error: 'Geçerli bir kod bulunamadı. Yeni kod isteyin.' });
+  if (kodKaydi.denemeSayisi >= 5) return res.status(400).json({ ok: false, error: 'Çok fazla yanlış deneme yapıldı. Yeni kod isteyin.' });
+  if (Date.now() > kodKaydi.sonKullanma) return res.status(400).json({ ok: false, error: 'Kodun süresi dolmuş. Yeni kod isteyin.' });
+  if (kod !== kodKaydi.kod) {
+    kodKaydi.denemeSayisi = (kodKaydi.denemeSayisi || 0) + 1;
+    await saveJson(SELF_OTP_KEY, codes);
+    return res.status(400).json({ ok: false, error: 'Kod hatalı, tekrar deneyin.' });
+  }
+  kodKaydi.kullanildi = true;
+  await saveJson(SELF_OTP_KEY, codes);
+
+  const accounts = await loadJson(SELF_ACCOUNTS_KEY);
+  const acc = accounts.find(a => a.email === email);
+  if (!acc) return res.status(404).json({ ok: false, error: 'Hesap bulunamadı.' });
+  acc.emailDogrulandi = true;
+  await saveJson(SELF_ACCOUNTS_KEY, accounts);
+  res.json({ ok: true });
+});
+
+app.post('/api/self-resend', async (req, res) => {
+  const email = (req.body.email || '').trim().toLowerCase();
+  const codes = await loadJson(SELF_OTP_KEY);
+  const son = codes.slice().reverse().find(c => c.email === email);
+  if (son && Date.now() - son.olusturulma < 45 * 1000) {
+    return res.status(429).json({ ok: false, error: 'Yeni kod istemeden önce birkaç saniye bekleyin.' });
+  }
+  const gonderildi = await selfOtpGonder(email);
+  res.json({ ok: true, mailSent: gonderildi });
+});
+
+app.post('/api/self-login', async (req, res) => {
+  const email = (req.body.email || '').trim().toLowerCase();
+  const sifre = req.body.sifre || '';
+  const accounts = await loadJson(SELF_ACCOUNTS_KEY);
+  const acc = accounts.find(a => a.email === email);
+  if (!acc || !acc.emailDogrulandi || !verifyPassword(sifre, acc.sifreHash)) {
+    return res.status(401).json({ ok: false, error: 'E-posta veya şifre hatalı ya da hesap henüz doğrulanmamış.' });
+  }
+  const token = crypto.randomBytes(24).toString('hex');
+  const tokens = await loadJson(SELF_TOKENS_KEY, {});
+  tokens[token] = { email, olusturulma: Date.now() };
+  await saveJson(SELF_TOKENS_KEY, tokens);
+  res.json({ ok: true, token, adSoyad: acc.adSoyad });
+});
+
+async function selfAuthMiddleware(req, res, next) {
+  const authHeader = req.headers['authorization'] || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : (req.query.token || '');
+  const tokens = await loadJson(SELF_TOKENS_KEY, {});
+  const entry = tokens[token];
+  if (!entry) return res.status(401).json({ ok: false, error: 'Giriş yapmalısınız.' });
+  req.selfEmail = entry.email;
+  next();
+}
+
+// --- KENDİ YEMEKHANE KAYITLARIM (PHP/MySQL sistemine köprü üzerinden ulaşır) ---
+app.get('/api/my-meals', selfAuthMiddleware, async (req, res) => {
+  const accounts = await loadJson(SELF_ACCOUNTS_KEY);
+  const acc = accounts.find(a => a.email === req.selfEmail);
+  if (!acc) return res.status(404).json({ ok: false, error: 'Hesap bulunamadı.' });
+
+  try {
+    const bridgeRes = await fetch(BRIDGE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Bridge-Key': BRIDGE_SECRET },
+      body: JSON.stringify({ telefon: acc.telefon }),
+    });
+    const data = await bridgeRes.json();
+    res.json(data);
+  } catch (err) {
+    console.error('Köprü API hatası:', err.message);
+    res.status(502).json({ ok: false, error: 'Yemekhane sistemine şu an ulaşılamıyor, lütfen daha sonra tekrar deneyin.' });
+  }
 });
 
 // --- Eşleşmeyen /api/* istekleri: HTML 404 sayfası yerine anlamlı JSON dön ---
