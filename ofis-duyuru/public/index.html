@@ -567,8 +567,12 @@
 
   <div class="tab-panel" id="panel-notlar">
     <div class="list-section">
-      <h3>Yemekhane Menüsü</h3>
-      <div id="notesList" class="list-empty">Yükleniyor...</div>
+      <div class="cal-nav">
+        <button type="button" id="menuPrevWeekBtn">← Önceki Hafta</button>
+        <span class="cal-title" id="menuWeekTitle">Yemekhane Menüsü</span>
+        <button type="button" id="menuNextWeekBtn">Sonraki Hafta →</button>
+      </div>
+      <div id="menuWeekCards"></div>
     </div>
   </div>
 
@@ -1123,6 +1127,46 @@ if ('serviceWorker' in navigator) {
 const catNames = { acil: 'Acil', yemek: 'Yemek Listesi', vefat: 'Vefat', dogum: 'Doğum', genel: 'Genel' };
 function formatTime(iso) { return new Date(iso).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); }
 function esc(s) { return (s || '').replace(/</g, '&lt;'); }
+
+const TR_MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+
+// --- RESMİ TATİLLER (2026-2027, doğrulanmış kaynaklardan) ---
+const TR_HOLIDAYS_FIXED = [
+  { m: 1, d: 1, name: 'Yılbaşı' },
+  { m: 4, d: 23, name: 'Ulusal Egemenlik ve Çocuk Bayramı' },
+  { m: 5, d: 1, name: 'Emek ve Dayanışma Günü' },
+  { m: 5, d: 19, name: "Atatürk'ü Anma, Gençlik ve Spor Bayramı" },
+  { m: 7, d: 15, name: 'Demokrasi ve Millî Birlik Günü' },
+  { m: 8, d: 30, name: 'Zafer Bayramı' },
+  { m: 10, d: 29, name: 'Cumhuriyet Bayramı' },
+];
+const TR_HOLIDAYS_RELIGIOUS = {
+  '2026-03-19': 'Ramazan Bayramı Arifesi', '2026-03-20': 'Ramazan Bayramı (1. Gün)',
+  '2026-03-21': 'Ramazan Bayramı (2. Gün)', '2026-03-22': 'Ramazan Bayramı (3. Gün)',
+  '2026-05-26': 'Kurban Bayramı Arifesi', '2026-05-27': 'Kurban Bayramı (1. Gün)',
+  '2026-05-28': 'Kurban Bayramı (2. Gün)', '2026-05-29': 'Kurban Bayramı (3. Gün)',
+  '2026-05-30': 'Kurban Bayramı (4. Gün)', '2026-10-28': 'Cumhuriyet Bayramı Arifesi',
+  '2027-03-08': 'Ramazan Bayramı Arifesi', '2027-03-09': 'Ramazan Bayramı (1. Gün)',
+  '2027-03-10': 'Ramazan Bayramı (2. Gün)', '2027-03-11': 'Ramazan Bayramı (3. Gün)',
+  '2027-05-15': 'Kurban Bayramı Arifesi', '2027-05-16': 'Kurban Bayramı (1. Gün)',
+  '2027-05-17': 'Kurban Bayramı (2. Gün)', '2027-05-18': 'Kurban Bayramı (3. Gün)',
+  '2027-05-19': 'Kurban Bayramı (4. Gün)', '2027-10-28': 'Cumhuriyet Bayramı Arifesi',
+};
+function getHolidayName(dateKey) {
+  if (TR_HOLIDAYS_RELIGIOUS[dateKey]) return TR_HOLIDAYS_RELIGIOUS[dateKey];
+  const parts = dateKey.split('-').map(Number);
+  const fixed = TR_HOLIDAYS_FIXED.find(h => h.m === parts[1] && h.d === parts[2]);
+  return fixed ? fixed.name : null;
+}
+
+// --- TAKVİM KATEGORİLERİ ---
+const CAL_CATEGORIES = {
+  genel: { label: 'Genel', color: '#7A2331' },
+  toplanti: { label: 'Toplantı', color: '#6B8F71' },
+  hatirlatma: { label: 'Hatırlatma', color: '#E0972C' },
+  etkinlik: { label: 'Etkinlik', color: '#C9A24B' },
+};
+
 function renderAttachment(att) {
   if (!att) return '';
   if (att.type === 'image') return `<a href="${att.url}" target="_blank"><img src="${att.url}" style="max-width:100%;border-radius:4px;margin-top:8px;display:block;"></a>`;
@@ -1217,9 +1261,71 @@ async function loadReadOnlyList(endpoint, listId, emptyText, renderItem, allowTo
   } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
 }
 
-loadReadOnlyList('/api/notes', 'notesList', 'Henüz not eklenmedi.', n => `
-  <div class="list-item"><div class="li-main"><div class="li-top"><span class="li-time">${formatTime(n.time)}</span></div><div class="li-body">${esc(n.text)}</div>${renderAttachment(n.attachment)}${activeAdminPassword ? `<div style="margin-top:6px;"><button class="btn-danger" onclick="deleteGeneric('notes','${n.id}')">Sil</button></div>`:''}</div></div>
-`);
+// --- YEMEKHANE MENÜSÜ (haftalık, salt okunur — ekleme admin panelinden yapılır) ---
+const DISH_LABELS = ['Çorba', 'Ana Yemek', 'Yardımcı Yemek', 'Tatlı / Ekstra'];
+const DISH_ICONS = ['🍲', '🍗', '🍚', '🍰'];
+const TR_DOW_NAMES = ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
+
+let menuAllItems = [];
+let menuWeekStart = (() => {
+  const d = new Date();
+  const dow = (d.getDay() + 6) % 7; // Pzt=0
+  d.setDate(d.getDate() - dow);
+  d.setHours(0,0,0,0);
+  return d;
+})();
+
+function menuPad2(n) { return String(n).padStart(2, '0'); }
+function menuDateKeyFromDate(d) { return d.getFullYear() + '-' + menuPad2(d.getMonth()+1) + '-' + menuPad2(d.getDate()); }
+
+async function loadMenuData() {
+  try {
+    const res = await fetch('/api/menu');
+    const data = await res.json();
+    menuAllItems = data.items || [];
+  } catch {}
+  renderMenuWeek();
+}
+
+function renderMenuWeek() {
+  const weekEnd = new Date(menuWeekStart); weekEnd.setDate(weekEnd.getDate() + 4);
+  document.getElementById('menuWeekTitle').textContent = menuWeekStart.getDate() + ' ' + TR_MONTHS[menuWeekStart.getMonth()].slice(0,3) + ' – ' + weekEnd.getDate() + ' ' + TR_MONTHS[weekEnd.getMonth()].slice(0,3);
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const cardsEl = document.getElementById('menuWeekCards');
+  let html = '';
+  for (let i = 0; i < 5; i++) {
+    const d = new Date(menuWeekStart); d.setDate(d.getDate() + i);
+    const key = menuDateKeyFromDate(d);
+    const isToday = d.getTime() === today.getTime();
+    const item = menuAllItems.find(m => m.date === key);
+    const holidayName = getHolidayName(key);
+    html += '<div class="list-item" style="flex-direction:column; align-items:stretch;' + (isToday ? ' border-left-width:6px;' : '') + '">' +
+      '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">' +
+        '<span style="font-family:\'Fraunces\',serif; font-weight:700; font-size:14px;">' + TR_DOW_NAMES[i] + ' — ' + d.getDate() + ' ' + TR_MONTHS[d.getMonth()] + (isToday ? ' <span style="color:var(--amber); font-size:11px;">(Bugün)</span>' : '') + '</span>' +
+      '</div>' +
+      (holidayName ? '<div style="font-size:11.5px; color:var(--clay); margin-bottom:6px;">🎉 ' + esc(holidayName) + ' — yemekhane kapalı olabilir</div>' : '') +
+      (item
+        ? '<div style="display:grid; grid-template-columns:1fr 1fr; gap:6px 14px;">' +
+            item.dishes.map((dish, idx) => dish ? '<div style="font-size:12.5px; color:#444;">' + DISH_ICONS[idx] + ' ' + esc(dish) + '</div>' : '').join('') +
+          '</div>'
+        : '<div style="font-size:12px; color:#999;">Menü henüz girilmedi.</div>') +
+    '</div>';
+  }
+  cardsEl.innerHTML = html;
+}
+
+document.getElementById('menuPrevWeekBtn').addEventListener('click', () => {
+  menuWeekStart.setDate(menuWeekStart.getDate() - 7);
+  renderMenuWeek();
+});
+document.getElementById('menuNextWeekBtn').addEventListener('click', () => {
+  menuWeekStart.setDate(menuWeekStart.getDate() + 7);
+  renderMenuWeek();
+});
+
+loadMenuData();
+
 
 loadReadOnlyList('/api/phones', 'phonesList', 'Henüz telefon eklenmedi.', p => `
   <div class="list-item"><div class="li-main"><div class="li-title">${esc(p.name)}</div><a class="li-phone" href="tel:${esc(p.number)}">${esc(p.number)}</a>${renderAttachment(p.attachment)}${activeAdminPassword ? `<div style="margin-top:6px;"><button class="btn-danger" onclick="deleteGeneric('phones','${p.id}')">Sil</button></div>`:''}</div></div>
@@ -1230,44 +1336,6 @@ loadReadOnlyList('/api/tasks', 'tasksList', 'Henüz görev eklenmedi.', t => `
 `, true);
 
 // --- TAKVİM (salt okunur — ekleme/silme admin panelinden yapılır) ---
-const TR_MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
-
-// --- RESMİ TATİLLER (2026-2027, doğrulanmış kaynaklardan) ---
-const TR_HOLIDAYS_FIXED = [
-  { m: 1, d: 1, name: 'Yılbaşı' },
-  { m: 4, d: 23, name: 'Ulusal Egemenlik ve Çocuk Bayramı' },
-  { m: 5, d: 1, name: 'Emek ve Dayanışma Günü' },
-  { m: 5, d: 19, name: "Atatürk'ü Anma, Gençlik ve Spor Bayramı" },
-  { m: 7, d: 15, name: 'Demokrasi ve Millî Birlik Günü' },
-  { m: 8, d: 30, name: 'Zafer Bayramı' },
-  { m: 10, d: 29, name: 'Cumhuriyet Bayramı' },
-];
-const TR_HOLIDAYS_RELIGIOUS = {
-  '2026-03-19': 'Ramazan Bayramı Arifesi', '2026-03-20': 'Ramazan Bayramı (1. Gün)',
-  '2026-03-21': 'Ramazan Bayramı (2. Gün)', '2026-03-22': 'Ramazan Bayramı (3. Gün)',
-  '2026-05-26': 'Kurban Bayramı Arifesi', '2026-05-27': 'Kurban Bayramı (1. Gün)',
-  '2026-05-28': 'Kurban Bayramı (2. Gün)', '2026-05-29': 'Kurban Bayramı (3. Gün)',
-  '2026-05-30': 'Kurban Bayramı (4. Gün)', '2026-10-28': 'Cumhuriyet Bayramı Arifesi',
-  '2027-03-08': 'Ramazan Bayramı Arifesi', '2027-03-09': 'Ramazan Bayramı (1. Gün)',
-  '2027-03-10': 'Ramazan Bayramı (2. Gün)', '2027-03-11': 'Ramazan Bayramı (3. Gün)',
-  '2027-05-15': 'Kurban Bayramı Arifesi', '2027-05-16': 'Kurban Bayramı (1. Gün)',
-  '2027-05-17': 'Kurban Bayramı (2. Gün)', '2027-05-18': 'Kurban Bayramı (3. Gün)',
-  '2027-05-19': 'Kurban Bayramı (4. Gün)', '2027-10-28': 'Cumhuriyet Bayramı Arifesi',
-};
-function getHolidayName(dateKey) {
-  if (TR_HOLIDAYS_RELIGIOUS[dateKey]) return TR_HOLIDAYS_RELIGIOUS[dateKey];
-  const parts = dateKey.split('-').map(Number);
-  const fixed = TR_HOLIDAYS_FIXED.find(h => h.m === parts[1] && h.d === parts[2]);
-  return fixed ? fixed.name : null;
-}
-
-// --- TAKVİM KATEGORİLERİ ---
-const CAL_CATEGORIES = {
-  genel: { label: 'Genel', color: '#7A2331' },
-  toplanti: { label: 'Toplantı', color: '#6B8F71' },
-  hatirlatma: { label: 'Hatırlatma', color: '#E0972C' },
-  etkinlik: { label: 'Etkinlik', color: '#C9A24B' },
-};
 const TR_DOWS = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
 let calAllItems = [];
 let calCurrentDate = new Date();
