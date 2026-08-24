@@ -347,8 +347,15 @@ app.post('/api/personnel/bulk-add', async (req, res) => {
   }
 
   const profiles = await loadJson(PROFILES_KEY, {});
+
+  function normName(s) { return (s || '').toLocaleLowerCase('tr').trim().replace(/\s+/g, ' '); }
+  function normPhone(s) { return (s || '').replace(/\D/g, ''); }
+
+  const existing = Object.values(profiles).map(p => ({ name: normName(p.name), phone: normPhone(p.phone) }));
+
   let added = 0;
   const errors = [];
+  const duplicates = [];
 
   for (const entry of entries) {
     const name = (entry.name || '').trim();
@@ -356,6 +363,11 @@ app.post('/api/personnel/bulk-add', async (req, res) => {
     const email = (entry.email || '').trim();
     if (!name) { errors.push('İsimsiz satır atlandı.'); continue; }
     if (!phone && !email) { errors.push(`"${name}" için telefon veya e-posta yok, atlandı.`); continue; }
+
+    const nName = normName(name);
+    const nPhone = normPhone(phone);
+    const isDup = nPhone && existing.some(e => e.name === nName && e.phone === nPhone);
+    if (isDup) { duplicates.push(name); continue; }
 
     const deviceId = 'manual-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
     profiles[deviceId] = {
@@ -366,11 +378,12 @@ app.post('/api/personnel/bulk-add', async (req, res) => {
       manual: true,
       addedAt: new Date().toISOString(),
     };
+    existing.push({ name: nName, phone: nPhone });
     added++;
   }
 
   await saveJson(PROFILES_KEY, profiles);
-  res.json({ ok: true, added, errors });
+  res.json({ ok: true, added, errors, duplicates });
 });
 
 // --- ELLE EKLENEN (henüz uygulama kurmamış) PERSONEL LİSTESİ ---
@@ -391,6 +404,22 @@ app.delete('/api/personnel/manual/:deviceId', async (req, res) => {
   if (passwordCheckResponse(res, result)) return;
   const profiles = await loadJson(PROFILES_KEY, {});
   delete profiles[req.params.deviceId];
+  await saveJson(PROFILES_KEY, profiles);
+  res.json({ ok: true });
+});
+
+app.put('/api/personnel/manual/:deviceId', async (req, res) => {
+  const { password, name, phone, email } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  if (!name || !name.trim()) return res.status(400).json({ ok: false, error: 'Adı Soyadı zorunlu.' });
+  const profiles = await loadJson(PROFILES_KEY, {});
+  const p = profiles[req.params.deviceId];
+  if (!p) return res.status(404).json({ ok: false, error: 'Bulunamadı.' });
+  p.name = name.trim();
+  p.phone = (phone || '').trim() || null;
+  p.email = (email || '').trim() || null;
+  p.editedAt = new Date().toISOString();
   await saveJson(PROFILES_KEY, profiles);
   res.json({ ok: true });
 });
@@ -451,6 +480,30 @@ app.get('/api/feedback', async (req, res) => {
   res.json({ items: (await loadJson(FEEDBACK_KEY)).slice().reverse() });
 });
 
+app.put('/api/feedback/:id', async (req, res) => {
+  const { password, text, name } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  if (!text || !text.trim()) return res.status(400).json({ ok: false, error: 'Mesaj boş olamaz.' });
+  const list = await loadJson(FEEDBACK_KEY);
+  const item = list.find(i => i.id === req.params.id);
+  if (!item) return res.status(404).json({ ok: false, error: 'Bulunamadı.' });
+  item.text = text.trim();
+  item.name = (name || '').trim() || null;
+  item.editedAt = new Date().toISOString();
+  await saveJson(FEEDBACK_KEY, list);
+  res.json({ ok: true, item });
+});
+
+app.delete('/api/feedback/:id', async (req, res) => {
+  const { password } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const list = (await loadJson(FEEDBACK_KEY)).filter(i => i.id !== req.params.id);
+  await saveJson(FEEDBACK_KEY, list);
+  res.json({ ok: true });
+});
+
 app.post('/api/devices/name', async (req, res) => {
   const { password, deviceId, name } = req.body;
   const result = checkPassword(password, req);
@@ -458,6 +511,23 @@ app.post('/api/devices/name', async (req, res) => {
   const subs = await loadJson(SUBS_KEY);
   for (const s of subs) { if (s.deviceId === deviceId) s.name = (name || '').trim() || null; }
   await saveJson(SUBS_KEY, subs);
+  res.json({ ok: true });
+});
+
+// --- CİHAZ SİLME (test/gereksiz aboneliklerini temizlemek için) ---
+app.delete('/api/devices/:deviceId', async (req, res) => {
+  const { password } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const { deviceId } = req.params;
+
+  const subs = (await loadJson(SUBS_KEY)).filter(s => s.deviceId !== deviceId);
+  await saveJson(SUBS_KEY, subs);
+
+  const profiles = await loadJson(PROFILES_KEY, {});
+  delete profiles[deviceId];
+  await saveJson(PROFILES_KEY, profiles);
+
   res.json({ ok: true });
 });
 
@@ -957,6 +1027,19 @@ function makeListApi(name, key) {
     res.json({ ok: true });
   });
 
+  app.put(`/api/${name}/:id`, async (req, res) => {
+    const { password, ...fields } = req.body;
+    const result = checkPassword(password, req);
+    if (passwordCheckResponse(res, result)) return;
+    const items = await loadJson(key);
+    const item = items.find(i => i.id === req.params.id);
+    if (!item) return res.status(404).json({ ok: false, error: 'Bulunamadı.' });
+    Object.assign(item, fields);
+    item.editedAt = new Date().toISOString();
+    await saveJson(key, items);
+    res.json({ ok: true, item });
+  });
+
   app.post(`/api/${name}/:id/toggle`, async (req, res) => {
     const items = await loadJson(key);
     const item = items.find(i => i.id === req.params.id);
@@ -970,6 +1053,56 @@ function makeListApi(name, key) {
 makeListApi('notes', 'notes');
 makeListApi('phones', 'phones');
 makeListApi('tasks', 'tasks');
+
+// --- TAKVİM (aylık/yıllık not/etkinlik takvimi) ---
+const CALENDAR_KEY = 'calendar';
+
+app.get('/api/calendar', async (req, res) => {
+  res.json({ items: await loadJson(CALENDAR_KEY) });
+});
+
+app.post('/api/calendar', async (req, res) => {
+  const { password, date, text } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ ok: false, error: 'Geçersiz tarih.' });
+  if (!text || !text.trim()) return res.status(400).json({ ok: false, error: 'Not boş olamaz.' });
+  const items = await loadJson(CALENDAR_KEY);
+  const item = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    date, text: text.trim(),
+    createdAt: new Date().toISOString(),
+  };
+  items.push(item);
+  await saveJson(CALENDAR_KEY, items.slice(-3000));
+  res.json({ ok: true, item });
+});
+
+app.put('/api/calendar/:id', async (req, res) => {
+  const { password, text, date } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const items = await loadJson(CALENDAR_KEY);
+  const item = items.find(i => i.id === req.params.id);
+  if (!item) return res.status(404).json({ ok: false, error: 'Bulunamadı.' });
+  if (text !== undefined) {
+    if (!text.trim()) return res.status(400).json({ ok: false, error: 'Not boş olamaz.' });
+    item.text = text.trim();
+  }
+  if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) item.date = date;
+  item.editedAt = new Date().toISOString();
+  await saveJson(CALENDAR_KEY, items);
+  res.json({ ok: true, item });
+});
+
+app.delete('/api/calendar/:id', async (req, res) => {
+  const { password } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const items = (await loadJson(CALENDAR_KEY)).filter(i => i.id !== req.params.id);
+  await saveJson(CALENDAR_KEY, items);
+  res.json({ ok: true });
+});
 
 // Multer/genel hataları çirkin bir stack trace sayfası yerine düzgün JSON olarak dön.
 app.use((err, req, res, next) => {
