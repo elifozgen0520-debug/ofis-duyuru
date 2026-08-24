@@ -850,6 +850,69 @@
     </div>
   </div>
 
+  <!-- YEMEK KAYDIM MODALI (self-servis kayıt/giriş + kişisel yemekhane geçmişi) -->
+  <div class="card" id="mealsModal" style="display:none;">
+    <div class="card-header"><h2>🍽️ Yemek Kaydım</h2><button class="card-close" data-close="mealsModal" aria-label="Kapat">✕</button></div>
+
+    <!-- Adım: Kayıt formu -->
+    <div id="mealsStepRegister">
+      <div class="sub">Kendi yemekhane geçmişini ve borcunu görebilmek için kişisel e-postanla kayıt ol.</div>
+      <div style="background:#eff6ff; border:1px solid #dbeafe; border-radius:10px; padding:10px 12px; font-size:12px; color:#1e40af; margin-bottom:14px;">
+        ℹ️ Yalnızca kişisel <b>Gmail</b> veya <b>Hotmail</b> adresiyle kayıt olabilirsin. Kurumsal e-postalar kabul edilmiyor.
+      </div>
+      <label>Adın Soyadın</label>
+      <input type="text" id="mealsRegName" placeholder="Örn: Ahmet Yılmaz">
+      <label>Telefon Numaran</label>
+      <input type="tel" id="mealsRegPhone" placeholder="Örn: 0555 111 22 33">
+      <label>E-posta (Gmail veya Hotmail)</label>
+      <input type="email" id="mealsRegEmail" placeholder="ornek@gmail.com">
+      <label>Şifre</label>
+      <input type="password" id="mealsRegPass" placeholder="En az 6 karakter">
+      <div class="send-row"><button class="btn-primary" id="mealsRegisterBtn" style="width:100%;">Kayıt Ol ve Kod Gönder</button></div>
+      <div class="feedback-msg" id="mealsRegFeedback"></div>
+      <div style="text-align:center; margin-top:14px; font-size:12.5px; color:#777;">
+        Zaten hesabın var mı? <a href="#" id="mealsGoLoginLink" style="color:var(--clay); font-weight:600;">Giriş yap</a>
+      </div>
+    </div>
+
+    <!-- Adım: OTP doğrulama -->
+    <div id="mealsStepVerify" style="display:none;">
+      <div class="sub">E-postana gönderilen 6 haneli kodu gir.</div>
+      <input type="text" id="mealsVerifyCode" maxlength="6" inputmode="numeric" placeholder="000000"
+        style="text-align:center; font-size:1.6rem; letter-spacing:8px; font-weight:800; padding:16px;">
+      <div class="send-row"><button class="btn-primary" id="mealsVerifyBtn" style="width:100%;">Doğrula</button></div>
+      <button type="button" id="mealsResendBtn" style="width:100%; background:none; color:#777; font-weight:600; font-size:12.5px; margin-top:8px;">Kodu Tekrar Gönder</button>
+      <div class="feedback-msg" id="mealsVerifyFeedback"></div>
+    </div>
+
+    <!-- Adım: Giriş formu -->
+    <div id="mealsStepLogin" style="display:none;">
+      <div class="sub">Kayıtlı e-posta ve şifrenle giriş yap.</div>
+      <label>E-posta</label>
+      <input type="email" id="mealsLoginEmail" placeholder="ornek@gmail.com">
+      <label>Şifre</label>
+      <input type="password" id="mealsLoginPass" placeholder="Şifren">
+      <div class="send-row"><button class="btn-primary" id="mealsLoginBtn" style="width:100%;">Giriş Yap</button></div>
+      <div class="feedback-msg" id="mealsLoginFeedback"></div>
+      <div style="text-align:center; margin-top:14px; font-size:12.5px; color:#777;">
+        Hesabın yok mu? <a href="#" id="mealsGoRegisterLink" style="color:var(--clay); font-weight:600;">Kayıt ol</a>
+      </div>
+    </div>
+
+    <!-- Adım: Kendi kayıtlarım -->
+    <div id="mealsStepRecords" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <div class="sub" style="margin:0;" id="mealsRecordsWho"></div>
+        <button type="button" id="mealsLogoutBtn" style="background:none; border:1px solid #ccc; color:#888; font-size:11px; padding:5px 10px; border-radius:20px;">Çıkış</button>
+      </div>
+      <div id="mealsDebtBox" style="background:var(--ink); color:var(--paper); border-radius:10px; padding:16px; text-align:center; margin-bottom:14px;">
+        <div style="font-size:11px; opacity:0.7; text-transform:uppercase; letter-spacing:0.05em;">Toplam Borç</div>
+        <div style="font-family:'Fraunces',serif; font-size:1.8rem; font-weight:700;" id="mealsDebtAmount">—</div>
+      </div>
+      <div id="mealsRecordsList" class="list-empty">Yükleniyor...</div>
+    </div>
+  </div>
+
   <!-- YÖNETİCİ MODALI -->
   <div class="card" id="adminModal" style="display:none;">
     <div class="card-header"><h2>Yönetici Paneli</h2><button class="card-close" data-close="adminModal" aria-label="Kapat">✕</button></div>
@@ -933,6 +996,8 @@
   <a href="#" id="feedbackLink">💬 Öneri</a>
   <span class="fdot">·</span>
   <a href="#" id="chatLink">🗨️ Sohbet</a>
+  <span class="fdot">·</span>
+  <a href="#" id="mealsLink">🍽️ Yemek Kaydım</a>
   <span class="fdot">·</span>
   <a href="/admin/" id="adminSecretBtn" title="" style="color:var(--line); text-decoration:none; padding:0 4px; font-size:14px;">•</a>
 </footer>
@@ -1765,7 +1830,7 @@ document.getElementById('islerSubTabCalendar').addEventListener('click', () => {
 
 // --- MODALLAR VE TEST ---
 function openModal(modalId) {
-  ['profileModal', 'feedbackModal', 'adminModal', 'chatModal'].forEach(id => {
+  ['profileModal', 'feedbackModal', 'adminModal', 'chatModal', 'mealsModal'].forEach(id => {
     if (id !== modalId) {
       const el = document.getElementById(id);
       el.classList.remove('anim-open');
@@ -2418,6 +2483,140 @@ async function deleteGeneric(type, id) {
     await fetch(`/api/${type}/${id}`, { method: 'DELETE', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ password: activeAdminPassword }) });
     location.reload();
   } catch { alert('Silinemedi.'); }
+}
+
+// ---------- YEMEK KAYDIM (self-servis kayıt / giriş / OTP / kişisel yemekhane geçmişi) ----------
+function mealsGetToken() { return localStorage.getItem('mealsToken') || ''; }
+function mealsSetToken(t) { if (t) localStorage.setItem('mealsToken', t); else localStorage.removeItem('mealsToken'); }
+let mealsPendingEmail = '';
+
+function mealsShowStep(step) {
+  ['mealsStepRegister', 'mealsStepVerify', 'mealsStepLogin', 'mealsStepRecords'].forEach(id => {
+    document.getElementById(id).style.display = (id === step) ? 'block' : 'none';
+  });
+}
+
+document.getElementById('mealsLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  openModal('mealsModal');
+  if (mealsGetToken()) { mealsShowStep('mealsStepRecords'); mealsLoadRecords(); }
+  else { mealsShowStep('mealsStepRegister'); }
+});
+
+document.getElementById('mealsGoLoginLink').addEventListener('click', (e) => { e.preventDefault(); mealsShowStep('mealsStepLogin'); });
+document.getElementById('mealsGoRegisterLink').addEventListener('click', (e) => { e.preventDefault(); mealsShowStep('mealsStepRegister'); });
+
+document.getElementById('mealsRegisterBtn').addEventListener('click', async () => {
+  const adSoyad = document.getElementById('mealsRegName').value.trim();
+  const telefon = document.getElementById('mealsRegPhone').value.trim();
+  const email = document.getElementById('mealsRegEmail').value.trim();
+  const sifre = document.getElementById('mealsRegPass').value;
+  const fb = document.getElementById('mealsRegFeedback');
+  if (!adSoyad || !telefon || !email || !sifre) { fb.textContent = 'Tüm alanları doldurun.'; fb.className = 'feedback-msg err'; return; }
+  const btn = document.getElementById('mealsRegisterBtn');
+  btn.disabled = true; fb.textContent = 'Gönderiliyor...'; fb.className = 'feedback-msg';
+  try {
+    const res = await fetch('/api/self-register', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adSoyad, telefon, email, sifre })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Kayıt olunamadı.');
+    mealsPendingEmail = email;
+    fb.textContent = ''; fb.className = 'feedback-msg';
+    mealsShowStep('mealsStepVerify');
+  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
+  finally { btn.disabled = false; }
+});
+
+document.getElementById('mealsVerifyBtn').addEventListener('click', async () => {
+  const kod = document.getElementById('mealsVerifyCode').value.trim();
+  const fb = document.getElementById('mealsVerifyFeedback');
+  if (!kod) { fb.textContent = 'Kodu girin.'; fb.className = 'feedback-msg err'; return; }
+  const btn = document.getElementById('mealsVerifyBtn');
+  btn.disabled = true; fb.textContent = 'Doğrulanıyor...'; fb.className = 'feedback-msg';
+  try {
+    const res = await fetch('/api/self-verify', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: mealsPendingEmail, kod })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Doğrulanamadı.');
+    fb.textContent = 'E-posta doğrulandı! Şimdi giriş yapabilirsin.'; fb.className = 'feedback-msg ok';
+    document.getElementById('mealsLoginEmail').value = mealsPendingEmail;
+    setTimeout(() => mealsShowStep('mealsStepLogin'), 900);
+  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
+  finally { btn.disabled = false; }
+});
+
+document.getElementById('mealsResendBtn').addEventListener('click', async () => {
+  const fb = document.getElementById('mealsVerifyFeedback');
+  try {
+    const res = await fetch('/api/self-resend', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: mealsPendingEmail })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Gönderilemedi.');
+    fb.textContent = 'Yeni kod gönderildi.'; fb.className = 'feedback-msg ok';
+  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
+});
+
+document.getElementById('mealsLoginBtn').addEventListener('click', async () => {
+  const email = document.getElementById('mealsLoginEmail').value.trim();
+  const sifre = document.getElementById('mealsLoginPass').value;
+  const fb = document.getElementById('mealsLoginFeedback');
+  if (!email || !sifre) { fb.textContent = 'E-posta ve şifre gerekli.'; fb.className = 'feedback-msg err'; return; }
+  const btn = document.getElementById('mealsLoginBtn');
+  btn.disabled = true; fb.textContent = 'Giriş yapılıyor...'; fb.className = 'feedback-msg';
+  try {
+    const res = await fetch('/api/self-login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, sifre })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Giriş yapılamadı.');
+    mealsSetToken(data.token);
+    fb.textContent = ''; fb.className = 'feedback-msg';
+    mealsShowStep('mealsStepRecords');
+    mealsLoadRecords();
+  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
+  finally { btn.disabled = false; }
+});
+
+document.getElementById('mealsLogoutBtn').addEventListener('click', () => {
+  mealsSetToken(null);
+  mealsShowStep('mealsStepLogin');
+});
+
+async function mealsLoadRecords() {
+  const listEl = document.getElementById('mealsRecordsList');
+  const whoEl = document.getElementById('mealsRecordsWho');
+  const debtEl = document.getElementById('mealsDebtAmount');
+  listEl.className = 'list-empty'; listEl.textContent = 'Yükleniyor...';
+  try {
+    const res = await fetch('/api/my-meals', { headers: { 'Authorization': 'Bearer ' + mealsGetToken() } });
+    const data = await res.json();
+    if (res.status === 401) { mealsSetToken(null); mealsShowStep('mealsStepLogin'); return; }
+    if (!data.ok) { listEl.textContent = data.error || 'Kayıtlar alınamadı.'; return; }
+
+    whoEl.textContent = `${data.adSoyad || ''}${data.birim ? ' · ' + data.birim : ''}`;
+    debtEl.textContent = (data.toplamBorc || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₺';
+
+    if (!data.kayitlar || data.kayitlar.length === 0) {
+      listEl.className = 'list-empty'; listEl.textContent = 'Henüz yemek kaydın yok.'; return;
+    }
+    listEl.className = '';
+    listEl.innerHTML = data.kayitlar.map(k => {
+      const tarih = new Date(k.tarih + 'T00:00:00').toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
+      const durumRenk = k.odemeDurumu === 'Borçlu' ? 'var(--clay)' : 'var(--sage)';
+      return `<div class="list-item"><div class="li-main">
+          <div class="li-top"><span class="li-time">${tarih}</span><span style="font-size:10px;font-weight:700;color:${durumRenk};">${esc(k.odemeDurumu || '')}</span></div>
+          <div class="li-title">${esc(k.yemek || 'Menü bilgisi yok')}</div>
+          <div class="li-body">Kendi: ${k.kendi} ${k.misafir ? '· Misafir: ' + k.misafir : ''} · Tutar: ${(k.tutar || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</div>
+        </div></div>`;
+    }).join('');
+  } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
 }
 </script>
 </body>
