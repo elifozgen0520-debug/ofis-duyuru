@@ -782,6 +782,7 @@ app.get('/api/chat/contacts', async (req, res) => {
       name: p.name,
       avatar: p.avatar || null,
       online: presence[id] ? (now - presence[id] < 90 * 1000) : false,
+      lastSeen: presence[id] || null,
     }))
     .sort((a, b) => (b.online - a.online) || a.name.localeCompare(b.name, 'tr'));
   res.json({ contacts });

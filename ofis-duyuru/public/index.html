@@ -310,6 +310,21 @@
     color: #fff; cursor: pointer; box-shadow: 0 14px 32px rgba(0,0,0,0.35);
     background: linear-gradient(135deg, var(--manset-c1, var(--ink)), var(--manset-c2, #000));
     transition: transform 0.15s ease;
+    animation: manset-fade-in 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .manset-card::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.16) 45%, transparent 60%);
+    background-size: 220% 100%; background-position: 130% 0;
+    animation: manset-sheen 2.6s ease-out 0.15s 1;
+  }
+  @keyframes manset-fade-in {
+    from { opacity: 0; transform: translateY(10px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes manset-sheen {
+    from { background-position: 130% 0; }
+    to { background-position: -30% 0; }
   }
   .manset-card:hover { transform: translateY(-2px); }
   .manset-tag {
@@ -320,8 +335,8 @@
   .manset-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 20px; margin: 0 0 8px; line-height: 1.25; }
   .manset-date { font-size: 12px; opacity: 0.82; }
   .manset-dots { display: flex; gap: 6px; justify-content: center; margin-top: 12px; }
-  .manset-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.28); cursor: pointer; border: none; padding: 0; }
-  .manset-dot.active { background: var(--paper); }
+  .manset-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.28); cursor: pointer; border: none; padding: 0; transition: background 0.2s ease, transform 0.2s ease; }
+  .manset-dot.active { background: var(--paper); transform: scale(1.35); }
   .li-detay-link { font-size: 11.5px; color: var(--clay); font-weight: 600; cursor: pointer; margin-top: 6px; display: inline-block; }
 
   /* DUYURU DETAY POPUP */
@@ -1986,6 +2001,19 @@ async function sendPresenceHeartbeat() {
   try { await fetch('/api/presence', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId() }) }); } catch {}
 }
 
+// Sohbet açıkken bile telefon arka plana düşünce (ekran kilitlendi, başka uygulamaya geçildi)
+// "hayattayım" sinyalini durdur — yoksa kişi saatlerdir uygulamayı görmese bile "Çevrimiçi" görünmeye devam eder.
+// Öne gelince hemen bir sinyal daha at ve pollamayı yeniden başlat.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    if (presencePoll) { clearInterval(presencePoll); presencePoll = null; }
+  } else if (document.visibilityState === 'visible' && hasCompleteProfile()) {
+    sendPresenceHeartbeat();
+    if (presencePoll) clearInterval(presencePoll);
+    presencePoll = setInterval(sendPresenceHeartbeat, 45000);
+  }
+});
+
 async function loadGeneralChat() {
   try {
     const res = await fetch('/api/chat/general');
@@ -2011,6 +2039,17 @@ async function sendGeneralChat() {
   } catch { alert('Gönderilemedi.'); }
 }
 
+function formatLastSeen(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  const now = new Date();
+  const time = d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+  if (d.toDateString() === now.toDateString()) return time;
+  const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+  if (d.toDateString() === yesterday.toDateString()) return 'dün ' + time;
+  return d.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' }) + ' ' + time;
+}
+
 async function loadContacts() {
   const el = document.getElementById('chatContactList');
   try {
@@ -2020,17 +2059,22 @@ async function loadContacts() {
       el.className = 'list-empty'; el.textContent = 'Henüz profilini tamamlamış başka kullanıcı yok.'; return;
     }
     el.className = '';
-    el.innerHTML = data.contacts.map(c => `
+    el.innerHTML = data.contacts.map(c => {
+      const statusHtml = c.online
+        ? 'Çevrimiçi'
+        : (c.lastSeen ? `<i>Son görülme: ${formatLastSeen(c.lastSeen)}</i>` : 'Çevrimdışı');
+      return `
       <div class="contact-row" onclick="openDirectChat('${c.deviceId}', '${escChat(c.name).replace(/'/g, "\\'")}')">
         <div class="contact-avatar">${c.avatar ? `<img src="${c.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : (c.name || '?').charAt(0).toUpperCase()}
           ${c.online ? '<span class="contact-online-dot"></span>' : ''}
         </div>
         <div>
           <div class="contact-name">${escChat(c.name)}</div>
-          <div class="contact-status">${c.online ? 'Çevrimiçi' : 'Çevrimdışı'}</div>
+          <div class="contact-status">${statusHtml}</div>
         </div>
       </div>
-    `).join('');
+    `;
+    }).join('');
   } catch { el.className = 'list-empty'; el.textContent = 'Yüklenemedi.'; }
 }
 
