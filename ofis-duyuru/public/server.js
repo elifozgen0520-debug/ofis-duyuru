@@ -1054,6 +1054,48 @@ makeListApi('notes', 'notes');
 makeListApi('phones', 'phones');
 makeListApi('tasks', 'tasks');
 
+// --- YEMEKHANE MENÜSÜ (günlük, 4 çeşit yemek) ---
+const MENU_KEY = 'cafeteria-menu';
+
+app.get('/api/menu', async (req, res) => {
+  res.json({ items: await loadJson(MENU_KEY) });
+});
+
+app.post('/api/menu', async (req, res) => {
+  const { password, date, dishes } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ ok: false, error: 'Geçersiz tarih.' });
+  if (!Array.isArray(dishes)) return res.status(400).json({ ok: false, error: 'Menü listesi geçersiz.' });
+  const cleanDishes = dishes.slice(0, 4).map(d => (d || '').trim());
+  if (cleanDishes.every(d => !d)) return res.status(400).json({ ok: false, error: 'En az bir yemek girilmeli.' });
+
+  const items = await loadJson(MENU_KEY);
+  let item = items.find(i => i.date === date);
+  if (item) {
+    item.dishes = cleanDishes;
+    item.editedAt = new Date().toISOString();
+  } else {
+    item = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      date, dishes: cleanDishes,
+      createdAt: new Date().toISOString(),
+    };
+    items.push(item);
+  }
+  await saveJson(MENU_KEY, items);
+  res.json({ ok: true, item });
+});
+
+app.delete('/api/menu/:id', async (req, res) => {
+  const { password } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const items = (await loadJson(MENU_KEY)).filter(i => i.id !== req.params.id);
+  await saveJson(MENU_KEY, items);
+  res.json({ ok: true });
+});
+
 // --- TAKVİM (aylık/yıllık not/etkinlik takvimi) ---
 const CALENDAR_KEY = 'calendar';
 
