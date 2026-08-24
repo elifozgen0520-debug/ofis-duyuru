@@ -303,30 +303,41 @@
 
   /* TAKVİM */
   .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-  .cal-nav button { background: var(--ink); color: var(--paper); padding: 8px 14px; font-size: 13px; }
-  .cal-nav .cal-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; }
+  .cal-nav button { background: var(--paper); color: var(--ink); padding: 8px 14px; font-size: 13px; font-weight: 600; }
+  .cal-nav .cal-title { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 700; color: var(--paper); }
   .cal-view-toggle { display: flex; gap: 6px; margin-bottom: 16px; }
-  .cal-view-toggle button { background: #eee; color: #555; padding: 6px 14px; font-size: 12.5px; border-radius: 20px; }
-  .cal-view-toggle button.active { background: var(--ink); color: var(--paper); }
-  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-  .cal-dow { text-align: center; font-size: 11px; font-weight: 700; color: #999; padding: 4px 0; }
-  .cal-day { aspect-ratio: 1; border: 1px solid #e5e2d8; border-radius: 6px; padding: 4px; cursor: pointer; position: relative; font-size: 12px; color: var(--ink); transition: background 0.15s ease; }
-  .cal-day:hover { background: #f5f3ee; }
-  .cal-day.empty { border: none; cursor: default; }
-  .cal-day.today { border-color: var(--amber); border-width: 2px; }
-  .cal-day .cd-num { font-weight: 700; }
-  .cal-day .cd-dot { position: absolute; bottom: 4px; right: 4px; width: 7px; height: 7px; border-radius: 50%; background: var(--clay); }
+  .cal-view-toggle button { background: rgba(255,255,255,0.12); color: var(--paper); padding: 7px 16px; font-size: 12.5px; border-radius: 20px; font-weight: 600; }
+  .cal-view-toggle button.active { background: var(--amber); color: var(--ink); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .cal-dow { text-align: center; font-size: 11px; font-weight: 700; color: var(--paper); opacity: 0.6; padding: 4px 0; letter-spacing: 0.05em; text-transform: uppercase; }
+  .cal-day {
+    aspect-ratio: 1; border-radius: 8px; padding: 6px; cursor: pointer; position: relative;
+    background: var(--paper); color: var(--ink); box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    display: flex; align-items: flex-start; justify-content: flex-start;
+  }
+  .cal-day:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,0.25); }
+  .cal-day.empty { background: transparent; box-shadow: none; cursor: default; }
+  .cal-day.empty:hover { transform: none; }
+  .cal-day.today { outline: 2.5px solid var(--amber); outline-offset: 1px; }
+  .cal-day .cd-num { font-family: 'Fraunces', serif; font-weight: 700; font-size: 15px; }
+  .cal-day .cd-dot { position: absolute; bottom: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--clay); box-shadow: 0 0 0 2px var(--paper); }
   .cal-year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-  .cal-mini-month { background: #f7f5f0; border-radius: 6px; padding: 10px; cursor: pointer; color: var(--ink); }
-  .cal-mini-month:hover { background: #efece0; }
-  .cal-mini-month .cmm-title { font-weight: 700; font-size: 12.5px; margin-bottom: 6px; }
-  .cal-mini-month .cmm-count { font-size: 11px; color: var(--clay); }
+  .cal-mini-month { background: var(--paper); border-radius: 8px; padding: 12px; cursor: pointer; color: var(--ink); box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: transform 0.15s ease; }
+  .cal-mini-month:hover { transform: translateY(-2px); }
+  .cal-mini-month .cmm-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+  .cal-mini-month .cmm-count { font-size: 11px; color: var(--clay); font-weight: 600; }
   .cal-search-box { display: flex; gap: 8px; margin-bottom: 16px; }
   .cal-search-box input { flex: 1; }
   .toast-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
   .toast-overlay.show { display: flex; }
   .toast-box { background: var(--paper); color: var(--ink); border-radius: 8px; padding: 26px 24px; max-width: 360px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
   .toast-box .ttitle { font-family: 'Fraunces', serif; font-weight: 700; font-size: 17px; margin-bottom: 8px; }
+
+  /* İŞLER içindeki alt sekme (İşler / Takvim) */
+  .isler-subtabs { display: flex; gap: 6px; margin-bottom: 18px; }
+  .isler-subtabs button { background: rgba(255,255,255,0.08); color: var(--paper); padding: 8px 18px; font-size: 13px; font-weight: 600; border-radius: 20px; }
+  .isler-subtabs button.active { background: var(--amber); color: var(--ink); }
 </style>
 </head>
 <body>
@@ -524,7 +535,6 @@
     <button class="tab-btn" data-tab="notlar">Notlar</button>
     <button class="tab-btn" data-tab="telefonlar">Telefonlar</button>
     <button class="tab-btn" data-tab="isler">İşler</button>
-    <button class="tab-btn" data-tab="takvim">Takvim</button>
   </div>
 
   <div class="tab-panel active" id="panel-duyurular">
@@ -563,42 +573,49 @@
   </div>
 
   <div class="tab-panel" id="panel-isler">
-    <div class="list-section">
-      <h3>Aylık Yapılacak İşler</h3>
-      <div id="tasksList" class="list-empty">Yükleniyor...</div>
+    <div class="isler-subtabs">
+      <button type="button" class="active" id="islerSubTabTasks">✅ İşler</button>
+      <button type="button" id="islerSubTabCalendar">📅 Takvim</button>
     </div>
-  </div>
 
-  <div class="tab-panel" id="panel-takvim">
-    <div class="list-section">
-      <h3>Takvim</h3>
-      <div class="cal-search-box">
-        <input type="text" id="calSearchInput" placeholder="Notlarda ara...">
-        <button class="btn-primary" id="calSearchBtn">Ara</button>
+    <div id="islerSubPanelTasks">
+      <div class="list-section">
+        <h3>Aylık Yapılacak İşler</h3>
+        <div id="tasksList" class="list-empty">Yükleniyor...</div>
       </div>
-      <div id="calSearchResults" style="display:none; margin-bottom:16px;"></div>
+    </div>
 
-      <div class="cal-view-toggle">
-        <button type="button" id="calViewMonthBtn" class="active">Aylık</button>
-        <button type="button" id="calViewYearBtn">Yıllık</button>
-      </div>
-
-      <div id="calMonthView">
-        <div class="cal-nav">
-          <button type="button" id="calPrevBtn">← Önceki</button>
-          <span class="cal-title" id="calMonthTitle"></span>
-          <button type="button" id="calNextBtn">Sonraki →</button>
+    <div id="islerSubPanelCalendar" style="display:none;">
+      <div class="list-section">
+        <h3>Takvim</h3>
+        <div class="cal-search-box">
+          <input type="text" id="calSearchInput" placeholder="Notlarda ara...">
+          <button class="btn-primary" id="calSearchBtn">Ara</button>
         </div>
-        <div class="cal-grid" id="calGrid"></div>
-      </div>
+        <div id="calSearchResults" style="display:none; margin-bottom:16px;"></div>
 
-      <div id="calYearView" style="display:none;">
-        <div class="cal-nav">
-          <button type="button" id="calPrevYearBtn">← Önceki Yıl</button>
-          <span class="cal-title" id="calYearTitle"></span>
-          <button type="button" id="calNextYearBtn">Sonraki Yıl →</button>
+        <div class="cal-view-toggle">
+          <button type="button" id="calViewMonthBtn" class="active">Aylık</button>
+          <button type="button" id="calViewYearBtn">Yıllık</button>
         </div>
-        <div class="cal-year-grid" id="calYearGrid"></div>
+
+        <div id="calMonthView">
+          <div class="cal-nav">
+            <button type="button" id="calPrevBtn">← Önceki</button>
+            <span class="cal-title" id="calMonthTitle"></span>
+            <button type="button" id="calNextBtn">Sonraki →</button>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
+
+        <div id="calYearView" style="display:none;">
+          <div class="cal-nav">
+            <button type="button" id="calPrevYearBtn">← Önceki Yıl</button>
+            <span class="cal-title" id="calYearTitle"></span>
+            <button type="button" id="calNextYearBtn">Sonraki Yıl →</button>
+          </div>
+          <div class="cal-year-grid" id="calYearGrid"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -1313,8 +1330,23 @@ document.getElementById('calSearchBtn').addEventListener('click', () => {
 });
 document.getElementById('calSearchInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('calSearchBtn').click(); });
 
-loadCalendar();
 renderCalMonth();
+
+// --- İşler / Takvim alt sekme geçişi ---
+let calendarLoadedOnce = false;
+document.getElementById('islerSubTabTasks').addEventListener('click', () => {
+  document.getElementById('islerSubTabTasks').classList.add('active');
+  document.getElementById('islerSubTabCalendar').classList.remove('active');
+  document.getElementById('islerSubPanelTasks').style.display = 'block';
+  document.getElementById('islerSubPanelCalendar').style.display = 'none';
+});
+document.getElementById('islerSubTabCalendar').addEventListener('click', () => {
+  document.getElementById('islerSubTabCalendar').classList.add('active');
+  document.getElementById('islerSubTabTasks').classList.remove('active');
+  document.getElementById('islerSubPanelCalendar').style.display = 'block';
+  document.getElementById('islerSubPanelTasks').style.display = 'none';
+  if (!calendarLoadedOnce) { calendarLoadedOnce = true; loadCalendar(); }
+});
 
 // --- MODALLAR VE TEST ---
 function openModal(modalId) {
