@@ -408,6 +408,22 @@ app.delete('/api/personnel/manual/:deviceId', async (req, res) => {
   res.json({ ok: true });
 });
 
+app.put('/api/personnel/manual/:deviceId', async (req, res) => {
+  const { password, name, phone, email } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  if (!name || !name.trim()) return res.status(400).json({ ok: false, error: 'Adı Soyadı zorunlu.' });
+  const profiles = await loadJson(PROFILES_KEY, {});
+  const p = profiles[req.params.deviceId];
+  if (!p) return res.status(404).json({ ok: false, error: 'Bulunamadı.' });
+  p.name = name.trim();
+  p.phone = (phone || '').trim() || null;
+  p.email = (email || '').trim() || null;
+  p.editedAt = new Date().toISOString();
+  await saveJson(PROFILES_KEY, profiles);
+  res.json({ ok: true });
+});
+
 app.post('/api/self-profile', async (req, res) => {
   const { deviceId, name, phone, email, bloodType, kvkkConsent, kvkkConsentAt } = req.body;
   if (!deviceId) return res.status(400).json({ ok: false, error: 'Cihaz kimliği eksik.' });
@@ -1011,6 +1027,19 @@ function makeListApi(name, key) {
     res.json({ ok: true });
   });
 
+  app.put(`/api/${name}/:id`, async (req, res) => {
+    const { password, ...fields } = req.body;
+    const result = checkPassword(password, req);
+    if (passwordCheckResponse(res, result)) return;
+    const items = await loadJson(key);
+    const item = items.find(i => i.id === req.params.id);
+    if (!item) return res.status(404).json({ ok: false, error: 'Bulunamadı.' });
+    Object.assign(item, fields);
+    item.editedAt = new Date().toISOString();
+    await saveJson(key, items);
+    res.json({ ok: true, item });
+  });
+
   app.post(`/api/${name}/:id/toggle`, async (req, res) => {
     const items = await loadJson(key);
     const item = items.find(i => i.id === req.params.id);
@@ -1024,6 +1053,56 @@ function makeListApi(name, key) {
 makeListApi('notes', 'notes');
 makeListApi('phones', 'phones');
 makeListApi('tasks', 'tasks');
+
+// --- TAKVİM (aylık/yıllık not/etkinlik takvimi) ---
+const CALENDAR_KEY = 'calendar';
+
+app.get('/api/calendar', async (req, res) => {
+  res.json({ items: await loadJson(CALENDAR_KEY) });
+});
+
+app.post('/api/calendar', async (req, res) => {
+  const { password, date, text } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ ok: false, error: 'Geçersiz tarih.' });
+  if (!text || !text.trim()) return res.status(400).json({ ok: false, error: 'Not boş olamaz.' });
+  const items = await loadJson(CALENDAR_KEY);
+  const item = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    date, text: text.trim(),
+    createdAt: new Date().toISOString(),
+  };
+  items.push(item);
+  await saveJson(CALENDAR_KEY, items.slice(-3000));
+  res.json({ ok: true, item });
+});
+
+app.put('/api/calendar/:id', async (req, res) => {
+  const { password, text, date } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const items = await loadJson(CALENDAR_KEY);
+  const item = items.find(i => i.id === req.params.id);
+  if (!item) return res.status(404).json({ ok: false, error: 'Bulunamadı.' });
+  if (text !== undefined) {
+    if (!text.trim()) return res.status(400).json({ ok: false, error: 'Not boş olamaz.' });
+    item.text = text.trim();
+  }
+  if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) item.date = date;
+  item.editedAt = new Date().toISOString();
+  await saveJson(CALENDAR_KEY, items);
+  res.json({ ok: true, item });
+});
+
+app.delete('/api/calendar/:id', async (req, res) => {
+  const { password } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const items = (await loadJson(CALENDAR_KEY)).filter(i => i.id !== req.params.id);
+  await saveJson(CALENDAR_KEY, items);
+  res.json({ ok: true });
+});
 
 // Multer/genel hataları çirkin bir stack trace sayfası yerine düzgün JSON olarak dön.
 app.use((err, req, res, next) => {
