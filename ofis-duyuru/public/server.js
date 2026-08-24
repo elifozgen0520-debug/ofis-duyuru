@@ -1223,6 +1223,13 @@ app.delete('/api/calendar/:id', async (req, res) => {
   res.json({ ok: true });
 });
 
+// --- Eşleşmeyen /api/* istekleri: HTML 404 sayfası yerine anlamlı JSON dön ---
+// (Böylece frontend'de "Unexpected token '<' ... is not valid JSON" gibi kriptik
+// hatalar yerine, hangi endpoint'in eksik/yanlış olduğu net görünür.)
+app.use('/api', (req, res) => {
+  res.status(404).json({ ok: false, error: 'Endpoint bulunamadı: ' + req.method + ' ' + req.originalUrl });
+});
+
 // Multer/genel hataları çirkin bir stack trace sayfası yerine düzgün JSON olarak dön.
 app.use((err, req, res, next) => {
   if (err && err.name === 'MulterError') {
