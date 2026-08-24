@@ -240,16 +240,19 @@
   <div class="view" id="view-notlar">
     <a class="back-link" data-back>← Panele Dön</a>
     <div class="card">
-      <h2>Yemekhane Menüsü Ekle</h2>
-      <div class="sub">Hafta içi (Pazartesi–Cuma) her gün için öğle yemeği menüsünü buradan ekle. Örn: "Pazartesi: Mercimek Çorbası, Pilav, Ayran".</div>
-      <label>Menü</label>
-      <textarea id="noteText" placeholder="Örn: Pazartesi - Mercimek Çorbası, Tavuk Sote, Pilav, Ayran"></textarea>
-      <label>Görsel / PDF Ekle (opsiyonel)</label>
-      <input type="file" id="noteAttachment" accept="image/jpeg,image/png,application/pdf">
-      <div class="send-row"><button class="btn-primary" id="noteSendBtn">Ekle</button></div>
-      <div class="feedback-msg" id="noteFeedback"></div>
+      <h2>🍽️ Yemekhane Menüsü</h2>
+      <div class="sub">Yıl, ay ve hafta seç, o haftanın hafta içi (Pazartesi–Cuma) günleri için 4 çeşit yemeği gir.</div>
+      <div style="display:flex; gap:10px; margin-bottom:14px;">
+        <select id="menuYearSelect" style="flex:1;"></select>
+        <select id="menuMonthSelect" style="flex:1;"></select>
+      </div>
+      <div id="menuWeekButtons" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:20px;"></div>
+      <div id="menuDayCards"></div>
     </div>
-    <div class="list-section"><h3>Yemekhane Menüleri</h3><div id="notesList" class="list-empty">Yükleniyor...</div></div>
+    <div class="list-section">
+      <h3>Girilmiş Tüm Menüler</h3>
+      <div id="menuOverviewList" class="list-empty">Yükleniyor...</div>
+    </div>
   </div>
 
   <div class="view" id="view-telefonlar">
@@ -445,7 +448,7 @@ async function tryLogin(password) {
 async function showDashboard() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
-  loadHistory(); loadNotes(); loadPhones(); loadTasks(); loadDevices(); loadFeedback();
+  loadHistory(); loadMenu(); loadPhones(); loadTasks(); loadDevices(); loadFeedback();
   loadStats(); loadPmDeviceList(); loadModGeneral(); loadModDirect(); loadManualPersonnel(); loadCalendar();
 }
 
@@ -795,16 +798,155 @@ function setupSimpleList(opts) {
   return { load };
 }
 
-const loadNotes = () => setupSimpleList({
-  endpoint: '/api/notes', sendBtnId: 'noteSendBtn', feedbackId: 'noteFeedback', listId: 'notesList', attachmentId: 'noteAttachment', countId: 'countNotlar',
-  buildPayload: () => ({ text: document.getElementById('noteText').value.trim() }),
-  validate: (p) => (!p.text) ? 'Not gerekli.' : null,
-  onSuccess: () => { document.getElementById('noteText').value = ''; },
-  emptyText: 'Henüz not eklenmedi.',
-  renderInner: (n) => '<div class="li-top"><span class="li-time">' + formatTime(n.time) + (n.editedAt ? ' · <i>düzenlendi</i>' : '') + '</span></div><div class="li-body">' + esc(n.text) + '</div>' + renderAttachment(n.attachment),
-  editFields: [{ key: 'text', label: 'Not', type: 'textarea' }],
-  validateEdit: (f) => (!f.text) ? 'Not boş olamaz.' : null,
-}).load;
+// ---------- Yemekhane Menüsü ----------
+const DISH_LABELS = ['Çorba', 'Ana Yemek', 'Yardımcı Yemek', 'Tatlı / Ekstra'];
+const DISH_ICONS = ['🍲', '🍗', '🍚', '🍰'];
+const TR_DOW_NAMES = ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
+
+let menuAllItems = [];
+let menuYear = new Date().getFullYear();
+let menuMonth = new Date().getMonth();
+let menuSelectorsInit = false;
+
+function menuPad2(n) { return String(n).padStart(2, '0'); }
+function menuDaysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
+function menuDateKey(y, m, d) { return y + '-' + menuPad2(m + 1) + '-' + menuPad2(d); }
+
+function getSimpleWeeks(year, month) {
+  const total = menuDaysInMonth(year, month);
+  const weeks = [];
+  for (let start = 1; start <= total; start += 7) {
+    const end = Math.min(start + 6, total);
+    const weekdayDays = [];
+    for (let d = start; d <= end; d++) {
+      const dow = new Date(year, month, d).getDay(); // 0=Paz..6=Cmt
+      if (dow >= 1 && dow <= 5) weekdayDays.push(d);
+    }
+    if (weekdayDays.length > 0) weeks.push({ start, end, days: weekdayDays });
+  }
+  return weeks;
+}
+
+function initMenuSelectors() {
+  if (menuSelectorsInit) return;
+  menuSelectorsInit = true;
+  const yearSel = document.getElementById('menuYearSelect');
+  const curYear = new Date().getFullYear();
+  yearSel.innerHTML = [curYear - 1, curYear, curYear + 1, curYear + 2].map(y => '<option value="' + y + '"' + (y === menuYear ? ' selected' : '') + '>' + y + '</option>').join('');
+  const monthSel = document.getElementById('menuMonthSelect');
+  monthSel.innerHTML = TR_MONTHS.map((m, i) => '<option value="' + i + '"' + (i === menuMonth ? ' selected' : '') + '>' + m + '</option>').join('');
+  yearSel.addEventListener('change', () => { menuYear = parseInt(yearSel.value, 10); renderMenuWeekButtons(); });
+  monthSel.addEventListener('change', () => { menuMonth = parseInt(monthSel.value, 10); renderMenuWeekButtons(); });
+}
+
+function renderMenuWeekButtons() {
+  const weeks = getSimpleWeeks(menuYear, menuMonth);
+  const el = document.getElementById('menuWeekButtons');
+  const today = new Date();
+  const todayDay = (today.getFullYear() === menuYear && today.getMonth() === menuMonth) ? today.getDate() : -1;
+  let defaultIdx = 0;
+  el.innerHTML = weeks.map((w, i) => {
+    if (todayDay >= w.start && todayDay <= w.end) defaultIdx = i;
+    return '<button type="button" class="cal-view-toggle-btn" data-week-idx="' + i + '" style="background:#eee;color:#555;padding:7px 14px;font-size:12px;border-radius:20px;">' + w.start + '–' + w.end + ' ' + TR_MONTHS[menuMonth] + '</button>';
+  }).join('');
+  el.querySelectorAll('[data-week-idx]').forEach(b => b.addEventListener('click', () => selectMenuWeek(parseInt(b.dataset.weekIdx, 10))));
+  selectMenuWeek(defaultIdx, weeks);
+}
+
+function selectMenuWeek(idx, weeksParam) {
+  const weeks = weeksParam || getSimpleWeeks(menuYear, menuMonth);
+  document.querySelectorAll('#menuWeekButtons button').forEach((b, i) => {
+    b.style.background = i === idx ? 'var(--ink)' : '#eee';
+    b.style.color = i === idx ? 'var(--paper)' : '#555';
+  });
+  const week = weeks[idx];
+  if (!week) { document.getElementById('menuDayCards').innerHTML = ''; return; }
+  renderMenuDayCards(week.days);
+}
+
+function renderMenuDayCards(days) {
+  const el = document.getElementById('menuDayCards');
+  el.innerHTML = days.map(d => {
+    const dow = new Date(menuYear, menuMonth, d).getDay();
+    const dowName = TR_DOW_NAMES[(dow + 6) % 7];
+    const key = menuDateKey(menuYear, menuMonth, d);
+    const existing = menuAllItems.find(i => i.date === key);
+    const dishes = existing ? existing.dishes : ['', '', '', ''];
+    return '<div class="card" style="margin-bottom:14px; padding:16px;">' +
+      '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">' +
+        '<span style="font-family:\'Fraunces\',serif; font-weight:700; font-size:15px;">' + dowName + ' — ' + d + ' ' + TR_MONTHS[menuMonth] + '</span>' +
+        (existing ? '<button class="btn-danger" style="font-size:11px;" data-del-menu="' + existing.id + '">Sil</button>' : '') +
+      '</div>' +
+      DISH_LABELS.map((label, i) =>
+        '<label style="font-size:11px;">' + DISH_ICONS[i] + ' ' + label + '</label>' +
+        '<input type="text" id="menu-' + key + '-' + i + '" value="' + esc(dishes[i] || '') + '" placeholder="' + label + '..." style="margin-bottom:8px;">'
+      ).join('') +
+      '<button class="btn-primary" data-save-menu="' + key + '" style="width:100%; margin-top:4px;">Kaydet</button>' +
+      '<div class="feedback-msg" id="menufb-' + key + '"></div>' +
+    '</div>';
+  }).join('');
+  el.querySelectorAll('[data-save-menu]').forEach(b => b.addEventListener('click', () => saveMenuDay(b.dataset.saveMenu)));
+  el.querySelectorAll('[data-del-menu]').forEach(b => b.addEventListener('click', () => deleteMenuItem(b.dataset.delMenu)));
+}
+
+async function saveMenuDay(dateKey) {
+  const dishes = [0, 1, 2, 3].map(i => document.getElementById('menu-' + dateKey + '-' + i).value.trim());
+  const fb = document.getElementById('menufb-' + dateKey);
+  if (dishes.every(d => !d)) { fb.textContent = 'En az bir yemek girmelisin.'; fb.className = 'feedback-msg err'; return; }
+  try {
+    const res = await fetch('/api/menu', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: getAdminPassword(), date: dateKey, dishes })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Kaydedilemedi');
+    const idx = menuAllItems.findIndex(i => i.date === dateKey);
+    if (idx >= 0) menuAllItems[idx] = data.item; else menuAllItems.push(data.item);
+    fb.textContent = 'Kaydedildi.'; fb.className = 'feedback-msg ok';
+    renderMenuOverviewList();
+    document.getElementById('countNotlar').textContent = menuAllItems.length + ' gün';
+  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
+}
+
+async function deleteMenuItem(id) {
+  if (!confirm('Bu günün menüsünü silmek istediğine emin misin?')) return;
+  try {
+    const res = await fetch('/api/menu/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: getAdminPassword() }) });
+    if (!res.ok) { const d = await res.json(); alert(d.error || 'Silinemedi'); return; }
+    menuAllItems = menuAllItems.filter(i => i.id !== id);
+    renderMenuWeekButtons();
+    renderMenuOverviewList();
+    document.getElementById('countNotlar').textContent = menuAllItems.length + ' gün';
+  } catch { alert('Silinemedi.'); }
+}
+
+function renderMenuOverviewList() {
+  const el = document.getElementById('menuOverviewList');
+  if (menuAllItems.length === 0) { el.className = 'list-empty'; el.textContent = 'Henüz menü girilmedi.'; return; }
+  el.className = '';
+  const sorted = menuAllItems.slice().sort((a, b) => b.date.localeCompare(a.date));
+  el.innerHTML = sorted.map(m => {
+    const d = new Date(m.date + 'T00:00:00');
+    const dowName = TR_DOW_NAMES[(d.getDay() + 6) % 7];
+    return '<div class="list-item"><div class="li-main">' +
+      '<div class="li-top"><span class="li-tag">' + dowName + ' ' + d.getDate() + ' ' + TR_MONTHS[d.getMonth()] + '</span></div>' +
+      '<div class="li-body">' + m.dishes.filter(Boolean).map(esc).join(' · ') + '</div>' +
+    '</div><button class="btn-danger" data-del-menu-ov="' + m.id + '">Sil</button></div>';
+  }).join('');
+  el.querySelectorAll('[data-del-menu-ov]').forEach(b => b.addEventListener('click', () => deleteMenuItem(b.dataset.delMenuOv)));
+}
+
+async function loadMenu() {
+  try {
+    const res = await fetch('/api/menu');
+    const data = await res.json();
+    menuAllItems = data.items || [];
+    document.getElementById('countNotlar').textContent = menuAllItems.length + ' gün';
+  } catch {}
+  initMenuSelectors();
+  renderMenuWeekButtons();
+  renderMenuOverviewList();
+}
 
 const loadPhones = () => setupSimpleList({
   endpoint: '/api/phones', sendBtnId: 'phoneSendBtn', feedbackId: 'phoneFeedback', listId: 'phonesList', attachmentId: 'phoneAttachment', countId: 'countTelefonlar',
