@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Amasya CSB - Kurumsal Duyuru Sistemi</title>
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0284C7">
+<meta name="theme-color" content="#4F46E5">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
@@ -13,7 +13,7 @@
     --primary-blue: #0284C7;
     --header-blue: #4F46E5;
     --cyan-accent: #06B6D4;
-    --amber: #F97316; /* Canlı Turuncu */
+    --amber: #FF7D29;
     --amber-gradient: linear-gradient(135deg, #FF7D29, #F97316);
     --csb-gradient: linear-gradient(135deg, #4F46E5 0%, #0284C7 50%, #06B6D4 100%);
     --sage: #10B981;
@@ -21,7 +21,7 @@
     --gold: #F59E0B;
     --ink: #0F172A;
     --paper: #FFFFFF;
-    --paper-shadow: rgba(79, 70, 229, 0.08);
+    --paper-shadow: rgba(79, 70, 229, 0.1);
     --bg-main: #F8FAFC;
     --line: #E2E8F0;
     --muted: #64748B;
@@ -30,6 +30,7 @@
     --body-text: #0F172A;
   }
 
+  /* ALTERNATİF TEMALAR */
   body[data-theme="klasik"] {
     --bg-main: #1F2430;
     --card-bg: #2A303F;
@@ -41,7 +42,10 @@
   body[data-theme="zeytin"] { --header-blue: #1E2A1C; --primary-blue: #7C9A4A; --amber: #A3C15E; }
   body[data-theme="bordo"] { --header-blue: #2A1418; --primary-blue: #B5384A; --amber: #D46B7A; }
 
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  * { 
+    box-sizing: border-box; 
+    -webkit-tap-highlight-color: transparent; 
+  }
 
   html, body {
     width: 100%;
@@ -52,13 +56,14 @@
   }
 
   body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', sans-serif; 
     background: var(--bg-main);
-    background-image: linear-gradient(180deg, #4F46E5 0%, #0284C7 160px, var(--bg-main) 220px);
+    background-image: linear-gradient(180deg, #4F46E5 0%, #0284C7 160px, #06B6D4 220px, var(--bg-main) 220px);
     background-repeat: no-repeat;
-    color: var(--body-text);
-    min-height: 100vh;
-    padding: 12px 12px calc(80px + env(safe-area-inset-bottom));
+    color: var(--body-text); 
+    min-height: 100vh; 
+    padding: 14px 14px calc(85px + env(safe-area-inset-bottom));
+    touch-action: manipulation;
     -webkit-font-smoothing: antialiased;
     overscroll-behavior-y: none;
   }
@@ -68,128 +73,141 @@
     -webkit-user-select: none;
   }
 
-  .wrap { max-width: 600px; margin: 0 auto; width: 100%; }
+  .wrap { max-width: 640px; margin: 0 auto; width: 100%; }
 
   /* GÜVENLİK ROZETİ */
   .security-badge {
     display: flex; align-items: center; justify-content: center; gap: 6px;
     background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.3);
-    color: #FFFFFF; font-size: 11px; font-weight: 700; padding: 4px 10px;
-    border-radius: 20px; margin-bottom: 12px; backdrop-filter: blur(6px);
+    color: #FFFFFF; font-size: 11.5px; font-weight: 700; padding: 5px 12px;
+    border-radius: 20px; margin-bottom: 12px; backdrop-filter: blur(8px);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.15);
   }
 
   /* SABİT ÜST BAŞLIK */
   header {
-    position: sticky; top: 0; z-index: 1000;
+    position: sticky; top: 0; z-index: 1200;
     background: rgba(79, 70, 229, 0.92);
-    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
     display: flex; align-items: center; justify-content: space-between;
-    gap: 8px; margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.18);
-    padding: 10px 14px; margin-left: -12px; margin-right: -12px; margin-top: -12px;
+    gap: 12px; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.2);
+    padding: 12px 16px; margin-left: -14px; margin-right: -14px; margin-top: -14px;
+    flex-wrap: wrap; transition: background 0.3s ease;
     color: #FFFFFF;
   }
   
-  h1 { font-family: 'Inter', sans-serif; font-weight: 800; font-size: clamp(16px, 5vw, 20px); margin: 0; color: #FFFFFF; letter-spacing: -0.02em; }
-  .pin-count { font-size: 11px; color: rgba(255,255,255,0.85); font-weight: 600; }
+  h1 { font-family: 'Inter', sans-serif; font-weight: 800; font-size: clamp(18px, 5.5vw, 22px); margin: 0; color: #FFFFFF; letter-spacing: -0.02em; }
+  .pin-count { font-size: 11.5px; color: rgba(255,255,255,0.85); font-weight: 600; }
 
+  /* SALLANAN LOGO VE ZİL ANİMASYONU */
   .sway-logo {
     display: inline-block;
     animation: logo-sway 1.8s ease-in-out infinite alternate;
     transform-origin: center center;
   }
   @keyframes logo-sway {
-    0% { transform: rotate(-10deg) scale(0.96); }
-    100% { transform: rotate(10deg) scale(1.04); }
+    0% { transform: rotate(-12deg) scale(0.96); }
+    50% { transform: rotate(0deg) scale(1.06); }
+    100% { transform: rotate(12deg) scale(0.96); }
   }
 
   .status-card {
-    background: var(--card-bg); color: var(--card-text); border-radius: 20px; padding: 18px;
-    margin-bottom: 16px; box-shadow: 0 10px 25px var(--paper-shadow); position: relative;
+    background: var(--card-bg); color: var(--card-text); border-radius: 22px; padding: 20px;
+    margin-bottom: 18px; box-shadow: 0 10px 30px var(--paper-shadow); position: relative;
     border: 1px solid var(--line);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
+  .status-card:active { transform: scale(0.985); }
   .status-card::before {
-    content: ''; position: absolute; top: -5px; left: 20px; width: 10px; height: 10px;
-    border-radius: 50%; background: var(--amber); box-shadow: 0 0 10px rgba(249, 115, 22, 0.8);
+    content: ''; position: absolute; top: -6px; left: 24px; width: 12px; height: 12px;
+    border-radius: 50%; background: var(--amber);
+    box-shadow: 0 0 12px rgba(255, 125, 41, 0.8);
   }
 
-  /* TIKLANABİLİR BİLDİRİM ROZETİ (RESİM 3) */
+  /* BİLDİRİM AKTİF ROZETİ (RESİM 3 İÇİN TIKLANABİLİR MODAL AÇICI) */
   .bell-status {
     display: inline-flex; align-items: center; gap: 8px; background: #FFFFFF;
-    color: #059669; font-size: 12.5px; font-weight: 700; padding: 8px 18px;
-    border-radius: 24px; margin-bottom: 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-    border: 1.5px solid #A7F3D0; cursor: pointer; transition: transform 0.15s ease;
+    color: #059669; font-size: 12.5px; font-weight: 700; padding: 9px 20px;
+    border-radius: 24px; margin-bottom: 18px; box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    border: 1.5px solid #A7F3D0; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
   .bell-status:active { transform: scale(0.95); }
 
   button {
-    font-family: 'Inter', sans-serif; font-weight: 700; font-size: 13.5px;
-    border: none; border-radius: 20px; padding: 10px 18px; cursor: pointer;
-    transition: transform 0.15s ease, opacity 0.15s ease;
+    font-family: 'Inter', sans-serif; font-weight: 700; font-size: 14px;
+    border: none; border-radius: 24px; padding: 11px 20px; cursor: pointer;
+    transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s ease, box-shadow 0.15s ease;
   }
   button:active { transform: scale(0.95); opacity: 0.9; }
-  .btn-primary { background: var(--amber-gradient); color: #FFFFFF; box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35); }
-  .btn-secondary { background: var(--primary-blue); color: #FFFFFF; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25); }
-  .btn-success { background: var(--sage); color: #fff; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); }
-  .btn-warning { background: var(--amber); color: #fff; }
-  .btn-danger { background: var(--clay); color: #fff; padding: 5px 10px; font-size: 11px; border-radius: 14px; }
+  .btn-primary { background: var(--amber-gradient); color: #FFFFFF; box-shadow: 0 4px 16px rgba(255, 125, 41, 0.35); }
+  .btn-primary:hover { opacity: 0.95; }
+  .btn-secondary { background: var(--primary-blue); color: #FFFFFF; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3); }
+  .btn-success { background: var(--sage); color: #fff; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3); }
+  .btn-warning { background: var(--amber); color: #fff; box-shadow: 0 4px 14px rgba(255, 125, 41, 0.3); }
+  .btn-danger { background: var(--clay); color: #fff; padding: 6px 12px; font-size: 11px; border-radius: 18px; }
 
-  /* ANA SEKMELER */
-  .tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 4px; }
+  /* SEKME TASARIMI */
+  .tabs { display: flex; gap: 6px; margin-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.25); padding-bottom: 6px; }
   .tab-btn {
-    background: rgba(255,255,255,0.18); color: #FFFFFF; border-radius: 18px;
-    padding: 8px 10px; font-size: 12px; font-weight: 700;
-    border: 1px solid rgba(255,255,255,0.25); flex: 1; text-align: center;
-    transition: all 0.2s ease;
+    background: rgba(255,255,255,0.18); color: #FFFFFF; border-radius: 20px;
+    padding: 10px 12px; font-size: 13px; font-weight: 700;
+    border: 1px solid rgba(255,255,255,0.28); flex: 1; text-align: center;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .tab-btn.active { color: var(--header-blue); background: #FFFFFF; border-color: #FFFFFF; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  .tab-btn.active { color: var(--header-blue); background: #FFFFFF; border-color: #FFFFFF; box-shadow: 0 4px 14px rgba(0,0,0,0.15); }
   
-  .tab-panel { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.2s ease, transform 0.2s ease; }
-  .tab-panel.active { display: block; opacity: 1; transform: translateY(0); }
+  .tab-panel { display: none; opacity: 0; transform: translateY(10px); transition: opacity 0.25s ease, transform 0.25s ease; }
+  .tab-panel.active { display: block; opacity: 1; transform: translateY(0); animation: mobileSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
 
-  /* GENEL POPUP / MODAL MİMARİSİ (RESİM 1 STİLİ) */
-  .modal-overlay {
+  @keyframes mobileSlideIn {
+    from { opacity: 0; transform: translateY(14px) scale(0.985); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* MODAL & POPUP YAPISI (RESİM 1 STİLİ DÜZELTİLDİ) */
+  .modal-overlay, .toast-overlay, .wizard-overlay {
     position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); z-index: 2500; display: none;
     align-items: flex-end; justify-content: center; padding: 0;
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   }
   @media (min-width: 600px) {
-    .modal-overlay { align-items: center; padding: 16px; }
+    .modal-overlay, .toast-overlay, .wizard-overlay { align-items: center; padding: 18px; }
   }
-  .modal-overlay.show { display: flex; }
+  .modal-overlay.show, .toast-overlay.show { display: flex; }
 
-  .card-popup {
-    background: var(--card-bg); color: var(--card-text); border-radius: 24px 24px 0 0; padding: 22px 20px 24px;
-    width: 100%; max-width: 540px; box-shadow: 0 -10px 40px rgba(0,0,0,0.3); border: 1px solid var(--line);
+  .card-popup, .card, .toast-box {
+    background: var(--card-bg); color: var(--card-text); border-radius: 26px 26px 0 0; padding: 24px 22px 26px;
+    width: 100%; max-width: 560px; box-shadow: 0 -10px 40px rgba(0,0,0,0.3); border: 1px solid var(--line);
     position: relative; max-height: 85vh; overflow-y: auto;
-    animation: popupSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: popupSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
   @media (min-width: 600px) {
-    .card-popup { border-radius: 24px; animation: card-in 0.28s cubic-bezier(0.16, 1, 0.3, 1); }
+    .card-popup, .card, .toast-box { border-radius: 26px; animation: card-in 0.28s cubic-bezier(0.16, 1, 0.3, 1); }
   }
 
-  .card-popup.anim-close { animation: popupSlideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  .card-popup.anim-close, .card.anim-close { animation: popupSlideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
   @keyframes popupSlideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
   @keyframes popupSlideDown { from { transform: translateY(0); opacity: 1; } to { transform: translateY(100%); opacity: 0; } }
-  @keyframes card-in { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+  @keyframes card-in { from { opacity: 0; transform: scale(0.95) translateY(12px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 
-  .popup-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-  .popup-title { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 18px; color: var(--card-text); margin: 0; }
-  .popup-close {
-    background: #F1F5F9; border: none; color: #64748B; font-size: 18px; width: 32px; height: 32px;
+  .popup-header, .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .popup-title, .card h2 { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 19px; color: var(--card-text); margin: 0; }
+  .popup-close, .card-close {
+    background: #F1F5F9; border: none; color: #64748B; font-size: 18px; width: 34px; height: 34px;
     border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;
     transition: background 0.15s ease, transform 0.15s ease;
   }
-  .popup-close:active { transform: scale(0.85); background: #E2E8F0; }
+  .popup-close:active, .card-close:active { transform: scale(0.85); background: #E2E8F0; }
 
-  /* SOHBET PENCERESİ */
-  #chatModal .card-popup { display: flex; flex-direction: column; height: 80vh; max-height: 650px; }
+  /* SOHBET MODALI */
+  #chatModal .card-popup, #chatModal.card { display: flex; flex-direction: column; height: 82vh; max-height: 680px; }
   #chatModal #chatUnlocked { display: flex; flex-direction: column; flex: 1; min-height: 0; }
   .chat-panel { display: flex; flex-direction: column; flex: 1; min-height: 0; }
   .chat-box {
-    flex: 1; min-height: 120px; overflow-y: auto; background: #F8FAFC; border-radius: 16px;
-    padding: 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;
-    border: 1px solid var(--line);
+    flex: 1; min-height: 120px; overflow-y: auto; background: #F8FAFC; border-radius: 18px;
+    padding: 14px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px;
+    -webkit-overflow-scrolling: touch; border: 1px solid var(--line);
   }
   .chat-bubble {
     max-width: 80%; padding: 10px 14px; border-radius: 18px; font-size: 13px; line-height: 1.45;
@@ -201,16 +219,19 @@
   .chat-bubble .cb-time { font-size: 9.5px; opacity: 0.6; margin-top: 3px; text-align: right; }
   .chat-bubble .cb-tick.read { color: #7ec9ff; }
   .chat-bubble .cb-actions { display: flex; gap: 4px; justify-content: flex-end; margin-top: 4px; opacity: 0; transition: opacity 0.15s ease; }
-  .chat-bubble.mine:hover .cb-actions { opacity: 1; }
+  .chat-bubble.mine:hover .cb-actions, .chat-bubble.mine:focus-within .cb-actions { opacity: 1; }
   .cb-action-btn { background: rgba(255,255,255,0.2); border: none; color: inherit; font-size: 11px; padding: 2px 6px; border-radius: 8px; cursor: pointer; }
+  .chat-bubble-editing { padding: 6px 8px; }
+  .chat-edit-input { width: 100%; font-size: 13px; padding: 6px 8px; border-radius: 12px; border: none; color: var(--card-text); background: #fff; }
+  .cb-edit-actions { display: flex; gap: 4px; justify-content: flex-end; margin-top: 4px; }
 
   .chat-input-row { display: flex; gap: 8px; flex-shrink: 0; }
   .chat-input-row input { flex: 1; }
 
-  .contact-row { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 14px; cursor: pointer; border-bottom: 1px solid var(--line); }
+  .contact-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; cursor: pointer; transition: background 0.15s ease; border-bottom: 1px solid var(--line); }
   .contact-row:active { background: #F1F5F9; }
   .contact-avatar {
-    width: 36px; height: 36px; border-radius: 50%; background: #E2E8F0; flex-shrink: 0;
+    width: 38px; height: 38px; border-radius: 50%; background: #E2E8F0; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700;
     color: var(--primary-blue); position: relative;
   }
@@ -218,45 +239,45 @@
   .contact-name { font-size: 13.5px; font-weight: 600; }
   .contact-status { font-size: 11px; color: #94A3B8; }
 
-  label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; margin-top: 12px; }
+  label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; margin-top: 14px; }
 
   input[type="text"], input[type="tel"], input[type="password"], input[type="email"], textarea, select {
-    width: 100%; font-family: 'Inter', sans-serif; font-size: 13.5px;
-    padding: 11px 14px; border: 1.5px solid #CBD5E1; border-radius: 14px; background: #fff; color: #0F172A;
+    width: 100%; font-family: 'Inter', sans-serif; font-size: 14px;
+    padding: 12px 16px; border: 1.5px solid #CBD5E1; border-radius: 14px; background: #fff; color: #0F172A;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
-  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--amber) !important; box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2) !important; }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--amber) !important; box-shadow: 0 0 0 3px rgba(255, 125, 41, 0.2) !important; }
   textarea { resize: vertical; min-height: 75px; }
 
-  .cat-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
-  .cat-btn { background: #fff; border: 1.5px solid #CBD5E1; color: #475569; font-size: 11.5px; font-weight: 600; padding: 5px 12px; border-radius: 18px; }
+  .cat-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .cat-btn { background: #fff; border: 1.5px solid #CBD5E1; color: #475569; font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 20px; }
   .cat-btn.active[data-cat="genel"] { background: var(--primary-blue); color: #fff; border-color: var(--primary-blue); }
   .cat-btn.active[data-cat="acil"] { background: var(--amber); color: #fff; border-color: var(--amber); }
 
-  .send-row { margin-top: 14px; display: flex; align-items: center; gap: 10px; }
-  .feedback-msg { font-size: 12.5px; margin-top: 8px; min-height: 16px; }
+  .send-row { margin-top: 16px; display: flex; align-items: center; gap: 10px; }
+  .feedback-msg { font-size: 13px; margin-top: 8px; min-height: 18px; }
   .feedback-msg.ok { color: var(--sage); font-weight: 600; }
   .feedback-msg.err { color: var(--clay); font-weight: 600; }
 
   /* TOAST BİLDİRİMİ */
-  #toastContainer { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 3500; display: flex; flex-direction: column; gap: 8px; align-items: center; width: 90%; max-width: 340px; pointer-events: none; }
+  #toastContainer { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); z-index: 3500; display: flex; flex-direction: column; gap: 8px; align-items: center; width: 90%; max-width: 350px; pointer-events: none; }
   .toast {
-    background: #0F172A; color: #FFFFFF; font-size: 13px; font-weight: 600;
-    padding: 10px 18px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-    display: flex; align-items: center; gap: 6px; pointer-events: auto;
+    background: #0F172A; color: #FFFFFF; font-size: 13.5px; font-weight: 600;
+    padding: 11px 20px; border-radius: 26px; box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    display: flex; align-items: center; gap: 8px; pointer-events: auto;
     animation: toast-in 0.25s cubic-bezier(0.16,1,0.3,1), toast-out 0.25s ease 2.4s forwards;
   }
   .toast.ok { background: var(--sage); }
   .toast.err { background: var(--clay); }
-  @keyframes toast-in { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes toast-out { to { opacity: 0; transform: translateY(-8px); } }
+  @keyframes toast-in { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes toast-out { to { opacity: 0; transform: translateY(-10px); } }
 
   /* LİSTE ÖĞELERİ */
-  .list-section h3 { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 14px; margin: 0 0 10px; color: var(--card-text); text-transform: uppercase; letter-spacing: 0.04em; }
+  .list-section h3 { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 14.5px; margin: 0 0 12px; color: var(--card-text); text-transform: uppercase; letter-spacing: 0.04em; }
   .list-item {
-    background: var(--card-bg); color: var(--card-text); border-radius: 16px;
-    padding: 14px 16px; margin-bottom: 10px; box-shadow: 0 4px 14px rgba(0,0,0,0.04);
-    border-left: 5px solid var(--primary-blue); display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
+    background: var(--card-bg); color: var(--card-text); border-radius: 18px;
+    padding: 15px 16px; margin-bottom: 11px; box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+    border-left: 6px solid var(--primary-blue); display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
     border-top: 1px solid var(--line); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
   }
   .list-item.acil { border-left-color: var(--amber); }
@@ -265,63 +286,71 @@
   .list-item.dogum { border-left-color: var(--gold); }
   .list-item .li-main { flex: 1; min-width: 0; }
   .list-item .li-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; }
-  .li-toggle { background: rgba(249, 115, 22, 0.12); border: none; color: var(--amber); font-size: 18px; padding: 2px 8px; border-radius: 8px; cursor: pointer; }
+  .li-toggle { background: rgba(255, 125, 41, 0.12); border: none; color: var(--amber); font-size: 20px; padding: 2px 8px; border-radius: 8px; cursor: pointer; }
   .attach-wrap { overflow: hidden; max-height: 0; transition: max-height 0.3s ease; }
-  .attach-wrap.open { max-height: 1000px; }
+  .attach-wrap.open { max-height: 1200px; }
 
-  .li-read-btn { background: none; border: 1px solid #CBD5E1; color: #64748B; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 14px; cursor: pointer; }
+  .li-read-btn { background: none; border: 1.5px solid #CBD5E1; color: #64748B; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 16px; cursor: pointer; }
   .li-read-btn.done { background: var(--sage); border-color: var(--sage); color: #fff; }
 
-  .pagination-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 14px 0; }
-  .page-size-select { width: auto; padding: 4px 8px; font-size: 12px; border-radius: 16px; }
-  .page-nav button { background: var(--card-bg); color: var(--card-text); border: 1px solid var(--line); padding: 6px 12px; border-radius: 16px; font-size: 12px; font-weight: 600; }
+  .pagination-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 16px 0; }
+  .page-size-select { width: auto; padding: 4px 10px; font-size: 12px; border-radius: 18px; }
+  .page-nav button { background: var(--card-bg); color: var(--card-text); border: 1px solid var(--line); padding: 7px 14px; border-radius: 18px; font-size: 12px; font-weight: 600; }
 
-  .list-item .li-tag { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--primary-blue); }
+  .list-item .li-tag { font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: var(--primary-blue); }
   .list-item .li-time { font-size: 11px; color: #94A3B8; }
-  .list-item .li-title { font-weight: 700; font-size: 14.5px; margin: 2px 0; color: #0F172A; }
-  .list-item .li-body { font-size: 13px; color: #334155; line-height: 1.4; }
-  .list-item .li-phone { font-weight: 800; font-size: 15px; color: var(--amber); text-decoration: none; }
-  .list-empty { color: var(--muted); font-size: 12.5px; text-align: center; padding: 18px; background: #FFFFFF; border-radius: 16px; border: 1px dashed var(--line); }
+  .list-item .li-title { font-weight: 700; font-size: 15px; margin: 2px 0; color: #0F172A; }
+  .list-item .li-body { font-size: 13px; color: #334155; line-height: 1.45; }
+  .list-item .li-phone { font-weight: 800; font-size: 15.5px; color: var(--amber); text-decoration: none; }
+  .list-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 20px; background: #FFFFFF; border-radius: 18px; border: 1px dashed var(--line); }
 
-  /* MANŞET KART & OKLAR (DÜZELTİLDİ) */
-  .manset-wrap { margin-bottom: 16px; }
-  .manset-nav { display: flex; align-items: center; gap: 8px; width: 100%; }
+  /* MANŞET KART & DÜZELTİLMİŞ GÖRÜNÜR OKLAR */
+  .manset-wrap { margin-bottom: 18px; }
+  .manset-nav { display: flex; align-items: center; gap: 10px; width: 100%; position: relative; }
   .manset-nav-btn {
     background: #FFFFFF; border: 1px solid var(--line); color: var(--header-blue);
-    width: 38px; height: 38px; min-width: 38px; border-radius: 50%; font-size: 20px; font-weight: 900;
+    width: 40px; height: 40px; min-width: 40px; border-radius: 50%; font-size: 20px; font-weight: 900;
     cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 10; transition: transform 0.15s ease;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15); z-index: 20; transition: transform 0.15s ease, background 0.15s ease;
   }
   .manset-nav-btn:active { transform: scale(0.88); }
   .manset-card {
-    flex: 1; min-width: 0; position: relative; border-radius: 20px; overflow: hidden; padding: 20px;
-    min-height: 140px; display: flex; flex-direction: column; justify-content: center;
-    color: #fff; cursor: pointer; box-shadow: 0 12px 28px rgba(0,0,0,0.2);
+    flex: 1; min-width: 0; position: relative; border-radius: 22px; overflow: hidden; padding: 22px 20px;
+    min-height: 150px; display: flex; flex-direction: column; justify-content: center;
+    color: #fff; cursor: pointer; box-shadow: 0 14px 32px rgba(0,0,0,0.22);
     background: linear-gradient(135deg, var(--manset-c1, #4F46E5), var(--manset-c2, #0284C7));
   }
-  .manset-tag { display: inline-block; background: rgba(255,255,255,0.22); font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 3px 10px; border-radius: 16px; margin-bottom: 8px; width: fit-content; }
-  .manset-title { font-weight: 800; font-size: 17px; margin: 0 0 6px; line-height: 1.25; }
+  .manset-tag { display: inline-block; background: rgba(255,255,255,0.22); font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 4px 11px; border-radius: 18px; margin-bottom: 8px; width: fit-content; }
+  .manset-title { font-weight: 800; font-size: 18px; margin: 0 0 6px; line-height: 1.25; }
   .manset-date { font-size: 11.5px; opacity: 0.85; }
-  .manset-dots { display: flex; gap: 5px; justify-content: center; margin-top: 10px; }
+  .manset-dots { display: flex; gap: 6px; justify-content: center; margin-top: 10px; }
   .manset-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.35); border: none; padding: 0; }
-  .manset-dot.active { background: #FFFFFF; transform: scale(1.3); }
+  .manset-dot.active { background: #FFFFFF; transform: scale(1.4); }
 
   #splash { position: fixed; inset: 0; background: #4F46E5; display: flex; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.5s ease; }
   #splash img { width: 95px; height: 95px; border-radius: 50%; }
   #splash.hide { opacity: 0; pointer-events: none; }
 
-  /* FOOTER ALTI NAVİGASYON */
+  /* FOOTER ALTI NAVİGASYON (BANKA STİLİ DÜZELTİLDİ) */
   .site-footer {
     position: fixed; left: 0; right: 0; bottom: 0;
-    background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
     border-top: 1px solid #E2E8F0; text-align: center; padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
     font-size: 13px; z-index: 2000; display: flex; justify-content: space-around; align-items: center;
     box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
   }
-  .site-footer a { color: #475569; text-decoration: none; font-weight: 700; padding: 4px 8px; display: flex; align-items: center; gap: 4px; }
+  .site-footer a { color: #475569; text-decoration: none; font-weight: 700; padding: 4px 10px; display: flex; align-items: center; gap: 4px; transition: color 0.15s ease; }
   .site-footer a:active { color: var(--primary-blue); transform: scale(0.92); }
 
-  /* TAKVİM & MENÜ SUBTABS */
+  /* WIZARD & TAKVİM */
+  .wizard-card { background: #FFFFFF; color: #0F172A; max-width: 500px; width: 100%; border-radius: 24px; padding: 24px; box-shadow: 0 24px 60px rgba(0,0,0,0.35); border: 2px solid var(--amber); }
+  .wizard-step { display: none; }
+  .wizard-step.active { display: block; animation: mobileSlideIn 0.28s cubic-bezier(0.16,1,0.3,1); }
+  .step-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #CBD5E1; transition: all 0.25s ease; }
+  .dot.active { background: var(--amber); width: 26px; border-radius: 10px; }
+  .guide-box { background: #FEF3C7; border: 1px solid #FDE68A; padding: 14px; border-radius: 14px; font-size: 12.5px; color: #92400E; margin: 12px 0; text-align: left; line-height: 1.55; }
+
   .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
   .cal-nav button { background: #FFFFFF; color: #0F172A; border: 1px solid #CBD5E1; padding: 6px 12px; font-size: 12px; font-weight: 700; border-radius: 16px; }
   .cal-title { font-weight: 800; font-size: 15px; color: var(--card-text); }
@@ -340,50 +369,116 @@
 <body>
 <div id="toastContainer"></div>
 <div id="splash"><img src="/icon-192.png" alt="CSB" class="sway-logo"></div>
+<div id="notifBanner"></div>
 
-<!-- KVKK MODAL -->
+<!-- KVKK AYDINLATMA METNİ MODALI -->
 <div class="modal-overlay" id="kvkkModal">
   <div class="card-popup">
     <div class="popup-header">
       <h2 class="popup-title">KVKK Aydınlatma Metni</h2>
       <button class="popup-close" onclick="closePopup('kvkkModal')">✕</button>
     </div>
-    <div style="font-size:12.5px; line-height:1.6; color:#334155;">
+    <div style="font-size:12.5px; line-height:1.65; color:#334155;">
       <p><b>Veri Sorumlusu:</b> Amasya Çevre, Şehircilik ve İklim Değişikliği İl Müdürlüğü.</p>
-      <p>Verileriniz 6698 sayılı KVKK uyarınca yalnızca kurum içi acil duyuru, yemekhane ve iç iletişim süreçlerinde işlenir. Üçüncü şahıslarla paylaşılmaz.</p>
+      <p><b>İşlenen Kişisel Veriler:</b> Ad-soyad, telefon numarası, e-posta adresi, kan grubu, profil fotoğrafı, cihaz kimliği, sohbet mesajları.</p>
+      <p><b>İşleme Amacı:</b> Yalnızca kurum içi acil duyuru, yemekhane ve iç iletişim süreçlerinde işlenir. Ticari amaçla kullanılmaz, üçüncü taraflarla paylaşılmaz.</p>
     </div>
     <button type="button" class="btn-primary" onclick="closePopup('kvkkModal')" style="width:100%; margin-top:14px;">Anladım ve Kapat</button>
   </div>
 </div>
 
-<!-- BİLDİRİM TEST MODAL (RESİM 3 İÇİN) -->
+<!-- BİLDİRİM & SES TESTİ MODALI (RESİM 3 TIKLANDIĞINDA AÇILIR) -->
 <div class="modal-overlay" id="bellStatusModal">
   <div class="card-popup">
     <div class="popup-header">
-      <h2 class="popup-title">🔔 Bildirim & Ses Durumu</h2>
+      <h2 class="popup-title">🔔 Bildirim ve Ses Testi</h2>
       <button class="popup-close" onclick="closePopup('bellStatusModal')">✕</button>
     </div>
     <div style="font-size:13px; color:#334155; margin-bottom:14px;">
-      Cihazınız anlık duyuru bildirimlerini almaya hazır. Aşağıdaki butonlarla test edebilirsiniz:
+      Cihazınız duyuruları almaya hazır. Ses motorunu ve kilit ekranı bildirimlerini test edebilirsiniz:
     </div>
     <button class="btn-success" id="testSoundBtnPop" style="width:100%; margin-bottom:10px;">🔊 Sesi Çal (3 Defa)</button>
     <button class="btn-warning" id="testLockBtnPop" style="width:100%;">🧪 Kilit Ekranı Test Bildirimi (3 Sn)</button>
   </div>
 </div>
 
+<!-- KURULUM WIZARD MODAL -->
+<div class="wizard-overlay" id="wizardModal" style="display:none;">
+  <div class="wizard-card">
+    <div class="step-dots">
+      <div class="dot active" id="dot1"></div>
+      <div class="dot" id="dot2"></div>
+      <div class="dot" id="dot3"></div>
+      <div class="dot" id="dot4"></div>
+    </div>
+
+    <div class="wizard-step active" id="step1">
+      <div id="step1-download">
+        <div style="font-size:36px; text-align:center; margin-bottom:8px;">📱</div>
+        <h2 style="text-align:center; margin:0 0 8px;">Adım 1: Uygulamayı İndir</h2>
+        <p style="font-size:13px; color:#64748B; text-align:center;">Duyuruların cebinize anında düşmesi için uygulamayı ekleyin.</p>
+        <div id="pwaInstallContainer" style="display:none; text-align:center; margin:16px 0;">
+          <button class="btn-primary" id="btnPwaInstall" style="width:100%; padding:12px; font-size:15px;">📥 Uygulamayı Telefona Yükle</button>
+        </div>
+        <div class="guide-box" id="iosPwaNotice" style="display:none;">
+          <b>iPhone (Safari) Kullanıcıları:</b><br>
+          1. Alt menüdeki <b>Paylaş (⬆️)</b> simgesine dokunun.<br>
+          2. Açılan listeden <b>"Ana Ekrana Ekle"</b> seçeneğini seçin.
+        </div>
+      </div>
+      <div id="step1-installed" style="display:none;">
+        <div style="font-size:36px; text-align:center; margin-bottom:8px;">✅</div>
+        <h2 style="text-align:center; margin:0 0 8px;">Kurulum Tamamlandı</h2>
+        <div class="guide-box"><b>🔒 Verileriniz güvende:</b> Uygulama yalnızca duyuruları iletmek içindir.</div>
+      </div>
+      <button class="btn-primary" id="btnNext1" style="width:100%; margin-top:12px;">Devam Et (2/4) ➔</button>
+    </div>
+
+    <div class="wizard-step" id="step2">
+      <div style="font-size:36px; text-align:center; margin-bottom:8px;">👤</div>
+      <h2 style="text-align:center; margin:0 0 8px;">Adım 2: Profilinizi Yazın</h2>
+      <label>Adınız Soyadınız *</label>
+      <input type="text" id="wizName" placeholder="Örn: Salih Özgen">
+      <label>Telefon Numarası (Opsiyonel)</label>
+      <input type="tel" id="wizPhone" placeholder="Örn: 0555 xxx xx xx">
+      <label style="display:flex; align-items:flex-start; gap:8px; margin-top:16px; cursor:pointer; text-transform:none; font-size:12px;">
+        <input type="checkbox" id="wizKvkkConsent" style="margin-top:2px;">
+        <span><a href="#" onclick="openPopup('kvkkModal'); return false;" style="color:var(--primary-blue); font-weight:700;">KVKK Metni</a>'ni okudum ve kabul ediyorum. *</span>
+      </label>
+      <button class="btn-primary" id="btnNext2" style="width:100%; margin-top:16px;">Kaydet ve Devam Et ➔</button>
+      <div id="kvkkWarning" style="display:none; color:var(--clay); font-size:12px; margin-top:8px; text-align:center;">KVKK metnini onaylamanız gerekiyor.</div>
+    </div>
+
+    <div class="wizard-step" id="step3">
+      <div style="font-size:36px; text-align:center; margin-bottom:8px;"><span class="sway-logo">🔔</span></div>
+      <h2 style="text-align:center; margin:0 0 8px;">Adım 3: Bildirim & Ses İzni</h2>
+      <p style="font-size:13px; color:#64748B; text-align:center;">Acil duyuru haberlerini kaçırmamak için bildirim izni verin.</p>
+      <button class="btn-primary" id="btnGrantPush" style="width:100%; padding:12px; font-size:15px;">🔔 Bildirimlere İzin Ver</button>
+    </div>
+
+    <div class="wizard-step" id="step4">
+      <div style="font-size:36px; text-align:center; margin-bottom:8px;">🧪</div>
+      <h2 style="text-align:center; margin:0 0 8px;">Adım 4: Test Et</h2>
+      <button class="btn-success" id="wizTestSound" style="width:100%; margin-bottom:10px;">🔊 Sesi Test Et</button>
+      <button class="btn-warning" id="wizTestLock" style="width:100%; margin-bottom:16px;">🧪 Test Bildirimi At</button>
+      <button class="btn-primary" id="btnFinishWizard" style="width:100%;">✅ Kurulumu Tamamla</button>
+    </div>
+  </div>
+</div>
+
 <div class="wrap">
-  <!-- ROZET & BAŞLIK -->
+  <!-- GÜVENLİK İMAJI ROZETİ -->
   <div class="security-badge">
     🛡️ %100 Güvenli Kurumsal Altyapı | CSB-05
   </div>
 
   <header>
     <div style="display:flex; align-items:center; gap:8px;">
-      <img src="/icon-192.png" alt="" class="sway-logo" style="width:30px; height:30px; border-radius:50%;">
+      <img src="/icon-192.png" alt="" class="sway-logo" style="width:32px; height:32px; border-radius:50%;">
       <h1>Duyurular</h1>
     </div>
     <div style="display:flex; align-items:center; gap:8px;">
-      <select id="themeSelect" style="background:rgba(255,255,255,0.2); color:#FFFFFF; border:1px solid rgba(255,255,255,0.3); border-radius:16px; font-size:11px; padding:3px 6px;">
+      <select id="themeSelect" style="background:rgba(255,255,255,0.2); color:#FFFFFF; border:1px solid rgba(255,255,255,0.3); border-radius:18px; font-size:11px; padding:4px 8px; font-weight:700;">
         <option value="kurumsal" style="color:#000;">🎨 CSB-05 (Canlı)</option>
         <option value="klasik" style="color:#000;">🌙 Koyu Tema</option>
         <option value="lacivert" style="color:#000;">🔷 Lacivert</option>
@@ -394,12 +489,12 @@
   </header>
 
   <div class="status-card" id="subscribeCard">
-    <h2 style="font-size:16px; margin:0 0 6px;">Bildirimleri Aç</h2>
-    <p style="margin:0 0 12px; font-size:12.5px; opacity:0.85;">Duyuruları telefonunuza anında alabilmek için bildirim izni verin.</p>
-    <button class="btn-primary" id="subscribeBtn">Kurulumu Başlat</button>
+    <h2 style="font-size:16.5px; margin:0 0 6px;">Bildirimleri Aç</h2>
+    <p style="margin:0 0 14px; font-size:12.5px; opacity:0.85;">Duyuruları telefonunuza anında alabilmek için bildirim izni verin.</p>
+    <button class="btn-primary" id="subscribeBtn">Bildirim Kurulumunu Başlat</button>
   </div>
 
-  <!-- BİLDİRİM AKTİF ROZETİ (RESİM 3 TIKLANABİLİR) -->
+  <!-- BİLDİRİM AKTİF ROZETİ (RESİM 3 TIKLANABİLİR POPUP) -->
   <div class="bell-status" id="bellStatus" style="display:none;" onclick="openPopup('bellStatusModal')">
     <span class="sway-logo">🔔</span> <span>Bildirimler ve Ses Aktif</span>
   </div>
@@ -413,7 +508,7 @@
 
   <!-- TAB 1: DUYURULAR -->
   <div class="tab-panel active" id="panel-duyurular">
-    <div id="upcomingBox" style="display:none; background:#FFFFFF; border-radius:18px; padding:14px; margin-bottom:14px; border:1px solid var(--line);">
+    <div id="upcomingBox" style="display:none; background:#FFFFFF; border-radius:20px; padding:14px 16px; margin-bottom:14px; border:1px solid var(--line);">
       <div style="font-weight:800; font-size:13.5px; margin-bottom:6px;">📅 Yaklaşan Etkinlikler</div>
       <div id="upcomingList"></div>
     </div>
@@ -442,18 +537,18 @@
     <div id="yemekSubPanelMenu">
       <div class="list-section">
         <div class="cal-nav">
-          <button type="button" id="menuPrevWeekBtn">← Önceki</button>
+          <button type="button" id="menuPrevWeekBtn">← Önceki Hafta</button>
           <span class="cal-title" id="menuWeekTitle">Yemek Menüsü</span>
-          <button type="button" id="menuNextWeekBtn">Sonraki →</button>
+          <button type="button" id="menuNextWeekBtn">Sonraki Hafta →</button>
         </div>
         <div id="menuWeekCards"></div>
       </div>
     </div>
 
     <div id="yemekSubPanelRecords" style="display:none;">
-      <div class="card" style="padding:14px; margin-bottom:0;">
+      <div class="card" style="box-shadow:none; padding:16px; margin-bottom:0;">
         <div id="mealsStepRegister">
-          <div class="sub">Yemekhane geçmişiniz ve borcunuz için kayıt olun.</div>
+          <div class="sub">Yemekhane geçmişin ve borcun için kayıt ol.</div>
           <label>Ad Soyad</label><input type="text" id="mealsRegName" placeholder="Ad Soyad">
           <label>Telefon</label><input type="tel" id="mealsRegPhone" placeholder="0555...">
           <label>E-posta (Gmail/Hotmail)</label><input type="email" id="mealsRegEmail" placeholder="ornek@gmail.com">
@@ -464,9 +559,9 @@
         <div id="mealsStepRecords" style="display:none;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
             <div id="mealsRecordsWho" style="font-weight:700; font-size:13px;"></div>
-            <button type="button" id="mealsLogoutBtn" style="background:none; border:1px solid #CBD5E1; font-size:11px; padding:4px 10px;">Çıkış</button>
+            <button type="button" id="mealsLogoutBtn" style="background:none; border:1px solid #CBD5E1; font-size:11px; padding:4px 10px; border-radius:14px;">Çıkış</button>
           </div>
-          <div id="mealsDebtBox" style="background:var(--csb-gradient); color:#FFFFFF; border-radius:16px; padding:16px; text-align:center; margin-bottom:12px;">
+          <div id="mealsDebtBox" style="background:var(--csb-gradient); color:#FFFFFF; border-radius:18px; padding:16px; text-align:center; margin-bottom:12px;">
             <div style="font-size:11px; opacity:0.85;">Toplam Borç</div>
             <div style="font-size:1.8rem; font-weight:800;" id="mealsDebtAmount">—</div>
           </div>
@@ -484,7 +579,7 @@
     </div>
   </div>
 
-  <!-- TAB 4: TAKVİM -->
+  <!-- TAB 4: TAKVİM & İŞLER -->
   <div class="tab-panel" id="panel-isler">
     <div class="isler-subtabs">
       <button type="button" class="active" id="islerSubTabCalendar">📅 Takvim</button>
@@ -504,7 +599,7 @@
   </div>
 </div>
 
-<!-- ALT POPUP 1: PROFİLİM -->
+<!-- ALT POPUP 1: PROFİLİM MODALI (RESİM 1 STİLİ) -->
 <div class="modal-overlay" id="profileModal">
   <div class="card-popup">
     <div class="popup-header">
@@ -524,10 +619,11 @@
       <option value="0 Rh+">0 Rh+</option>
     </select>
     <div class="send-row"><button class="btn-primary" id="profileSaveBtn" style="width:100%;">Kaydet</button></div>
+    <div class="feedback-msg" id="profileFeedback"></div>
   </div>
 </div>
 
-<!-- ALT POPUP 2: ÖNERİ (RESİM 1 UYUMLU) -->
+<!-- ALT POPUP 2: ÖNERİ MODALI (RESİM 1 GÖRSELİNİN AYNISI) -->
 <div class="modal-overlay" id="feedbackModal">
   <div class="card-popup">
     <div class="popup-header">
@@ -540,10 +636,11 @@
     <label>MESAJINIZ</label>
     <textarea id="feedbackText" placeholder="Mesajınızı yazın..."></textarea>
     <div class="send-row"><button class="btn-primary" id="feedbackSendBtn" style="width:100%;">Gönder</button></div>
+    <div class="feedback-msg" id="feedbackModalFeedback"></div>
   </div>
 </div>
 
-<!-- ALT POPUP 3: SOHBET (ONLINE ÜYELER SEKMEDEN KESİLMEDEN EKLENDİ) -->
+<!-- ALT POPUP 3: SOHBET MODALI (ONLINE ÜYELER SEKMESİ EKSİKSİZ MUHAFAZA EDİLDİ) -->
 <div class="modal-overlay" id="chatModal">
   <div class="card-popup">
     <div class="popup-header">
@@ -551,14 +648,14 @@
       <button class="popup-close" onclick="closePopup('chatModal')">✕</button>
     </div>
     <div id="chatUnlocked">
-      <div class="tabs" style="margin-bottom:10px;">
+      <div class="tabs" style="margin-bottom:12px;">
         <button class="tab-btn active" id="chatTabGeneral">Sohbet</button>
         <button class="tab-btn" id="chatTabDirect">Online Üyeler</button>
       </div>
       <div id="chatPanelGeneral" class="chat-panel">
         <div id="chatGeneralMessages" class="chat-box"></div>
         <div class="chat-input-row">
-          <input type="text" id="chatGeneralInput" placeholder="Mesajınızı yazın...">
+          <input type="text" id="chatGeneralInput" placeholder="Mesajınızı yazın..." maxlength="1000">
           <button class="btn-primary" id="chatGeneralSendBtn">Gönder</button>
         </div>
       </div>
@@ -569,7 +666,18 @@
   </div>
 </div>
 
-<!-- SABİT ALT MENÜ (FOOTER) -->
+<!-- DUYURU DETAY MODALI -->
+<div class="toast-overlay" id="duyuruDetayOverlay">
+  <div class="toast-box">
+    <button type="button" class="popup-close" id="duyuruDetayCloseBtn" style="position:absolute; top:14px; right:14px;">✕</button>
+    <div id="duyuruDetayTag" class="dd-tag"></div>
+    <div id="duyuruDetayTitle" class="dd-title" style="font-weight:800; font-size:18px; margin-top:10px;"></div>
+    <div id="duyuruDetayMeta" class="dd-meta" style="font-size:11.5px; color:#64748B;"></div>
+    <div id="duyuruDetayBody" class="dd-body" style="font-size:13.5px; margin:10px 0;"></div>
+  </div>
+</div>
+
+<!-- SABİT FOOTER NAVİGASYONU -->
 <footer class="site-footer">
   <a href="#" onclick="openPopup('profileModal'); return false;">👤 Profilim</a>
   <span style="color:#CBD5E1;">·</span>
@@ -579,60 +687,56 @@
 </footer>
 
 <script>
+// POPUP AÇMA & KAPATMA (AJAX HİSSLİ ANİMASYON)
 function openPopup(id) {
   const el = document.getElementById(id);
   if (!el) return;
-  el.classList.remove('anim-close');
+  const card = el.querySelector('.card-popup, .toast-box');
+  if (card) card.classList.remove('anim-close');
   el.classList.add('show');
 }
 
 function closePopup(id) {
   const el = document.getElementById(id);
   if (!el) return;
-  const popup = el.querySelector('.card-popup');
-  if (popup) popup.classList.add('anim-close');
+  const card = el.querySelector('.card-popup, .toast-box');
+  if (card) card.classList.add('anim-close');
   setTimeout(() => {
     el.classList.remove('show');
-    if (popup) popup.classList.remove('anim-close');
+    if (card) card.classList.remove('anim-close');
   }, 180);
 }
 
-function showToast(msg, type) {
+function showToast(message, type) {
   const container = document.getElementById('toastContainer');
   const t = document.createElement('div');
   t.className = 'toast ' + (type || '');
-  t.innerHTML = msg;
+  t.innerHTML = message;
   container.appendChild(t);
   setTimeout(() => t.remove(), 2600);
 }
 
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    const s = document.getElementById('splash');
-    if (s) { s.classList.add('hide'); setTimeout(() => s.remove(), 500); }
-  }, 800);
-});
-
-// SES VE KİLİT EKRANI TESTİ (RESİM 3 İÇİN)
+// SES KONTROLÜ
 document.getElementById('testSoundBtnPop').addEventListener('click', () => {
   try {
-    const a = new Audio('/notify.wav');
-    a.play().catch(() => {});
+    const audio = new Audio('/notify.wav');
+    audio.play().catch(() => {});
     showToast('🔊 Test sesi çalınıyor', 'ok');
   } catch {}
 });
+
 document.getElementById('testLockBtnPop').addEventListener('click', async () => {
-  showToast('3 sn sonra test bildirimi gönderilecek!', 'ok');
+  showToast('3 sn sonra test bildirimi atılıyor...', 'ok');
   if ('serviceWorker' in navigator) {
     const reg = await navigator.serviceWorker.ready;
     setTimeout(() => {
-      reg.showNotification('🚨 TEST BİLDİRİMİ', { body: 'Kilit ekranı ve ses testi başarılı.', icon: '/icon-192.png' });
+      reg.showNotification('🚨 TEST BİLDİRİMİ', { body: 'Kilit ekranı bildirimi başarılı.', icon: '/icon-192.png' });
     }, 3000);
   }
 });
 
-// MANŞET OKLARI & SLIDER DÜZELTME
-let mansetItems = [{ title: 'Örnek Acil Duyuru', category: 'acil', time: new Date().toISOString() }];
+// MANŞET OKLARI VURGULANMIŞ SLIDER
+let mansetItems = [{ id: '1', title: 'Amasya İl Müdürlüğü Acil Duyuru Sistemi', category: 'acil', time: new Date().toISOString() }];
 let mansetIdx = 0;
 
 function renderManset() {
@@ -668,7 +772,7 @@ document.querySelectorAll('.tabs .tab-btn').forEach(btn => {
   }
 });
 
-// SOHBET ONLINE SEKME KONTROLÜ
+// SOHBET ONLINE ÜYELER SEKME YÖNETİMİ
 document.getElementById('chatTabGeneral').addEventListener('click', () => {
   document.getElementById('chatTabGeneral').classList.add('active');
   document.getElementById('chatTabDirect').classList.remove('active');
@@ -680,6 +784,14 @@ document.getElementById('chatTabDirect').addEventListener('click', () => {
   document.getElementById('chatTabGeneral').classList.remove('active');
   document.getElementById('chatPanelDirect').style.display = 'block';
   document.getElementById('chatPanelGeneral').style.display = 'none';
+});
+
+// SPLASH SCREEN
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const s = document.getElementById('splash');
+    if (s) { s.classList.add('hide'); setTimeout(() => s.remove(), 500); }
+  }, 800);
 });
 </script>
 </body>
