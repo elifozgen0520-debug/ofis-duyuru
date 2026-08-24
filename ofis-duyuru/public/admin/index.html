@@ -591,8 +591,16 @@ async function toggleReads(id) {
 }
 
 // ---------- Genel liste yardımcı fonksiyonu ----------
+function buildEditFieldHtml(itemId, field, value) {
+  const id = 'ef-' + itemId + '-' + field.key;
+  if (field.type === 'textarea') {
+    return '<textarea id="' + id + '" placeholder="' + field.label + '" style="margin-bottom:6px;">' + esc(value || '') + '</textarea>';
+  }
+  return '<input type="text" id="' + id + '" value="' + esc(value || '') + '" placeholder="' + field.label + '" style="margin-bottom:6px;">';
+}
+
 function setupSimpleList(opts) {
-  const { endpoint, sendBtnId, feedbackId, listId, buildPayload, validate, renderItem, emptyText, attachmentId, countId } = opts;
+  const { endpoint, sendBtnId, feedbackId, listId, buildPayload, validate, renderInner, prefixHtml, extraClass, emptyText, attachmentId, countId, editFields } = opts;
   document.getElementById(sendBtnId).addEventListener('click', async () => {
     const fb = document.getElementById(feedbackId);
     const payload = buildPayload();
@@ -617,6 +625,33 @@ function setupSimpleList(opts) {
     finally { btn.disabled = false; }
   });
 
+  function renderFullItem(item) {
+    const cls = extraClass ? extraClass(item) : '';
+    const prefix = prefixHtml ? prefixHtml(item) : '';
+    const inner = renderInner(item);
+    let editBox = '';
+    if (editFields && editFields.length) {
+      const fieldsHtml = editFields.map(f => buildEditFieldHtml(item.id, f, item[f.key])).join('');
+      editBox = '<div id="editbox-' + item.id + '" style="display:none;margin-top:10px;padding-top:10px;border-top:1px dashed #ddd;">' +
+        fieldsHtml +
+        '<div style="display:flex;gap:6px;margin-top:8px;">' +
+          '<button class="btn-primary" style="font-size:12px;padding:6px 12px;" data-save-edit="' + item.id + '">Güncelle</button>' +
+          '<button class="btn-danger" style="font-size:12px;" data-cancel-edit="' + item.id + '">Vazgeç</button>' +
+        '</div>' +
+        '<div class="feedback-msg" id="editfb-' + item.id + '"></div>' +
+      '</div>';
+    }
+    const editBtn = editFields && editFields.length ? '<button class="btn-primary" style="font-size:12px;padding:5px 10px;" data-edit-id="' + item.id + '">Düzenle</button>' : '';
+    return '<div class="list-item ' + cls + '">' +
+      prefix +
+      '<div class="li-main">' + inner + editBox + '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:6px;">' +
+        editBtn +
+        '<button class="btn-danger" data-del-id="' + item.id + '">Sil</button>' +
+      '</div>' +
+    '</div>';
+  }
+
   async function load() {
     const listEl = document.getElementById(listId);
     try {
@@ -625,10 +660,39 @@ function setupSimpleList(opts) {
       if (countId) document.getElementById(countId).textContent = (data.items || []).length + ' kayıt';
       if (!data.items || data.items.length === 0) { listEl.className = 'list-empty'; listEl.textContent = emptyText; return; }
       listEl.className = '';
-      listEl.innerHTML = data.items.map(renderItem).join('');
+      listEl.innerHTML = data.items.map(renderFullItem).join('');
       listEl.querySelectorAll('[data-del-id]').forEach(b => b.addEventListener('click', () => deleteItem(b.dataset.delId)));
       listEl.querySelectorAll('[data-toggle-id]').forEach(c => c.addEventListener('change', () => toggleItem(c.dataset.toggleId)));
+      listEl.querySelectorAll('[data-edit-id]').forEach(b => b.addEventListener('click', () => {
+        document.getElementById('editbox-' + b.dataset.editId).style.display = 'block';
+      }));
+      listEl.querySelectorAll('[data-cancel-edit]').forEach(b => b.addEventListener('click', () => {
+        document.getElementById('editbox-' + b.dataset.cancelEdit).style.display = 'none';
+      }));
+      listEl.querySelectorAll('[data-save-edit]').forEach(b => b.addEventListener('click', () => saveEdit(b.dataset.saveEdit)));
     } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
+  }
+
+  async function saveEdit(id) {
+    const fb = document.getElementById('editfb-' + id);
+    const fields = {};
+    for (const f of editFields) {
+      fields[f.key] = document.getElementById('ef-' + id + '-' + f.key).value.trim();
+    }
+    if (opts.validateEdit) {
+      const err = opts.validateEdit(fields);
+      if (err) { fb.textContent = err; fb.className = 'feedback-msg err'; return; }
+    }
+    try {
+      const res = await fetch(endpoint + '/' + id, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: getAdminPassword(), ...fields })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Güncellenemedi');
+      fb.textContent = 'Güncellendi.'; fb.className = 'feedback-msg ok';
+      setTimeout(load, 500);
+    } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
   }
 
   async function deleteItem(id) {
@@ -653,7 +717,9 @@ const loadNotes = () => setupSimpleList({
   validate: (p) => (!p.text) ? 'Not gerekli.' : null,
   onSuccess: () => { document.getElementById('noteText').value = ''; },
   emptyText: 'Henüz not eklenmedi.',
-  renderItem: (n) => '<div class="list-item"><div class="li-main"><div class="li-top"><span class="li-time">' + formatTime(n.time) + '</span></div><div class="li-body">' + esc(n.text) + '</div>' + renderAttachment(n.attachment) + '</div><button class="btn-danger" data-del-id="' + n.id + '">Sil</button></div>',
+  renderInner: (n) => '<div class="li-top"><span class="li-time">' + formatTime(n.time) + (n.editedAt ? ' · <i>düzenlendi</i>' : '') + '</span></div><div class="li-body">' + esc(n.text) + '</div>' + renderAttachment(n.attachment),
+  editFields: [{ key: 'text', label: 'Not', type: 'textarea' }],
+  validateEdit: (f) => (!f.text) ? 'Not boş olamaz.' : null,
 }).load;
 
 const loadPhones = () => setupSimpleList({
@@ -662,7 +728,9 @@ const loadPhones = () => setupSimpleList({
   validate: (p) => (!p.name || !p.number) ? 'İsim ve numara gerekli.' : null,
   onSuccess: () => { document.getElementById('phoneName').value = ''; document.getElementById('phoneNumber').value = ''; },
   emptyText: 'Henüz telefon eklenmedi.',
-  renderItem: (p) => '<div class="list-item"><div class="li-main"><div class="li-title">' + esc(p.name) + '</div><a class="li-phone" href="tel:' + esc(p.number) + '">' + esc(p.number) + '</a>' + renderAttachment(p.attachment) + '</div><button class="btn-danger" data-del-id="' + p.id + '">Sil</button></div>',
+  renderInner: (p) => '<div class="li-title">' + esc(p.name) + (p.editedAt ? ' · <i style="font-size:10px;">düzenlendi</i>' : '') + '</div><a class="li-phone" href="tel:' + esc(p.number) + '">' + esc(p.number) + '</a>' + renderAttachment(p.attachment),
+  editFields: [{ key: 'name', label: 'İsim' }, { key: 'number', label: 'Numara' }],
+  validateEdit: (f) => (!f.name || !f.number) ? 'İsim ve numara gerekli.' : null,
 }).load;
 
 const loadTasks = () => setupSimpleList({
@@ -671,7 +739,11 @@ const loadTasks = () => setupSimpleList({
   validate: (p) => (!p.text) ? 'Görev gerekli.' : null,
   onSuccess: () => { document.getElementById('taskText').value = ''; },
   emptyText: 'Henüz görev eklenmedi.',
-  renderItem: (t) => '<div class="list-item ' + (t.done ? 'done' : '') + '"><input type="checkbox" class="checkbox" data-toggle-id="' + t.id + '" ' + (t.done ? 'checked' : '') + '><div class="li-main"><div class="li-title">' + esc(t.text) + '</div>' + renderAttachment(t.attachment) + '</div><button class="btn-danger" data-del-id="' + t.id + '">Sil</button></div>',
+  extraClass: (t) => t.done ? 'done' : '',
+  prefixHtml: (t) => '<input type="checkbox" class="checkbox" data-toggle-id="' + t.id + '" ' + (t.done ? 'checked' : '') + '>',
+  renderInner: (t) => '<div class="li-title">' + esc(t.text) + (t.editedAt ? ' · <i style="font-size:10px;">düzenlendi</i>' : '') + '</div>' + renderAttachment(t.attachment),
+  editFields: [{ key: 'text', label: 'Görev' }],
+  validateEdit: (f) => (!f.text) ? 'Görev boş olamaz.' : null,
 }).load;
 
 // ---------- Cihazlar ----------
@@ -1051,12 +1123,51 @@ function renderPersonelPage() {
   const pageItems = pgSlice('personel', personelAllItems);
   el.innerHTML = pageItems.map(p =>
     '<div class="list-item"><div class="li-main">' +
-      '<div class="li-title">' + esc(p.name) + '</div>' +
+      '<div class="li-title">' + esc(p.name) + (p.editedAt ? ' · <i style="font-size:10px;">düzenlendi</i>' : '') + '</div>' +
       '<div class="li-body">' + [p.phone, p.email].filter(Boolean).map(esc).join(' · ') + '</div>' +
-    '</div><button class="btn-danger" data-del-personnel="' + p.deviceId + '">Sil</button></div>'
+      '<div id="pedit-' + p.deviceId + '" style="display:none;margin-top:10px;padding-top:10px;border-top:1px dashed #ddd;">' +
+        '<input type="text" id="pename-' + p.deviceId + '" value="' + esc(p.name) + '" placeholder="Adı Soyadı" style="margin-bottom:6px;">' +
+        '<input type="text" id="pephone-' + p.deviceId + '" value="' + esc(p.phone || '') + '" placeholder="Telefon" style="margin-bottom:6px;">' +
+        '<input type="text" id="peemail-' + p.deviceId + '" value="' + esc(p.email || '') + '" placeholder="E-posta" style="margin-bottom:6px;">' +
+        '<div style="display:flex;gap:6px;margin-top:8px;">' +
+          '<button class="btn-primary" style="font-size:12px;padding:6px 12px;" data-save-personnel="' + p.deviceId + '">Güncelle</button>' +
+          '<button class="btn-danger" style="font-size:12px;" data-cancel-personnel="' + p.deviceId + '">Vazgeç</button>' +
+        '</div>' +
+        '<div class="feedback-msg" id="pefb-' + p.deviceId + '"></div>' +
+      '</div>' +
+    '</div>' +
+    '<div style="display:flex;flex-direction:column;gap:6px;">' +
+      '<button class="btn-primary" style="font-size:12px;padding:5px 10px;" data-edit-personnel="' + p.deviceId + '">Düzenle</button>' +
+      '<button class="btn-danger" data-del-personnel="' + p.deviceId + '">Sil</button>' +
+    '</div></div>'
   ).join('');
   el.querySelectorAll('[data-del-personnel]').forEach(b => b.addEventListener('click', () => deleteManualPersonnel(b.dataset.delPersonnel)));
+  el.querySelectorAll('[data-edit-personnel]').forEach(b => b.addEventListener('click', () => {
+    document.getElementById('pedit-' + b.dataset.editPersonnel).style.display = 'block';
+  }));
+  el.querySelectorAll('[data-cancel-personnel]').forEach(b => b.addEventListener('click', () => {
+    document.getElementById('pedit-' + b.dataset.cancelPersonnel).style.display = 'none';
+  }));
+  el.querySelectorAll('[data-save-personnel]').forEach(b => b.addEventListener('click', () => saveManualPersonnelEdit(b.dataset.savePersonnel)));
   pgControls('personel', 'personelPagination', personelAllItems.length, renderPersonelPage);
+}
+
+async function saveManualPersonnelEdit(deviceId) {
+  const name = document.getElementById('pename-' + deviceId).value.trim();
+  const phone = document.getElementById('pephone-' + deviceId).value.trim();
+  const email = document.getElementById('peemail-' + deviceId).value.trim();
+  const fb = document.getElementById('pefb-' + deviceId);
+  if (!name) { fb.textContent = 'Adı Soyadı zorunlu.'; fb.className = 'feedback-msg err'; return; }
+  try {
+    const res = await fetch('/api/personnel/manual/' + deviceId, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: getAdminPassword(), name, phone, email })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Güncellenemedi');
+    fb.textContent = 'Güncellendi.'; fb.className = 'feedback-msg ok';
+    setTimeout(loadManualPersonnel, 500);
+  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
 }
 
 async function deleteManualPersonnel(deviceId) {
