@@ -1062,7 +1062,7 @@ app.get('/api/calendar', async (req, res) => {
 });
 
 app.post('/api/calendar', async (req, res) => {
-  const { password, date, text } = req.body;
+  const { password, date, text, category } = req.body;
   const result = checkPassword(password, req);
   if (passwordCheckResponse(res, result)) return;
   if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ ok: false, error: 'Geçersiz tarih.' });
@@ -1071,6 +1071,7 @@ app.post('/api/calendar', async (req, res) => {
   const item = {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
     date, text: text.trim(),
+    category: category || 'genel',
     createdAt: new Date().toISOString(),
   };
   items.push(item);
@@ -1079,7 +1080,7 @@ app.post('/api/calendar', async (req, res) => {
 });
 
 app.put('/api/calendar/:id', async (req, res) => {
-  const { password, text, date } = req.body;
+  const { password, text, date, category } = req.body;
   const result = checkPassword(password, req);
   if (passwordCheckResponse(res, result)) return;
   const items = await loadJson(CALENDAR_KEY);
@@ -1090,6 +1091,7 @@ app.put('/api/calendar/:id', async (req, res) => {
     item.text = text.trim();
   }
   if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) item.date = date;
+  if (category) item.category = category;
   item.editedAt = new Date().toISOString();
   await saveJson(CALENDAR_KEY, items);
   res.json({ ok: true, item });
