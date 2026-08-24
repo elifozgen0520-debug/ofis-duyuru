@@ -121,10 +121,30 @@
   }
 
   /* SOHBET — telefon ekranına göre otomatik boy, input her zaman altta sabit */
+  /* Artık sayfa akışında değil, sağ altta sabit yüzen (floating) bir pencere */
   #chatModal {
     display: flex;
     flex-direction: column;
-    max-height: 82vh;
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    left: auto;
+    top: auto;
+    width: 380px;
+    max-width: calc(100vw - 24px);
+    max-height: 78vh;
+    border-radius: 22px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 4px 14px rgba(0,0,0,0.25);
+    border: 1px solid rgba(0,0,0,0.06);
+    z-index: 1600;
+    margin-bottom: 0;
+  }
+  @media (max-width: 560px) {
+    #chatModal {
+      right: 8px; left: 8px; bottom: 8px; width: auto; max-width: none;
+      border-radius: 22px 22px 18px 18px;
+      max-height: 82vh;
+    }
   }
   #chatModal #chatUnlocked {
     display: flex;
@@ -146,12 +166,30 @@
   }
   .chat-bubble {
     max-width: 78%; padding: 8px 12px; border-radius: 14px; font-size: 13px; line-height: 1.4;
-    word-wrap: break-word;
+    word-wrap: break-word; position: relative;
   }
   .chat-bubble.mine { align-self: flex-end; background: var(--bordo, #7A2331); color: #fff; border-bottom-right-radius: 3px; }
   .chat-bubble.theirs { align-self: flex-start; background: #fff; color: var(--ink); border: 1px solid #e2ddd2; border-bottom-left-radius: 3px; }
   .chat-bubble .cb-name { font-size: 10.5px; font-weight: 700; opacity: 0.75; margin-bottom: 2px; }
   .chat-bubble .cb-time { font-size: 9.5px; opacity: 0.55; margin-top: 3px; text-align: right; }
+  .chat-bubble .cb-tick { opacity: 0.85; }
+  .chat-bubble .cb-tick.read { color: #7ec9ff; opacity: 1; }
+  .chat-bubble .cb-actions {
+    display: flex; gap: 4px; justify-content: flex-end; margin-top: 4px;
+    opacity: 0; transition: opacity 0.15s ease;
+  }
+  .chat-bubble.mine:hover .cb-actions, .chat-bubble.mine:focus-within .cb-actions { opacity: 1; }
+  .cb-action-btn {
+    background: rgba(255,255,255,0.18); border: none; color: inherit; font-size: 11px;
+    padding: 2px 6px; border-radius: 8px; cursor: pointer; line-height: 1.4;
+  }
+  .cb-action-btn:hover { background: rgba(255,255,255,0.32); }
+  .chat-bubble-editing { padding: 6px 8px; }
+  .chat-edit-input {
+    width: 100%; font-size: 13px; padding: 6px 8px; border-radius: 8px; border: none;
+    color: var(--ink); background: #fff;
+  }
+  .cb-edit-actions { display: flex; gap: 4px; justify-content: flex-end; margin-top: 4px; }
   .chat-input-row { display: flex; gap: 8px; flex-shrink: 0; }
   .chat-input-row input { flex: 1; }
   .contact-row {
@@ -1532,7 +1570,7 @@ function openModal(modalId) {
   m.style.display = (modalId === 'chatModal') ? 'flex' : 'block';
   m.classList.remove('anim-close');
   m.classList.add('anim-open');
-  m.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  if (modalId !== 'chatModal') m.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 function closeModal(modalId) {
   const m = document.getElementById(modalId);
@@ -1656,20 +1694,100 @@ function hasCompleteProfile() {
 }
 
 function escChat(s) { return (s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function escChatAttr(s) { return escChat(s).replace(/"/g, '&quot;'); }
 function chatTime(iso) { return new Date(iso).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }); }
 
-function renderChatMessages(container, messages, isMine) {
+let chatGeneralEditingId = null;
+let chatDirectEditingId = null;
+
+function chatReadTick(m, scope) {
+  if (scope === 'general') {
+    const n = (m.reads || []).length;
+    return n > 0 ? ` <span class="cb-tick read" title="${n} kişi gördü">✓✓</span>` : ' <span class="cb-tick" title="Gönderildi">✓</span>';
+  }
+  return m.read ? ' <span class="cb-tick read" title="Görüldü">✓✓</span>' : ' <span class="cb-tick" title="Gönderildi">✓</span>';
+}
+
+function renderChatMessages(container, messages, isMine, scope, editingId) {
   const wasAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 30;
   container.innerHTML = messages.map(m => {
     const mine = isMine(m);
     const name = m.name || m.fromName || '';
-    return `<div class="chat-bubble ${mine ? 'mine' : 'theirs'}">
+
+    if (mine && editingId === m.id) {
+      return `<div class="chat-bubble mine chat-bubble-editing" data-msg-id="${m.id}">
+        <input type="text" class="chat-edit-input" id="chatEditInput-${scope}-${m.id}" value="${escChatAttr(m.text)}" maxlength="1000">
+        <div class="cb-edit-actions">
+          <button type="button" class="cb-action-btn" onclick="saveEditChatMsg('${scope}','${m.id}')" title="Kaydet">✓ Kaydet</button>
+          <button type="button" class="cb-action-btn" onclick="cancelEditChatMsg('${scope}')" title="Vazgeç">✕</button>
+        </div>
+      </div>`;
+    }
+
+    const readTick = mine ? chatReadTick(m, scope) : '';
+    const actions = mine ? `<div class="cb-actions">
+        <button type="button" class="cb-action-btn" onclick="startEditChatMsg('${scope}','${m.id}')" title="Düzenle">✏️</button>
+        <button type="button" class="cb-action-btn" onclick="deleteOwnChatMsg('${scope}','${m.id}')" title="Sil">🗑️</button>
+      </div>` : '';
+
+    return `<div class="chat-bubble ${mine ? 'mine' : 'theirs'}" data-msg-id="${m.id}">
       ${!mine ? `<div class="cb-name">${escChat(name)}</div>` : ''}
       <div>${escChat(m.text)}</div>
-      <div class="cb-time">${chatTime(m.time)}</div>
+      <div class="cb-time">${chatTime(m.time)}${m.editedAt ? ' · düzenlendi' : ''}${readTick}</div>
+      ${actions}
     </div>`;
   }).join('') || '<div style="text-align:center;color:#999;font-size:12px;padding:20px 0;">Henüz mesaj yok. İlk mesajı sen yaz!</div>';
   if (wasAtBottom || messages.length <= 1) container.scrollTop = container.scrollHeight;
+
+  const editEl = editingId && document.getElementById('chatEditInput-' + scope + '-' + editingId);
+  if (editEl) {
+    editEl.focus();
+    editEl.setSelectionRange(editEl.value.length, editEl.value.length);
+    editEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') saveEditChatMsg(scope, editingId);
+      if (e.key === 'Escape') cancelEditChatMsg(scope);
+    });
+  }
+}
+
+function startEditChatMsg(scope, id) {
+  if (scope === 'general') chatGeneralEditingId = id; else chatDirectEditingId = id;
+  if (scope === 'general') loadGeneralChat(); else loadDirectChat();
+}
+function cancelEditChatMsg(scope) {
+  if (scope === 'general') chatGeneralEditingId = null; else chatDirectEditingId = null;
+  if (scope === 'general') loadGeneralChat(); else loadDirectChat();
+}
+async function saveEditChatMsg(scope, id) {
+  const input = document.getElementById('chatEditInput-' + scope + '-' + id);
+  const text = input.value.trim();
+  if (!text) return;
+  try {
+    const url = scope === 'general' ? '/api/chat/general/' + id : '/api/chat/direct/' + id;
+    const res = await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), text }) });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Güncellenemedi'); return; }
+  } catch { alert('Güncellenemedi.'); }
+  if (scope === 'general') chatGeneralEditingId = null; else chatDirectEditingId = null;
+  if (scope === 'general') loadGeneralChat(); else loadDirectChat();
+}
+async function deleteOwnChatMsg(scope, id) {
+  if (!confirm('Bu mesajı silmek istediğine emin misin?')) return;
+  try {
+    const url = scope === 'general' ? '/api/chat/general/' + id : '/api/chat/direct/' + id;
+    const res = await fetch(url, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId() }) });
+    if (!res.ok) { const d = await res.json(); alert(d.error || 'Silinemedi'); return; }
+  } catch { alert('Silinemedi.'); }
+  if (scope === 'general') loadGeneralChat(); else loadDirectChat();
+}
+
+async function markGeneralRead(ids) {
+  if (!ids.length) return;
+  try { await fetch('/api/chat/general/read-bulk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), ids }) }); } catch {}
+}
+async function markDirectRead(ids) {
+  if (!ids.length) return;
+  try { await fetch('/api/chat/direct/read-bulk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), ids }) }); } catch {}
 }
 
 async function sendPresenceHeartbeat() {
@@ -1681,7 +1799,11 @@ async function loadGeneralChat() {
   try {
     const res = await fetch('/api/chat/general');
     const data = await res.json();
-    renderChatMessages(document.getElementById('chatGeneralMessages'), data.messages || [], m => m.deviceId === getDeviceId());
+    const messages = data.messages || [];
+    const myId = getDeviceId();
+    renderChatMessages(document.getElementById('chatGeneralMessages'), messages, m => m.deviceId === myId, 'general', chatGeneralEditingId);
+    const unreadIds = messages.filter(m => m.deviceId !== myId && !(m.reads || []).includes(myId)).map(m => m.id);
+    markGeneralRead(unreadIds);
   } catch {}
 }
 
@@ -1744,7 +1866,11 @@ async function loadDirectChat() {
   try {
     const res = await fetch(`/api/chat/direct?deviceId=${encodeURIComponent(getDeviceId())}&withId=${encodeURIComponent(currentChatContact.deviceId)}`);
     const data = await res.json();
-    renderChatMessages(document.getElementById('chatDirectMessages'), data.messages || [], m => m.fromDeviceId === getDeviceId());
+    const messages = data.messages || [];
+    const myId = getDeviceId();
+    renderChatMessages(document.getElementById('chatDirectMessages'), messages, m => m.fromDeviceId === myId, 'direct', chatDirectEditingId);
+    const unreadIds = messages.filter(m => m.toDeviceId === myId && !m.read).map(m => m.id);
+    markDirectRead(unreadIds);
   } catch {}
 }
 
