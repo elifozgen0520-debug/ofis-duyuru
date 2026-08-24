@@ -5,42 +5,41 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Müdürlük Duyuru Sistemi</title>
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#1F2430">
+<meta name="theme-color" content="#005AA7">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap');
 
   :root {
-    --ink: #1F2430;
-    --paper: #F7F5F0;
-    --paper-shadow: rgba(0,0,0,0.18);
-    --amber: #E0972C;
-    --sage: #6B8F71;
-    --clay: #B5674A;
-    --gold: #C9A24B;
-    --line: rgba(255,255,255,0.12);
-    --muted: #9AA0AE;
-    --card-bg: var(--paper);
-    --card-text: var(--ink);
-    --body-text: var(--paper);
-  }
-
-  body[data-theme="lacivert"] { --amber: #3E8FD0; --gold: #5AA8E0; --ink: #0F1F33; }
-  body[data-theme="zeytin"] { --amber: #7C9A4A; --gold: #A3C15E; --ink: #1E2A1C; }
-  body[data-theme="bordo"] { --amber: #B5384A; --gold: #D46B7A; --ink: #2A1418; }
-  
-  /* BEYAZ TEMA OVERRIDE */
-  body[data-theme="beyaz"] {
-    --amber: #D97706;
-    --gold: #B45309;
-    --ink: #F8FAFC;
+    --primary-blue: #0066B2;
+    --header-blue: #005AA7;
+    --cyan-accent: #0099E6;
+    --amber: #F36F21; /* Banka Turuncusu */
+    --amber-gradient: linear-gradient(135deg, #FF7A29, #F36F21);
+    --sage: #10B981; /* Pozitif Yeşil */
+    --clay: #EF4444; /* Negatif/Sil Kırmızı */
+    --gold: #F59E0B;
+    --ink: #0F172A;
     --paper: #FFFFFF;
-    --paper-shadow: rgba(15, 23, 42, 0.08);
-    --line: rgba(15, 23, 42, 0.12);
+    --paper-shadow: rgba(0, 85, 160, 0.08);
+    --bg-main: #F0F4F8;
+    --line: #E2E8F0;
     --muted: #64748B;
     --card-bg: #FFFFFF;
     --card-text: #0F172A;
     --body-text: #0F172A;
   }
+
+  /* ALTERNATİF TEMALAR */
+  body[data-theme="klasik"] {
+    --bg-main: #1F2430;
+    --card-bg: #2A303F;
+    --card-text: #F7F5F0;
+    --body-text: #F7F5F0;
+    --line: rgba(255,255,255,0.12);
+  }
+  body[data-theme="lacivert"] { --header-blue: #0F1F33; --primary-blue: #3E8FD0; --amber: #0099E6; }
+  body[data-theme="zeytin"] { --header-blue: #1E2A1C; --primary-blue: #7C9A4A; --amber: #A3C15E; }
+  body[data-theme="bordo"] { --header-blue: #2A1418; --primary-blue: #B5384A; --amber: #D46B7A; }
 
   * { 
     box-sizing: border-box; 
@@ -48,11 +47,10 @@
   }
 
   body {
-    margin: 0; font-family: 'Inter', sans-serif; background: var(--ink);
-    background-image:
-      radial-gradient(circle at 20% 10%, rgba(224,151,44,0.08), transparent 45%),
-      radial-gradient(circle at 80% 80%, rgba(107,143,113,0.08), transparent 45%);
-    color: var(--body-text); min-height: 100vh; padding: 24px 16px 95px;
+    margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-main);
+    background-image: linear-gradient(180deg, var(--header-blue) 0%, var(--cyan-accent) 210px, var(--bg-main) 210px, var(--bg-main) 100%);
+    background-repeat: no-repeat;
+    color: var(--body-text); min-height: 100vh; padding: 18px 16px 95px;
     touch-action: manipulation;
     -webkit-font-smoothing: antialiased;
     overscroll-behavior-y: none;
@@ -65,22 +63,20 @@
 
   .wrap { max-width: 640px; margin: 0 auto; width: 100%; }
 
-  /* SABİT ÜST BAŞLIK (STICKY HEADER) */
+  /* SABİT ÜST BAŞLIK (BANKA MOBİL STİLİ) */
   header {
     position: sticky; top: 0; z-index: 1200;
-    background: rgba(31, 36, 48, 0.88);
+    background: rgba(0, 90, 167, 0.92);
     backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
     display: flex; align-items: center; justify-content: space-between;
-    gap: 12px; margin-bottom: 22px; border-bottom: 1px solid var(--line);
-    padding: 12px 16px; margin-left: -16px; margin-right: -16px; margin-top: -24px;
+    gap: 12px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.15);
+    padding: 12px 16px; margin-left: -16px; margin-right: -16px; margin-top: -18px;
     flex-wrap: wrap; transition: background 0.3s ease;
-  }
-  body[data-theme="beyaz"] header {
-    background: rgba(248, 250, 252, 0.88);
+    color: #FFFFFF;
   }
   
-  h1 { font-family: 'Fraunces', serif; font-weight: 700; font-size: clamp(19px, 5.5vw, 24px); margin: 0; color: var(--body-text); }
-  .pin-count { font-size: 12px; color: var(--muted); }
+  h1 { font-family: 'Inter', sans-serif; font-weight: 800; font-size: clamp(18px, 5.5vw, 22px); margin: 0; color: #FFFFFF; letter-spacing: -0.02em; }
+  .pin-count { font-size: 11.5px; color: rgba(255,255,255,0.8); font-weight: 500; }
 
   /* SALLANAN LOGO VE ZİL ANİMASYONU */
   .sway-logo {
@@ -89,54 +85,53 @@
     transform-origin: center center;
   }
   @keyframes logo-sway {
-    0% { transform: rotate(-14deg) scale(0.96); }
-    50% { transform: rotate(0deg) scale(1.08); }
-    100% { transform: rotate(14deg) scale(0.96); }
+    0% { transform: rotate(-12deg) scale(0.96); }
+    50% { transform: rotate(0deg) scale(1.06); }
+    100% { transform: rotate(12deg) scale(0.96); }
   }
 
   .status-card {
-    background: var(--card-bg); color: var(--card-text); border-radius: 18px; padding: 18px 20px;
-    margin-bottom: 20px; box-shadow: 0 10px 28px var(--paper-shadow); position: relative;
+    background: var(--card-bg); color: var(--card-text); border-radius: 20px; padding: 20px;
+    margin-bottom: 20px; box-shadow: 0 10px 30px var(--paper-shadow); position: relative;
     border: 1px solid var(--line);
     transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .status-card:active { transform: scale(0.985); }
   .status-card::before {
     content: ''; position: absolute; top: -6px; left: 24px; width: 12px; height: 12px;
-    border-radius: 50%; background: var(--clay);
-    box-shadow: 0 0 10px rgba(181, 103, 74, 0.6);
+    border-radius: 50%; background: var(--amber);
+    box-shadow: 0 0 12px rgba(243, 111, 33, 0.8);
   }
 
   .bell-status {
     display: inline-flex; align-items: center; gap: 6px; background: var(--card-bg);
-    color: var(--sage); font-size: 12px; font-weight: 600; padding: 7px 16px;
-    border-radius: 24px; margin-bottom: 20px; box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+    color: var(--sage); font-size: 12px; font-weight: 700; padding: 8px 18px;
+    border-radius: 24px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.08);
     border: 1px solid var(--line);
   }
 
   button {
-    font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px;
-    border: none; border-radius: 22px; padding: 10px 18px; cursor: pointer;
+    font-family: 'Inter', sans-serif; font-weight: 700; font-size: 14px;
+    border: none; border-radius: 24px; padding: 11px 20px; cursor: pointer;
     transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s ease, box-shadow 0.15s ease;
   }
   button:active { transform: scale(0.95); opacity: 0.9; }
-  .btn-primary { background: #1F2430; color: #FFFFFF; box-shadow: 0 4px 14px rgba(0,0,0,0.2); }
-  body[data-theme="beyaz"] .btn-primary { background: #0F172A; color: #FFFFFF; }
-  .btn-primary:hover { opacity: 0.9; }
-  .btn-success { background: var(--sage); color: #fff; box-shadow: 0 4px 14px rgba(107,143,113,0.3); }
-  .btn-warning { background: var(--amber); color: #fff; box-shadow: 0 4px 14px rgba(224,151,44,0.3); }
+  .btn-primary { background: var(--amber-gradient); color: #FFFFFF; box-shadow: 0 4px 16px rgba(243, 111, 33, 0.35); }
+  .btn-primary:hover { opacity: 0.95; }
+  .btn-secondary { background: var(--primary-blue); color: #FFFFFF; box-shadow: 0 4px 14px rgba(0, 102, 178, 0.3); }
+  .btn-success { background: var(--sage); color: #fff; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3); }
+  .btn-warning { background: var(--amber); color: #fff; box-shadow: 0 4px 14px rgba(243, 111, 33, 0.3); }
   .btn-danger { background: var(--clay); color: #fff; padding: 6px 12px; font-size: 11px; border-radius: 18px; }
 
-  .tabs { display: flex; gap: 6px; margin-bottom: 20px; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+  /* SEKME TASARIMI (BANKA MOBİL ÜST MENÜSÜ) */
+  .tabs { display: flex; gap: 6px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 6px; }
   .tab-btn {
-    background: transparent; color: var(--muted); border-radius: 20px;
-    padding: 10px 12px; font-size: 13px; font-weight: 600;
-    border-bottom: 2.5px solid transparent; flex: 1; text-align: center;
+    background: rgba(255,255,255,0.15); color: #FFFFFF; border-radius: 20px;
+    padding: 10px 14px; font-size: 13px; font-weight: 700;
+    border: 1px solid rgba(255,255,255,0.25); flex: 1; text-align: center;
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .tab-btn.active { color: var(--body-text); border-bottom-color: var(--amber); background: rgba(255,255,255,0.06); }
-  body[data-theme="beyaz"] .tab-btn.active { background: rgba(0,0,0,0.05); }
-  .card .tab-btn.active { color: var(--card-text); border-bottom-color: var(--clay, var(--amber)); background: rgba(0,0,0,0.04); }
+  .tab-btn.active { color: var(--primary-blue); background: #FFFFFF; border-color: #FFFFFF; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
   
   .tab-panel { display: none; opacity: 0; transform: translateY(10px); transition: opacity 0.25s ease, transform 0.25s ease; }
   .tab-panel.active { display: block; opacity: 1; transform: translateY(0); animation: mobileSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
@@ -147,12 +142,12 @@
   }
 
   .card {
-    background: var(--card-bg); color: var(--card-text); border-radius: 20px; padding: 22px;
-    box-shadow: 0 14px 32px var(--paper-shadow); margin-bottom: 18px;
+    background: var(--card-bg); color: var(--card-text); border-radius: 22px; padding: 22px;
+    box-shadow: 0 12px 32px var(--paper-shadow); margin-bottom: 18px;
     border: 1px solid var(--line);
   }
-  .card h2 { font-family: 'Fraunces', serif; font-size: 18px; margin: 0; color: var(--card-text); }
-  .card .sub { font-size: 12.5px; color: #6b6b6b; margin-bottom: 16px; }
+  .card h2 { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 18px; margin: 0; color: var(--card-text); }
+  .card .sub { font-size: 12.5px; color: var(--muted); margin-bottom: 16px; }
   .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
   .card-close {
     background: none; border: none; color: #999; font-size: 20px; line-height: 1;
@@ -174,122 +169,65 @@
 
   /* SOHBET MODALI - Floating Glass Window */
   #chatModal {
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    right: 18px;
-    bottom: 24px;
-    left: auto;
-    top: auto;
-    width: 380px;
-    max-width: calc(100vw - 24px);
-    max-height: 78vh;
-    border-radius: 24px;
-    box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 4px 18px rgba(0,0,0,0.3);
-    border: 1px solid var(--line);
-    z-index: 1600;
-    margin-bottom: 0;
+    display: flex; flex-direction: column; position: fixed;
+    right: 18px; bottom: 24px; left: auto; top: auto;
+    width: 380px; max-width: calc(100vw - 24px); max-height: 78vh;
+    border-radius: 24px; box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+    border: 1px solid var(--line); z-index: 1600; margin-bottom: 0;
   }
   @media (max-width: 560px) {
-    #chatModal {
-      right: 10px; left: 10px; bottom: 10px; width: auto; max-width: none;
-      border-radius: 24px;
-      max-height: 84vh;
-    }
+    #chatModal { right: 10px; left: 10px; bottom: 10px; width: auto; max-width: none; border-radius: 24px; max-height: 84vh; }
   }
-  #chatModal #chatUnlocked {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-  }
-  .chat-panel {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-  }
+  #chatModal #chatUnlocked { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+  .chat-panel { display: flex; flex-direction: column; flex: 1; min-height: 0; }
   .chat-box {
-    flex: 1;
-    min-height: 120px;
-    overflow-y: auto; background: rgba(0,0,0,0.03); border-radius: 16px;
+    flex: 1; min-height: 120px; overflow-y: auto; background: #F8FAFC; border-radius: 16px;
     padding: 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;
-    -webkit-overflow-scrolling: touch;
-    border: 1px solid var(--line);
+    -webkit-overflow-scrolling: touch; border: 1px solid var(--line);
   }
-  body[data-theme="beyaz"] .chat-box { background: #F1F5F9; }
   .chat-bubble {
     max-width: 78%; padding: 10px 14px; border-radius: 18px; font-size: 13px; line-height: 1.45;
     word-wrap: break-word; position: relative; box-shadow: 0 2px 6px rgba(0,0,0,0.06);
   }
-  .chat-bubble.mine { align-self: flex-end; background: var(--bordo, #7A2331); color: #fff; border-bottom-right-radius: 4px; }
-  body[data-theme="beyaz"] .chat-bubble.mine { background: #1E293B; color: #FFFFFF; }
-  .chat-bubble.theirs { align-self: flex-start; background: #fff; color: #1F2430; border: 1px solid #e2ddd2; border-bottom-left-radius: 4px; }
-  body[data-theme="beyaz"] .chat-bubble.theirs { background: #FFFFFF; color: #0F172A; border-color: #E2E8F0; }
+  .chat-bubble.mine { align-self: flex-end; background: var(--primary-blue); color: #fff; border-bottom-right-radius: 4px; }
+  .chat-bubble.theirs { align-self: flex-start; background: #FFFFFF; color: #0F172A; border: 1px solid #E2E8F0; border-bottom-left-radius: 4px; }
   .chat-bubble .cb-name { font-size: 10.5px; font-weight: 700; opacity: 0.75; margin-bottom: 2px; }
   .chat-bubble .cb-time { font-size: 9.5px; opacity: 0.55; margin-top: 3px; text-align: right; }
   .chat-bubble .cb-tick { opacity: 0.85; }
   .chat-bubble .cb-tick.read { color: #7ec9ff; opacity: 1; }
-  .chat-bubble .cb-actions {
-    display: flex; gap: 4px; justify-content: flex-end; margin-top: 4px;
-    opacity: 0; transition: opacity 0.15s ease;
-  }
+  .chat-bubble .cb-actions { display: flex; gap: 4px; justify-content: flex-end; margin-top: 4px; opacity: 0; transition: opacity 0.15s ease; }
   .chat-bubble.mine:hover .cb-actions, .chat-bubble.mine:focus-within .cb-actions { opacity: 1; }
-  .cb-action-btn {
-    background: rgba(255,255,255,0.18); border: none; color: inherit; font-size: 11px;
-    padding: 2px 6px; border-radius: 10px; cursor: pointer; line-height: 1.4;
-  }
+  .cb-action-btn { background: rgba(255,255,255,0.18); border: none; color: inherit; font-size: 11px; padding: 2px 6px; border-radius: 10px; cursor: pointer; line-height: 1.4; }
   .chat-bubble-editing { padding: 6px 8px; }
-  .chat-edit-input {
-    width: 100%; font-size: 13px; padding: 6px 8px; border-radius: 12px; border: none;
-    color: var(--card-text); background: #fff;
-  }
+  .chat-edit-input { width: 100%; font-size: 13px; padding: 6px 8px; border-radius: 12px; border: none; color: var(--card-text); background: #fff; }
   .cb-edit-actions { display: flex; gap: 4px; justify-content: flex-end; margin-top: 4px; }
   .chat-input-row { display: flex; gap: 8px; flex-shrink: 0; }
   .chat-input-row input { flex: 1; }
-  .contact-row {
-    display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px;
-    cursor: pointer; transition: background 0.15s ease, transform 0.15s ease;
-  }
+  .contact-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; cursor: pointer; transition: background 0.15s ease, transform 0.15s ease; }
   .contact-row:active { background: rgba(0,0,0,0.05); transform: scale(0.98); }
   .contact-avatar {
-    width: 38px; height: 38px; border-radius: 50%; background: #ddd; flex-shrink: 0;
+    width: 38px; height: 38px; border-radius: 50%; background: #E2E8F0; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700;
-    color: #777; object-fit: cover; position: relative; box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    color: var(--primary-blue); object-fit: cover; position: relative; box-shadow: 0 2px 6px rgba(0,0,0,0.08);
   }
-  .contact-online-dot {
-    width: 10px; height: 10px; border-radius: 50%; background: #3E7A4F; border: 2px solid #fff;
-    position: absolute; bottom: -1px; right: -1px;
-  }
+  .contact-online-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--sage); border: 2px solid #fff; position: absolute; bottom: -1px; right: -1px; }
   .contact-name { font-size: 13.5px; font-weight: 600; }
   .contact-status { font-size: 11px; color: #999; }
 
-  label {
-    display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.05em;
-    text-transform: uppercase; color: #777; margin-bottom: 6px; margin-top: 14px;
-  }
+  label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; margin-top: 14px; }
 
   input[type="text"], input[type="tel"], input[type="password"], input[type="email"], textarea, select {
     width: 100%; font-family: 'Inter', sans-serif; font-size: 14px;
-    padding: 11px 15px; border: 1.5px solid #ddd; border-radius: 14px; background: #fff; color: #1F2430;
+    padding: 12px 16px; border: 1.5px solid #CBD5E1; border-radius: 14px; background: #fff; color: #0F172A;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
   }
-  body[data-theme="beyaz"] input,
-  body[data-theme="beyaz"] textarea,
-  body[data-theme="beyaz"] select {
-    border-color: #CBD5E1; color: #0F172A;
-  }
-  input:focus, textarea:focus, select:focus {
-    outline: none;
-    border-color: var(--amber) !important;
-    box-shadow: 0 0 0 3.5px rgba(224, 151, 44, 0.25) !important;
-  }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--amber) !important; box-shadow: 0 0 0 3.5px rgba(243, 111, 33, 0.2) !important; }
   textarea { resize: vertical; min-height: 75px; }
 
   .cat-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-  .cat-btn { background: #fff; border: 1.5px solid #ddd; color: #555; font-size: 12px; padding: 6px 14px; border-radius: 20px; transition: all 0.15s ease; }
+  .cat-btn { background: #fff; border: 1.5px solid #CBD5E1; color: #475569; font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 20px; transition: all 0.15s ease; }
   .cat-btn:active { transform: scale(0.94); }
-  .cat-btn.active[data-cat="genel"] { background: #1F2430; color: #fff; border-color: #1F2430; }
+  .cat-btn.active[data-cat="genel"] { background: var(--primary-blue); color: #fff; border-color: var(--primary-blue); }
   .cat-btn.active[data-cat="acil"] { background: var(--amber); color: #fff; border-color: var(--amber); }
   .cat-btn.active[data-cat="yemek"] { background: var(--sage); color: #fff; border-color: var(--sage); }
   .cat-btn.active[data-cat="vefat"] { background: var(--clay); color: #fff; border-color: var(--clay); }
@@ -303,8 +241,8 @@
   /* TOAST BİLDİRİMİ */
   #toastContainer { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 3000; display: flex; flex-direction: column; gap: 8px; align-items: center; width: 90%; max-width: 360px; pointer-events: none; }
   .toast {
-    background: #1F2430; color: #F7F5F0; font-size: 13.5px; font-weight: 600;
-    padding: 12px 22px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    background: #0F172A; color: #FFFFFF; font-size: 13.5px; font-weight: 600;
+    padding: 12px 22px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     display: flex; align-items: center; gap: 8px; border: 1px solid var(--line);
     animation: toast-in 0.3s cubic-bezier(0.16,1,0.3,1), toast-out 0.3s ease 2.4s forwards;
     pointer-events: auto;
@@ -316,19 +254,20 @@
 
   /* OKUNDU İŞARETLEME */
   .li-read-btn {
-    display: inline-flex; align-items: center; gap: 4px; background: none; border: 1.5px solid #ccc;
-    color: #888; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 4px; background: none; border: 1.5px solid #CBD5E1;
+    color: #64748B; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; cursor: pointer;
     transition: all 0.15s ease; flex-shrink: 0;
   }
   .li-read-btn:active { transform: scale(0.92); }
   .li-read-btn:hover { border-color: var(--sage); color: var(--sage); }
   .li-read-btn.done { background: var(--sage); border-color: var(--sage); color: #fff; cursor: default; }
 
-  .list-section h3 { font-family: 'Fraunces', serif; font-size: 16px; margin: 0 0 12px; color: var(--body-text); }
+  /* LİSTE ÖĞELERİ (MOBİL BANKA HESAP HAREKETLERİ KART STİLİ) */
+  .list-section h3 { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 15px; margin: 0 0 12px; color: var(--card-text); text-transform: uppercase; letter-spacing: 0.04em; }
   .list-item {
-    background: var(--card-bg); color: var(--card-text); border-radius: 16px;
-    padding: 15px 18px; margin-bottom: 11px; box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-    border-left: 5px solid var(--ink); display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
+    background: var(--card-bg); color: var(--card-text); border-radius: 18px;
+    padding: 16px 18px; margin-bottom: 11px; box-shadow: 0 4px 16px rgba(0, 85, 160, 0.06);
+    border-left: 6px solid var(--primary-blue); display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
     border-top: 1px solid var(--line); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
     transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease;
   }
@@ -338,9 +277,9 @@
   .list-item.vefat { border-left-color: var(--clay); }
   .list-item.dogum { border-left-color: var(--gold); }
   .list-item .li-main { flex: 1; min-width: 0; }
-  .list-item .li-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 3px; }
+  .list-item .li-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 4px; }
   .li-toggle {
-    background: rgba(224,151,44,0.12); border: none; color: var(--amber); font-size: 24px; line-height: 1; cursor: pointer;
+    background: rgba(243, 111, 33, 0.12); border: none; color: var(--amber); font-size: 22px; line-height: 1; cursor: pointer;
     padding: 4px 10px; border-radius: 10px; transition: transform 0.2s ease, background 0.15s ease; flex-shrink: 0;
     animation: chevron-bounce 1.6s ease-in-out infinite; font-weight: 900;
   }
@@ -355,39 +294,38 @@
   .page-nav { display: flex; align-items: center; gap: 8px; }
   .page-nav button {
     background: var(--card-bg); color: var(--card-text); border: 1px solid var(--line); padding: 7px 14px;
-    border-radius: 20px; font-size: 12.5px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    border-radius: 20px; font-size: 12.5px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   }
   .page-nav button:disabled { opacity: 0.35; cursor: default; box-shadow: none; }
   .page-nav .page-info { font-size: 12.5px; color: var(--muted); }
-  .list-item .li-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #888; }
-  .list-item .li-time { font-size: 10.5px; color: #999; }
-  .list-item .li-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 14.5px; margin: 0 0 2px; }
-  .list-item .li-body { font-size: 12.5px; color: #555; line-height: 1.45; margin: 0; }
-  body[data-theme="beyaz"] .list-item .li-body { color: #334155; }
-  .list-item .li-phone { font-family: 'Fraunces', serif; font-weight: 700; font-size: 16px; color: var(--clay); text-decoration: none; }
-  .list-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 22px; background: rgba(0,0,0,0.03); border-radius: 16px; border: 1px dashed var(--line); }
+  .list-item .li-tag { font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: var(--primary-blue); }
+  .list-item .li-time { font-size: 11px; color: #94A3B8; font-weight: 500; }
+  .list-item .li-title { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 15px; margin: 2px 0; color: #0F172A; }
+  .list-item .li-body { font-size: 13px; color: #334155; line-height: 1.45; margin: 0; }
+  .list-item .li-phone { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 16px; color: var(--amber); text-decoration: none; }
+  .list-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 22px; background: #FFFFFF; border-radius: 18px; border: 1px dashed var(--line); }
 
-  /* MANŞET */
+  /* MANŞET KART */
   .manset-wrap { margin-bottom: 20px; }
   .manset-nav { display: flex; align-items: center; gap: 10px; }
   .manset-nav-btn {
-    background: rgba(255,255,255,0.1); border: 1px solid var(--line); color: var(--body-text);
+    background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: #FFFFFF;
     width: 36px; height: 36px; min-width: 36px; border-radius: 50%; font-size: 18px; cursor: pointer;
     flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: background 0.15s ease, transform 0.15s ease;
   }
   .manset-nav-btn:active { transform: scale(0.88); }
   .manset-card {
-    flex: 1; position: relative; border-radius: 20px; overflow: hidden; padding: 26px 24px;
+    flex: 1; position: relative; border-radius: 22px; overflow: hidden; padding: 26px 24px;
     min-height: 155px; display: flex; flex-direction: column; justify-content: center;
-    color: #fff; cursor: pointer; box-shadow: 0 16px 36px rgba(0,0,0,0.35);
-    background: linear-gradient(135deg, var(--manset-c1, var(--ink)), var(--manset-c2, #000));
+    color: #fff; cursor: pointer; box-shadow: 0 16px 36px rgba(0,0,0,0.25);
+    background: linear-gradient(135deg, var(--manset-c1, var(--primary-blue)), var(--manset-c2, #003B73));
     transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     animation: manset-fade-in 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .manset-card:active { transform: scale(0.97); }
   .manset-card::after {
     content: ''; position: absolute; inset: 0; pointer-events: none;
-    background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.18) 45%, transparent 60%);
+    background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.2) 45%, transparent 60%);
     background-size: 220% 100%; background-position: 130% 0;
     animation: manset-sheen 2.6s ease-out 0.15s 1;
   }
@@ -400,45 +338,44 @@
     to { background-position: -30% 0; }
   }
   .manset-tag {
-    display: inline-block; background: rgba(255,255,255,0.22); font-size: 10.5px; font-weight: 700;
+    display: inline-block; background: rgba(255,255,255,0.22); font-size: 10.5px; font-weight: 800;
     letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 12px; border-radius: 20px;
     margin-bottom: 12px; width: fit-content; backdrop-filter: blur(4px);
   }
-  .manset-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 20px; margin: 0 0 8px; line-height: 1.25; }
-  .manset-date { font-size: 12px; opacity: 0.82; }
+  .manset-title { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 20px; margin: 0 0 8px; line-height: 1.25; }
+  .manset-date { font-size: 12px; opacity: 0.85; }
   .manset-dots { display: flex; gap: 6px; justify-content: center; margin-top: 12px; }
-  .manset-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.28); cursor: pointer; border: none; padding: 0; transition: background 0.2s ease, transform 0.2s ease; }
-  .manset-dot.active { background: var(--paper); transform: scale(1.4); }
-  .li-detay-link { font-size: 11.5px; color: var(--clay); font-weight: 600; cursor: pointer; margin-top: 6px; display: inline-block; }
+  .manset-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.35); cursor: pointer; border: none; padding: 0; transition: background 0.2s ease, transform 0.2s ease; }
+  .manset-dot.active { background: #FFFFFF; transform: scale(1.4); }
+  .li-detay-link { font-size: 12px; color: var(--primary-blue); font-weight: 700; cursor: pointer; margin-top: 6px; display: inline-block; }
 
   /* POPUP OVERLAYS */
   .toast-overlay, .wizard-overlay, #kvkkModal {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.68); z-index: 3000; display: none;
+    position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); z-index: 3000; display: none;
     align-items: center; justify-content: center; padding: 18px;
     backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   }
   .toast-overlay.show { display: flex; }
   .toast-box {
-    background: var(--card-bg); color: var(--card-text); border-radius: 22px; padding: 26px 24px;
-    max-width: 420px; width: 100%; box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    background: #FFFFFF; color: #0F172A; border-radius: 24px; padding: 26px 24px;
+    max-width: 420px; width: 100%; box-shadow: 0 24px 60px rgba(0,0,0,0.3);
     animation: card-in 0.28s cubic-bezier(0.16, 1, 0.3, 1); border: 1px solid var(--line);
   }
-  .toast-box .ttitle { font-family: 'Fraunces', serif; font-weight: 700; font-size: 17.5px; margin-bottom: 8px; }
+  .toast-box .ttitle { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 18px; margin-bottom: 8px; }
 
   #duyuruDetayOverlay .toast-box { max-width: 460px; text-align: left; position: relative; }
-  .dd-close { position: absolute; top: 14px; right: 14px; background: none; border: none; font-size: 20px; color: #999; cursor: pointer; line-height: 1; border-radius: 50%; padding: 4px; }
-  .dd-tag { display: inline-block; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #fff; padding: 4px 12px; border-radius: 20px; margin-bottom: 10px; }
-  .dd-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 19px; margin: 0 0 6px; color: var(--card-text); }
-  .dd-meta { font-size: 11.5px; color: #999; margin-bottom: 14px; }
-  .dd-body { font-size: 14px; line-height: 1.6; color: #333; margin-bottom: 8px; white-space: pre-wrap; }
-  body[data-theme="beyaz"] .dd-body { color: #1E293B; }
-  .dd-read-info { font-size: 12px; color: #888; margin: 12px 0 4px; }
+  .dd-close { position: absolute; top: 14px; right: 14px; background: none; border: none; font-size: 20px; color: #94A3B8; cursor: pointer; line-height: 1; border-radius: 50%; padding: 4px; }
+  .dd-tag { display: inline-block; font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #fff; padding: 4px 12px; border-radius: 20px; margin-bottom: 10px; }
+  .dd-title { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 19px; margin: 0 0 6px; color: #0F172A; }
+  .dd-meta { font-size: 11.5px; color: #64748B; margin-bottom: 14px; }
+  .dd-body { font-size: 14px; line-height: 1.6; color: #334155; margin-bottom: 8px; white-space: pre-wrap; }
+  .dd-read-info { font-size: 12px; color: #64748B; margin: 12px 0 4px; }
   .dd-actions { display: flex; gap: 8px; margin-top: 16px; }
   .dd-actions button { flex: 1; }
   .btn-share { background: var(--sage); color: #fff; }
 
   #splash {
-    position: fixed; inset: 0; background: var(--ink); display: flex;
+    position: fixed; inset: 0; background: var(--header-blue); display: flex;
     align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.6s ease, visibility 0.6s;
   }
   #splash img { width: 110px; height: 110px; animation: splash-blink 1.4s ease-in-out infinite; border-radius: 50%; }
@@ -447,58 +384,52 @@
 
   #notifBanner {
     display: none; max-width: 640px; margin: 0 auto 20px; padding: 20px 22px;
-    border-radius: 16px; font-family: 'Inter', sans-serif; color: #fff;
-    box-shadow: 0 10px 24px rgba(0,0,0,0.3);
+    border-radius: 18px; font-family: 'Inter', sans-serif; color: #fff;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.25);
   }
   #notifBanner.show { display: block; animation: mobileSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-  #notifBanner .tag { display: block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.8; margin-bottom: 8px; }
-  #notifBanner .btitle { font-family: 'Fraunces', serif; font-size: 24px; line-height: 1.2; font-weight: 700; margin: 0 0 8px; }
+  #notifBanner .tag { display: block; font-size: 10.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.85; margin-bottom: 8px; }
+  #notifBanner .btitle { font-family: 'Inter', sans-serif; font-size: 22px; line-height: 1.2; font-weight: 800; margin: 0 0 8px; }
   #notifBanner .bbody { font-size: 14px; line-height: 1.5; margin: 0; opacity: 0.95; }
-  #notifBanner.acil { background: linear-gradient(135deg, #E0972C, #B5674A); }
+  #notifBanner.acil { background: linear-gradient(135deg, #FF7A29, #F36F21); }
 
-  /* NATIVE APP STYLE GLASS BOTTOM NAVIGATION BAR */
+  /* BANKA MOBİL STİLİ ALT MENÜ (FOOTER NAV) */
   .site-footer {
     position: fixed; left: 0; right: 0; bottom: 0; 
-    background: rgba(31, 36, 48, 0.92);
+    background: rgba(255, 255, 255, 0.96);
     backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-    border-top: 1px solid var(--line); text-align: center; padding: 12px 14px;
+    border-top: 1px solid #E2E8F0; text-align: center; padding: 12px 14px;
     font-size: 12.5px; z-index: 1500; display: flex; justify-content: space-around; align-items: center;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.35); transition: background 0.3s ease;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08); transition: background 0.3s ease;
   }
-  body[data-theme="beyaz"] .site-footer {
-    background: rgba(255, 255, 255, 0.92);
-    border-top: 1px solid #E2E8F0;
-  }
-  .site-footer a { color: var(--muted); text-decoration: none; font-weight: 600; transition: color 0.15s ease, transform 0.15s ease; padding: 4px 8px; }
-  body[data-theme="beyaz"] .site-footer a { color: #475569; }
-  .site-footer a:active { transform: scale(0.9); color: var(--body-text); }
-  .site-footer .fdot { color: var(--line); opacity: 0.5; }
+  .site-footer a { color: #475569; text-decoration: none; font-weight: 700; transition: color 0.15s ease, transform 0.15s ease; padding: 4px 8px; }
+  .site-footer a:active { transform: scale(0.9); color: var(--primary-blue); }
+  .site-footer .fdot { color: #CBD5E1; }
 
   /* WIZARD & MODALS */
   .wizard-card {
-    background: var(--card-bg); color: var(--card-text); max-width: 500px; width: 100%;
-    border-radius: 22px; padding: 24px; box-shadow: 0 24px 60px rgba(0,0,0,0.6); border: 2px solid var(--amber);
+    background: #FFFFFF; color: #0F172A; max-width: 500px; width: 100%;
+    border-radius: 24px; padding: 24px; box-shadow: 0 24px 60px rgba(0,0,0,0.35); border: 2px solid var(--amber);
   }
   .wizard-step { display: none; }
   .wizard-step.active { display: block; animation: mobileSlideIn 0.28s cubic-bezier(0.16,1,0.3,1); }
   .step-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
-  .dot { width: 10px; height: 10px; border-radius: 50%; background: #ccc; transition: all 0.25s ease; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #CBD5E1; transition: all 0.25s ease; }
   .dot.active { background: var(--amber); width: 26px; border-radius: 10px; }
-  .guide-box { background: #FAF5E9; border: 1px solid #E6D7B8; padding: 14px; border-radius: 14px; font-size: 12.5px; color: #555; margin: 12px 0; text-align: left; line-height: 1.55; }
+  .guide-box { background: #FEF3C7; border: 1px solid #FDE68A; padding: 14px; border-radius: 14px; font-size: 12.5px; color: #92400E; margin: 12px 0; text-align: left; line-height: 1.55; }
 
   /* TAKVİM & YEMEKHANE ALT SEKMELER */
   .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-  .cal-nav button { background: var(--card-bg); color: var(--card-text); border: 1px solid var(--line); padding: 8px 14px; font-size: 13px; font-weight: 600; border-radius: 20px; }
-  .cal-nav .cal-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; color: var(--body-text); }
+  .cal-nav button { background: #FFFFFF; color: #0F172A; border: 1px solid #CBD5E1; padding: 8px 14px; font-size: 13px; font-weight: 700; border-radius: 20px; }
+  .cal-nav .cal-title { font-family: 'Inter', sans-serif; font-size: 17px; font-weight: 800; color: var(--card-text); }
   .cal-view-toggle { display: flex; gap: 6px; margin-bottom: 16px; }
-  .cal-view-toggle button { background: rgba(255,255,255,0.12); color: var(--body-text); padding: 7px 16px; font-size: 12.5px; border-radius: 20px; font-weight: 600; }
-  body[data-theme="beyaz"] .cal-view-toggle button { background: rgba(0,0,0,0.06); }
-  .cal-view-toggle button.active { background: var(--amber); color: #fff; }
+  .cal-view-toggle button { background: #E2E8F0; color: #475569; padding: 7px 16px; font-size: 12.5px; border-radius: 20px; font-weight: 700; }
+  .cal-view-toggle button.active { background: var(--primary-blue); color: #fff; }
   .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-  .cal-dow { text-align: center; font-size: 11px; font-weight: 700; color: var(--body-text); opacity: 0.6; padding: 4px 0; letter-spacing: 0.05em; text-transform: uppercase; }
+  .cal-dow { text-align: center; font-size: 11px; font-weight: 800; color: var(--muted); padding: 4px 0; letter-spacing: 0.05em; text-transform: uppercase; }
   .cal-day {
     aspect-ratio: 1; border-radius: 12px; padding: 6px; cursor: pointer; position: relative;
-    background: var(--card-bg); color: var(--card-text); box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    background: #FFFFFF; color: #0F172A; box-shadow: 0 2px 6px rgba(0,0,0,0.06);
     border: 1px solid var(--line);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
     display: flex; align-items: flex-start; justify-content: flex-start;
@@ -506,30 +437,28 @@
   .cal-day:active { transform: scale(0.92); }
   .cal-day.empty { background: transparent; box-shadow: none; border: none; cursor: default; }
   .cal-day.today { outline: 2.5px solid var(--amber); outline-offset: 1px; }
-  .cal-day.weekend { background: rgba(0,0,0,0.04); }
-  .cal-day.holiday { background: #FDECEA; color: #1F2430; }
-  .cal-day.note-holiday { border: 2px solid #B03030; }
-  .cal-day .cd-num { font-family: 'Fraunces', serif; font-weight: 700; font-size: 15px; }
-  .cal-day .cd-dot { position: absolute; bottom: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 0 2px var(--card-bg); }
-  .cal-day .cd-holiday-dot { position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: #D93838; box-shadow: 0 0 0 2px var(--card-bg); animation: cd-blink 2.2s ease-in-out infinite; }
+  .cal-day.weekend { background: #F1F5F9; }
+  .cal-day.holiday { background: #FEE2E2; color: #991B1B; }
+  .cal-day.note-holiday { border: 2px solid #DC2626; }
+  .cal-day .cd-num { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 14px; }
+  .cal-day .cd-dot { position: absolute; bottom: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 0 2px #FFFFFF; }
+  .cal-day .cd-holiday-dot { position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: #EF4444; box-shadow: 0 0 0 2px #FFFFFF; animation: cd-blink 2.2s ease-in-out infinite; }
   @keyframes cd-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
-  .cal-cat-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: #fff; }
+  .cal-cat-badge { display: inline-block; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 10px; color: #fff; }
   .cal-year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
-  .cal-mini-month { background: var(--card-bg); border-radius: 14px; padding: 12px; cursor: pointer; color: var(--card-text); border: 1px solid var(--line); box-shadow: 0 2px 6px rgba(0,0,0,0.12); transition: transform 0.15s ease; }
+  .cal-mini-month { background: #FFFFFF; border-radius: 14px; padding: 12px; cursor: pointer; color: #0F172A; border: 1px solid var(--line); box-shadow: 0 2px 6px rgba(0,0,0,0.06); transition: transform 0.15s ease; }
   .cal-mini-month:active { transform: scale(0.94); }
-  .cal-mini-month .cmm-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
-  .cal-mini-month .cmm-count { font-size: 11px; color: var(--clay); font-weight: 600; }
+  .cal-mini-month .cmm-title { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 14px; margin-bottom: 6px; }
+  .cal-mini-month .cmm-count { font-size: 11px; color: var(--amber); font-weight: 700; }
   .cal-search-box { display: flex; gap: 8px; margin-bottom: 16px; }
   .cal-search-box input { flex: 1; }
 
   /* İŞLER VE YEMEKHANE ALT SEKMELERİ */
   .isler-subtabs, .yemek-subtabs { display: flex; gap: 6px; margin-bottom: 18px; }
   .isler-subtabs button, .yemek-subtabs button {
-    background: rgba(255,255,255,0.08); color: var(--body-text); padding: 9px 18px; font-size: 13px; font-weight: 600; border-radius: 20px; flex: 1; border: 1px solid var(--line);
+    background: #E2E8F0; color: #475569; padding: 9px 18px; font-size: 13px; font-weight: 700; border-radius: 20px; flex: 1; border: 1px solid var(--line);
   }
-  body[data-theme="beyaz"] .isler-subtabs button,
-  body[data-theme="beyaz"] .yemek-subtabs button { background: rgba(0,0,0,0.05); }
-  .isler-subtabs button.active, .yemek-subtabs button.active { background: var(--amber); color: #fff; border-color: var(--amber); }
+  .isler-subtabs button.active, .yemek-subtabs button.active { background: var(--primary-blue); color: #fff; border-color: var(--primary-blue); box-shadow: 0 4px 12px rgba(0, 102, 178, 0.25); }
 </style>
 </head>
 <body>
@@ -540,9 +469,9 @@
 
 <!-- KVKK AYDINLATMA METNİ MODALI -->
 <div id="kvkkModal" style="display:none;">
-  <div style="background:var(--card-bg); color:var(--card-text); max-width:520px; width:100%; max-height:85vh; overflow-y:auto; border-radius:22px; padding:24px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border:1px solid var(--line);">
-    <h2 style="font-family:'Fraunces',serif; font-size:18px; margin:0 0 14px;">KVKK Aydınlatma Metni</h2>
-    <div style="font-size:13px; line-height:1.7; color:#333;">
+  <div style="background:var(--card-bg); color:var(--card-text); max-width:520px; width:100%; max-height:85vh; overflow-y:auto; border-radius:24px; padding:24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border:1px solid var(--line);">
+    <h2 style="font-family:'Inter',sans-serif; font-weight:800; font-size:18px; margin:0 0 14px;">KVKK Aydınlatma Metni</h2>
+    <div style="font-size:13px; line-height:1.7; color:#334155;">
       <p><b>Veri Sorumlusu:</b> Amasya Çevre, Şehircilik ve İklim Değişikliği İl Müdürlüğü.</p>
       <p><b>İşlenen Kişisel Veriler:</b> Ad-soyad, telefon numarası, e-posta adresi, kan grubu, profil fotoğrafı, cihaz kimliği, uygulama içi sohbet mesajları ve bildirim okuma zaman bilgisi.</p>
       <p><b>İşleme Amacı:</b> Bu veriler yalnızca kurum içi acil duyuru, bilgilendirme, iç iletişim (sohbet) ve acil durumlarda (kan grubu bilgisi gibi) personele hızlı ulaşım amacıyla işlenir. Herhangi bir ticari amaçla kullanılmaz, üçüncü taraflarla paylaşılmaz.</p>
@@ -568,10 +497,10 @@
       <div id="step1-download">
         <div style="font-size:36px; text-align:center; margin-bottom:8px;">📱</div>
         <h2 style="text-align:center; margin:0 0 8px;">Adım 1: Uygulamayı İndir</h2>
-        <p style="font-size:13px; color:#555; text-align:center;">Duyuruların cebinize anında düşmesi için uygulamayı telefonunuza ekleyin.</p>
+        <p style="font-size:13px; color:#64748B; text-align:center;">Duyuruların cebinize anında düşmesi için uygulamayı telefonunuza ekleyin.</p>
 
         <div id="pwaInstallContainer" style="display:none; text-align:center; margin:16px 0;">
-          <button class="btn-primary" id="btnPwaInstall" style="width:100%; padding:12px; font-size:15px; background:var(--sage);">
+          <button class="btn-primary" id="btnPwaInstall" style="width:100%; padding:12px; font-size:15px;">
             📥 Uygulamayı Telefona Yükle
           </button>
         </div>
@@ -587,7 +516,7 @@
       <div id="step1-installed" style="display:none;">
         <div style="font-size:36px; text-align:center; margin-bottom:8px;">✅</div>
         <h2 style="text-align:center; margin:0 0 8px;">Kurulumu Başarıyla Tamamladınız</h2>
-        <p style="font-size:13px; color:#555; text-align:center; margin-bottom:14px;">Kurulum sırasında karşınıza çıkan uyarıları merak ettiyseniz — hepsi normal, işte kısaca nedenleri:</p>
+        <p style="font-size:13px; color:#64748B; text-align:center; margin-bottom:14px;">Kurulum sırasında karşınıza çıkan uyarıları merak ettiyseniz — hepsi normal, işte kısaca nedenleri:</p>
 
         <div class="guide-box" style="margin-bottom:10px;">
           <b>🛡️ "Bilinmeyen uygulama engellendi"</b><br>
@@ -595,7 +524,7 @@
         </div>
         <div class="guide-box" style="margin-bottom:10px;">
           <b>🛡️ "Google Play Protect" uyarısı</b><br>
-          Google, henüz Play Store'da yayınlanmamış her uygulama için bu uyarıyı gösterir.
+          Google, henüz Play Store'da yayınlannamış her uygulama için bu uyarıyı gösterir.
         </div>
         <div class="guide-box">
           <b>🔒 Verileriniz güvende</b><br>
@@ -616,10 +545,10 @@
       <label>Telefon Numarası (Opsiyonel)</label>
       <input type="tel" id="wizPhone" placeholder="Örn: 0555 xxx xx xx">
 
-      <label style="display:flex; align-items:flex-start; gap:8px; margin-top:16px; cursor:pointer; text-transform:none; letter-spacing:normal; font-weight:400; font-size:12.5px; color:#555;">
+      <label style="display:flex; align-items:flex-start; gap:8px; margin-top:16px; cursor:pointer; text-transform:none; letter-spacing:normal; font-weight:400; font-size:12.5px; color:#475569;">
         <input type="checkbox" id="wizKvkkConsent" style="margin-top:2px; flex-shrink:0;">
         <span>
-          <a href="#" id="kvkkLinkOpen" style="color:var(--clay); font-weight:600; text-decoration:underline;">KVKK Aydınlatma Metni</a>'ni okudum, kişisel verilerimin yalnızca kurum içi duyuru ve iletişim amacıyla işlenmesini kabul ediyorum. *
+          <a href="#" id="kvkkLinkOpen" style="color:var(--primary-blue); font-weight:700; text-decoration:underline;">KVKK Aydınlatma Metni</a>'ni okudum, kişisel verilerimin yalnızca kurum içi duyuru ve iletişim amacıyla işlenmesini kabul ediyorum. *
         </span>
       </label>
 
@@ -631,13 +560,13 @@
     <div class="wizard-step" id="step3">
       <div style="font-size:36px; text-align:center; margin-bottom:8px;"><span class="sway-logo">🔔</span></div>
       <h2 style="text-align:center; margin:0 0 8px;">Adım 3: Bildirim & Ses İzni</h2>
-      <p style="font-size:13px; color:#555; text-align:center;">Acil duyuru ve toplantı haberlerini kaçırmamak için bildirim izni verin.</p>
+      <p style="font-size:13px; color:#64748B; text-align:center;">Acil duyuru ve toplantı haberlerini kaçırmamak için bildirim izni verin.</p>
 
       <label>Telefon Markanızı Seçip Ayarı İnceleyin:</label>
       <div style="display:flex; gap:6px; margin:8px 0 12px;">
-        <button type="button" class="btn-primary" onclick="showBrand('samsung')" style="flex:1; font-size:12px; padding:6px;">Samsung</button>
-        <button type="button" class="btn-primary" onclick="showBrand('xiaomi')" style="flex:1; font-size:12px; padding:6px;">Xiaomi/Redmi</button>
-        <button type="button" class="btn-primary" onclick="showBrand('iphone')" style="flex:1; font-size:12px; padding:6px;">iPhone</button>
+        <button type="button" class="btn-secondary" onclick="showBrand('samsung')" style="flex:1; font-size:12px; padding:6px;">Samsung</button>
+        <button type="button" class="btn-secondary" onclick="showBrand('xiaomi')" style="flex:1; font-size:12px; padding:6px;">Xiaomi/Redmi</button>
+        <button type="button" class="btn-secondary" onclick="showBrand('iphone')" style="flex:1; font-size:12px; padding:6px;">iPhone</button>
       </div>
 
       <div id="brand-samsung" class="brand-guide guide-box">
@@ -661,14 +590,14 @@
         3. <i>Ayarlar > Bildirimler > Müdürlük Duyuru</i> altından Sesler'i açın.
       </div>
 
-      <button class="btn-primary" id="btnGrantPush" style="width:100%; padding:12px; font-size:15px; background:var(--amber);">
+      <button class="btn-primary" id="btnGrantPush" style="width:100%; padding:12px; font-size:15px;">
         🔔 Bildirimlere Şimdi İzin Ver
       </button>
 
-      <div id="permFailedNotice" style="display:none; margin-top:14px; background:#FBEFE0; border:1.5px solid var(--amber); border-radius:12px; padding:12px 14px;">
-        <div style="font-size:13px; font-weight:700; margin-bottom:4px;">⚠️ Otomatik izin penceresi açılmadı</div>
-        <div style="font-size:12.5px; color:#555; margin-bottom:10px;">Ayarlar &gt; Uygulamalar &gt; Amasya CSB Acil Duyuru &gt; Bildirimler'e girip elle açabilirsiniz.</div>
-        <button type="button" class="btn-primary" onclick="tryOpenAndroidNotifSettings()" style="width:100%; font-size:12.5px; padding:8px; margin-bottom:8px;">⚙️ Ayarları Açmayı Tekrar Dene</button>
+      <div id="permFailedNotice" style="display:none; margin-top:14px; background:#FEF3C7; border:1.5px solid var(--amber); border-radius:14px; padding:12px 14px;">
+        <div style="font-size:13px; font-weight:700; color:#92400E; margin-bottom:4px;">⚠️ Otomatik izin penceresi açılmadı</div>
+        <div style="font-size:12.5px; color:#78350F; margin-bottom:10px;">Ayarlar &gt; Uygulamalar &gt; Amasya CSB Acil Duyuru &gt; Bildirimler'e girip elle açabilirsiniz.</div>
+        <button type="button" class="btn-secondary" onclick="tryOpenAndroidNotifSettings()" style="width:100%; font-size:12.5px; padding:8px; margin-bottom:8px;">⚙️ Ayarları Açmayı Tekrar Dene</button>
         <button type="button" class="btn-success" id="permRetryBtn" style="width:100%; font-size:12.5px; padding:8px;">✓ Ayardan Açtım, Devam Et</button>
       </div>
     </div>
@@ -677,7 +606,7 @@
     <div class="wizard-step" id="step4">
       <div style="font-size:36px; text-align:center; margin-bottom:8px;">🧪</div>
       <h2 style="text-align:center; margin:0 0 8px;">Adım 4: Sesi ve Bildirimi Test Et</h2>
-      <p style="font-size:13px; color:#555; text-align:center;">Kurulum tamamlandı! Sesi ve kilit ekranı davranışını test edin.</p>
+      <p style="font-size:13px; color:#64748B; text-align:center;">Kurulum tamamlandı! Sesi ve kilit ekranı davranışını test edin.</p>
 
       <button class="btn-success" id="wizTestSound" style="width:100%; margin-bottom:10px; padding:10px;">
         🔊 Sesi Test Et (3 Defa Çalar)
@@ -695,19 +624,19 @@
 </div>
 
 <div class="wrap">
-  <!-- SABİT BAŞLIK (STICKY HEADER) -->
+  <!-- SABİT BAŞLIK (BANKA MOBİL STİLİ) -->
   <header>
     <div style="display:flex; align-items:center; gap:10px;">
       <img src="/icon-192.png" alt="" class="sway-logo" style="width:34px; height:34px; border-radius:50%;">
       <h1>Duyurular</h1>
     </div>
     <div style="display:flex; align-items:center; gap:10px;">
-      <select id="themeSelect" style="background:transparent; color:var(--body-text); border:1px solid var(--line); border-radius:20px; font-size:11px; padding:4px 8px;">
-        <option value="klasik">🎨 Varsayılan</option>
-        <option value="beyaz">⚪ Beyaz</option>
-        <option value="lacivert">🔵 Lacivert</option>
-        <option value="zeytin">🟢 Zeytin</option>
-        <option value="bordo">🔴 Bordo</option>
+      <select id="themeSelect" style="background:rgba(255,255,255,0.2); color:#FFFFFF; border:1px solid rgba(255,255,255,0.3); border-radius:20px; font-size:11px; padding:4px 8px; font-weight:600;">
+        <option value="kurumsal" style="color:#000;">🔵 Mobil Banka</option>
+        <option value="klasik" style="color:#000;">🎨 Koyu Tema</option>
+        <option value="lacivert" style="color:#000;">🔷 Lacivert</option>
+        <option value="zeytin" style="color:#000;">🟢 Zeytin</option>
+        <option value="bordo" style="color:#000;">🔴 Bordo</option>
       </select>
       <span class="pin-count" id="subCount">— abone</span>
     </div>
@@ -729,8 +658,8 @@
 
   <!-- TAB 1: DUYURULAR -->
   <div class="tab-panel active" id="panel-duyurular">
-    <div id="upcomingBox" style="display:none; background:rgba(255,255,255,0.06); border-radius:16px; padding:14px 16px; margin-bottom:16px; border:1px solid var(--line);">
-      <div style="font-family:'Fraunces',serif; font-weight:700; font-size:14px; color:var(--body-text); margin-bottom:8px;">📅 Yaklaşanlar</div>
+    <div id="upcomingBox" style="display:none; background:#FFFFFF; border-radius:20px; padding:16px 18px; margin-bottom:16px; border:1px solid var(--line); box-shadow:0 8px 24px var(--paper-shadow);">
+      <div style="font-family:'Inter',sans-serif; font-weight:800; font-size:14px; color:var(--card-text); margin-bottom:8px;">📅 Yaklaşanlar</div>
       <div id="upcomingList"></div>
     </div>
     <div class="manset-wrap" id="duyuruManset" style="display:none;"></div>
@@ -779,7 +708,7 @@
         <!-- Adım 1: Kayıt formu -->
         <div id="mealsStepRegister">
           <div class="sub">Kendi yemekhane geçmişini ve borcunu görebilmek için kişisel e-postanla kayıt ol.</div>
-          <div style="background:#eff6ff; border:1px solid #dbeafe; border-radius:12px; padding:10px 12px; font-size:12px; color:#1e40af; margin-bottom:14px;">
+          <div style="background:#EFF6FF; border:1px solid #BFDBFE; border-radius:14px; padding:12px 14px; font-size:12px; color:#1E40AF; margin-bottom:14px;">
             ℹ️ Yalnızca kişisel <b>Gmail</b> veya <b>Hotmail</b> adresiyle kayıt olabilirsin. Kurumsal e-postalar kabul edilmiyor.
           </div>
           <label>Adın Soyadın</label>
@@ -792,8 +721,8 @@
           <input type="password" id="mealsRegPass" placeholder="En az 6 karakter">
           <div class="send-row"><button class="btn-primary" id="mealsRegisterBtn" style="width:100%;">Kayıt Ol ve Kod Gönder</button></div>
           <div class="feedback-msg" id="mealsRegFeedback"></div>
-          <div style="text-align:center; margin-top:14px; font-size:12.5px; color:#777;">
-            Zaten hesabın var mı? <a href="#" id="mealsGoLoginLink" style="color:var(--clay); font-weight:600;">Giriş yap</a>
+          <div style="text-align:center; margin-top:14px; font-size:12.5px; color:#64748B;">
+            Zaten hesabın var mı? <a href="#" id="mealsGoLoginLink" style="color:var(--primary-blue); font-weight:700;">Giriş yap</a>
           </div>
         </div>
 
@@ -803,7 +732,7 @@
           <input type="text" id="mealsVerifyCode" maxlength="6" inputmode="numeric" placeholder="000000"
             style="text-align:center; font-size:1.6rem; letter-spacing:8px; font-weight:800; padding:16px;">
           <div class="send-row"><button class="btn-primary" id="mealsVerifyBtn" style="width:100%;">Doğrula</button></div>
-          <button type="button" id="mealsResendBtn" style="width:100%; background:none; color:#777; font-weight:600; font-size:12.5px; margin-top:8px;">Kodu Tekrar Gönder</button>
+          <button type="button" id="mealsResendBtn" style="width:100%; background:none; color:#64748B; font-weight:600; font-size:12.5px; margin-top:8px;">Kodu Tekrar Gönder</button>
           <div class="feedback-msg" id="mealsVerifyFeedback"></div>
         </div>
 
@@ -816,8 +745,8 @@
           <input type="password" id="mealsLoginPass" placeholder="Şifren">
           <div class="send-row"><button class="btn-primary" id="mealsLoginBtn" style="width:100%;">Giriş Yap</button></div>
           <div class="feedback-msg" id="mealsLoginFeedback"></div>
-          <div style="text-align:center; margin-top:14px; font-size:12.5px; color:#777;">
-            Hesabın yok mu? <a href="#" id="mealsGoRegisterLink" style="color:var(--clay); font-weight:600;">Kayıt ol</a>
+          <div style="text-align:center; margin-top:14px; font-size:12.5px; color:#64748B;">
+            Hesabın yok mu? <a href="#" id="mealsGoRegisterLink" style="color:var(--primary-blue); font-weight:700;">Kayıt ol</a>
           </div>
         </div>
 
@@ -825,11 +754,11 @@
         <div id="mealsStepRecords" style="display:none;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
             <div class="sub" style="margin:0;" id="mealsRecordsWho"></div>
-            <button type="button" id="mealsLogoutBtn" style="background:none; border:1px solid #ccc; color:#888; font-size:11px; padding:5px 12px; border-radius:20px;">Çıkış</button>
+            <button type="button" id="mealsLogoutBtn" style="background:none; border:1px solid #CBD5E1; color:#64748B; font-size:11px; padding:5px 12px; border-radius:20px;">Çıkış</button>
           </div>
-          <div id="mealsDebtBox" style="background:var(--ink); color:var(--paper); border-radius:14px; padding:16px; text-align:center; margin-bottom:14px; border:1px solid var(--line);">
-            <div style="font-size:11px; opacity:0.7; text-transform:uppercase; letter-spacing:0.05em;">Toplam Borç</div>
-            <div style="font-family:'Fraunces',serif; font-size:1.8rem; font-weight:700;" id="mealsDebtAmount">—</div>
+          <div id="mealsDebtBox" style="background:linear-gradient(135deg, var(--header-blue), var(--cyan-accent)); color:#FFFFFF; border-radius:18px; padding:18px; text-align:center; margin-bottom:14px; box-shadow:0 8px 20px rgba(0, 90, 167, 0.25);">
+            <div style="font-size:11px; opacity:0.85; text-transform:uppercase; letter-spacing:0.05em; font-weight:700;">Toplam Borç</div>
+            <div style="font-family:'Inter',sans-serif; font-size:2rem; font-weight:800; margin-top:2px;" id="mealsDebtAmount">—</div>
           </div>
           <div id="mealsRecordsList" class="list-empty">Yükleniyor...</div>
         </div>
@@ -897,7 +826,7 @@
   <div class="toast-overlay" id="calDayOverlay">
     <div class="toast-box" style="max-width:420px; text-align:left;">
       <div class="ttitle" id="calDayTitle" style="text-align:center;"></div>
-      <div id="calDayHolidayBanner" style="display:none; background:#FDECEA; color:#B03030; font-size:12.5px; font-weight:700; padding:8px 12px; border-radius:10px; margin-bottom:10px; text-align:center;"></div>
+      <div id="calDayHolidayBanner" style="display:none; background:#FEE2E2; color:#991B1B; font-size:12.5px; font-weight:700; padding:8px 12px; border-radius:12px; margin-bottom:10px; text-align:center;"></div>
       <div id="calDayNotesList" style="margin:14px 0; max-height:280px; overflow-y:auto;"></div>
       <button class="btn-danger" id="calDayCloseBtn" style="width:100%; margin-top:10px;">Kapat</button>
     </div>
@@ -927,7 +856,7 @@
 
     <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
       <img id="profileAvatarPreview" src="" alt="" style="width:64px; height:64px; border-radius:50%; object-fit:cover; background:#eee; display:none; border:2px solid var(--line);">
-      <div id="profileAvatarPlaceholder" style="width:64px; height:64px; border-radius:50%; background:#eee; display:flex; align-items:center; justify-content:center; font-size:26px; color:#aaa;">👤</div>
+      <div id="profileAvatarPlaceholder" style="width:64px; height:64px; border-radius:50%; background:#E2E8F0; display:flex; align-items:center; justify-content:center; font-size:26px; color:#94A3B8;">👤</div>
       <div>
         <input type="file" id="profileAvatarInput" accept="image/png,image/jpeg,image/webp" style="display:none;">
         <button type="button" class="btn-primary" id="profileAvatarBtn" style="font-size:12px; padding:7px 14px;">Fotoğraf Yükle</button>
@@ -979,7 +908,7 @@
     <div class="card-header"><h2>🗨️ Sohbet</h2><button class="card-close" data-close="chatModal" aria-label="Kapat">✕</button></div>
 
     <div id="chatLockedNotice" style="display:none;">
-      <div class="sub" style="color:#b23b3b;">Sohbete katılmak için önce adınızı ve telefon numaranızı kaydetmeniz gerekiyor.</div>
+      <div class="sub" style="color:#DC2626;">Sohbete katılmak için önce adınızı ve telefon numaranızı kaydetmeniz gerekiyor.</div>
       <button class="btn-primary" id="chatGoProfileBtn" style="width:100%;">👤 Profilime Git</button>
     </div>
 
@@ -1000,8 +929,8 @@
       <div id="chatPanelDirect" class="chat-panel" style="display:none;">
         <div id="chatContactList" class="list-empty">Yükleniyor...</div>
         <div id="chatDirectConversation" style="display:none;" class="chat-panel">
-          <button type="button" id="chatBackToContacts" style="background:none;border:none;color:var(--clay);font-size:12px;cursor:pointer;padding:0 0 8px;">← Kişi Listesine Dön</button>
-          <div id="chatDirectTitle" style="font-weight:700;font-size:14px;margin-bottom:8px;"></div>
+          <button type="button" id="chatBackToContacts" style="background:none;border:none;color:var(--primary-blue);font-size:12px;font-weight:700;cursor:pointer;padding:0 0 8px;">← Kişi Listesine Dön</button>
+          <div id="chatDirectTitle" style="font-weight:800;font-size:14px;margin-bottom:8px;"></div>
           <div id="chatDirectMessages" class="chat-box"></div>
           <div class="chat-input-row">
             <input type="text" id="chatDirectInput" placeholder="Mesajınızı yazın..." maxlength="1000">
@@ -1089,7 +1018,7 @@
   </div>
 </div>
 
-<!-- OVAL & BUZLU CAM GEZİNTİ ÇUBUĞU (BOTTOM NAV) -->
+<!-- BANKA STİLİ ALT GEZİNTİ ÇUBUĞU -->
 <footer class="site-footer">
   <a href="#" id="profileLink">👤 Profilim</a>
   <span class="fdot">·</span>
@@ -1097,7 +1026,7 @@
   <span class="fdot">·</span>
   <a href="#" id="chatLink">🗨️ Sohbet</a>
   <span class="fdot">·</span>
-  <a href="/admin/" id="adminSecretBtn" title="" style="color:var(--line); text-decoration:none; padding:0 4px; font-size:14px;">•</a>
+  <a href="/admin/" id="adminSecretBtn" title="" style="color:#CBD5E1; text-decoration:none; padding:0 4px; font-size:14px;">•</a>
 </footer>
 
 <script>
@@ -1144,12 +1073,12 @@ window.addEventListener('load', () => {
 });
 
 const themeSelect = document.getElementById('themeSelect');
-const savedTheme = localStorage.getItem('theme') || 'klasik';
-if (savedTheme !== 'klasik') document.body.setAttribute('data-theme', savedTheme);
+const savedTheme = localStorage.getItem('theme') || 'kurumsal';
+if (savedTheme !== 'kurumsal') document.body.setAttribute('data-theme', savedTheme);
 themeSelect.value = savedTheme;
 themeSelect.addEventListener('change', () => {
   const val = themeSelect.value;
-  if (val === 'klasik') document.body.removeAttribute('data-theme');
+  if (val === 'kurumsal') document.body.removeAttribute('data-theme');
   else document.body.setAttribute('data-theme', val);
   localStorage.setItem('theme', val);
 });
@@ -1424,16 +1353,16 @@ function getHolidayName(dateKey) {
 }
 
 const CAL_CATEGORIES = {
-  genel: { label: 'Genel', color: '#7A2331' },
-  toplanti: { label: 'Toplantı', color: '#6B8F71' },
-  hatirlatma: { label: 'Hatırlatma', color: '#E0972C' },
-  etkinlik: { label: 'Etkinlik', color: '#C9A24B' },
+  genel: { label: 'Genel', color: '#0066B2' },
+  toplanti: { label: 'Toplantı', color: '#10B981' },
+  hatirlatma: { label: 'Hatırlatma', color: '#F36F21' },
+  etkinlik: { label: 'Etkinlik', color: '#F59E0B' },
 };
 
 function renderAttachment(att) {
   if (!att) return '';
   if (att.type === 'image') return `<a href="${att.url}" target="_blank"><img src="${att.url}" style="max-width:100%;border-radius:12px;margin-top:8px;display:block;"></a>`;
-  return `<a href="${att.url}" target="_blank" style="display:inline-block;margin-top:8px;font-size:12px;color:var(--clay);font-weight:600;">📄 ${esc(att.name || 'Dosyayı Aç')}</a>`;
+  return `<a href="${att.url}" target="_blank" style="display:inline-block;margin-top:8px;font-size:12px;color:var(--primary-blue);font-weight:700;">📄 ${esc(att.name || 'Dosyayı Aç')}</a>`;
 }
 
 let activeAdminPassword = '';
@@ -1519,11 +1448,11 @@ let mansetTimer = null;
 
 function mansetColors(cat) {
   const map = {
-    acil: ['#E0972C', '#B5674A'],
-    yemek: ['#6B8F71', '#3E5C43'],
-    vefat: ['#4A4A52', '#1F2430'],
-    dogum: ['#C9A24B', '#8A6D2F'],
-    genel: ['#7A2331', '#5A1622'],
+    acil: ['#FF7A29', '#F36F21'],
+    yemek: ['#10B981', '#047857'],
+    vefat: ['#475569', '#1E293B'],
+    dogum: ['#F59E0B', '#B45309'],
+    genel: ['#0066B2', '#003B73'],
   };
   return map[cat] || map.genel;
 }
@@ -1688,16 +1617,16 @@ function renderMenuWeek() {
     const isToday = d.getTime() === today.getTime();
     const item = menuAllItems.find(m => m.date === key);
     const holidayName = getHolidayName(key);
-    html += '<div class="list-item" style="flex-direction:column; align-items:stretch;' + (isToday ? ' border-left-width:6px;' : '') + '">' +
+    html += '<div class="list-item" style="flex-direction:column; align-items:stretch;' + (isToday ? ' border-left-width:6px; border-left-color:var(--amber);' : '') + '">' +
       '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">' +
-        '<span style="font-family:\'Fraunces\',serif; font-weight:700; font-size:14px;">' + TR_DOW_NAMES[i] + ' — ' + d.getDate() + ' ' + TR_MONTHS[d.getMonth()] + (isToday ? ' <span style="color:var(--amber); font-size:11px;">(Bugün)</span>' : '') + '</span>' +
+        '<span style="font-family:\'Inter\',sans-serif; font-weight:800; font-size:14px; color:#0F172A;">' + TR_DOW_NAMES[i] + ' — ' + d.getDate() + ' ' + TR_MONTHS[d.getMonth()] + (isToday ? ' <span style="color:var(--amber); font-size:11px;">(Bugün)</span>' : '') + '</span>' +
       '</div>' +
-      (holidayName ? '<div style="font-size:11.5px; color:var(--clay); margin-bottom:6px;">🎉 ' + esc(holidayName) + ' — yemekhane kapalı olabilir</div>' : '') +
+      (holidayName ? '<div style="font-size:11.5px; color:var(--clay); margin-bottom:6px; font-weight:600;">🎉 ' + esc(holidayName) + ' — yemekhane kapalı olabilir</div>' : '') +
       (item
         ? '<div style="display:grid; grid-template-columns:1fr 1fr; gap:6px 14px;">' +
-            item.dishes.map((dish, idx) => dish ? '<div style="font-size:12.5px; color:var(--card-text);">' + DISH_ICONS[idx] + ' ' + esc(dish) + '</div>' : '').join('') +
+            item.dishes.map((dish, idx) => dish ? '<div style="font-size:12.5px; color:#334155; font-weight:500;">' + DISH_ICONS[idx] + ' ' + esc(dish) + '</div>' : '').join('') +
           '</div>'
-        : '<div style="font-size:12px; color:#999;">Menü henüz girilmedi.</div>') +
+        : '<div style="font-size:12px; color:#94A3B8;">Menü henüz girilmedi.</div>') +
     '</div>';
   }
   cardsEl.innerHTML = html;
@@ -1760,11 +1689,11 @@ async function loadUpcomingBox() {
       const d = new Date(u.date + 'T00:00:00');
       const cat = CAL_CATEGORIES[u.category] || CAL_CATEGORIES.genel;
       const holidayName = getHolidayName(u.date);
-      return '<div style="display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--line); font-size:12.5px; color:var(--body-text);">' +
-        '<span style="font-weight:700; min-width:60px;">' + d.getDate() + ' ' + TR_MONTHS[d.getMonth()].slice(0,3) + '</span>' +
+      return '<div style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--line); font-size:12.5px; color:#334155;">' +
+        '<span style="font-weight:800; color:#0F172A; min-width:60px;">' + d.getDate() + ' ' + TR_MONTHS[d.getMonth()].slice(0,3) + '</span>' +
         '<span class="cal-cat-badge" style="background:' + cat.color + ';">' + cat.label + '</span>' +
         '<span style="opacity:0.9;">' + esc(u.text) + '</span>' +
-        (holidayName ? '<span style="opacity:0.6; font-size:11px;">🎉 ' + esc(holidayName) + '</span>' : '') +
+        (holidayName ? '<span style="color:var(--clay); font-weight:700; font-size:11px;">🎉 ' + esc(holidayName) + '</span>' : '') +
       '</div>';
     }).join('');
     box.style.display = 'block';
@@ -2093,7 +2022,7 @@ function renderChatMessages(container, messages, isMine, scope, editingId) {
       <div class="cb-time">${chatTime(m.time)}${m.editedAt ? ' · düzenlendi' : ''}${readTick}</div>
       ${actions}
     </div>`;
-  }).join('') || '<div style="text-align:center;color:#999;font-size:12px;padding:20px 0;">Henüz mesaj yok. İlk mesajı sen yaz!</div>';
+  }).join('') || '<div style="text-align:center;color:#94A3B8;font-size:12px;padding:20px 0;">Henüz mesaj yok. İlk mesajı sen yaz!</div>';
   if (wasAtBottom || messages.length <= 1) container.scrollTop = container.scrollHeight;
 
   const editEl = editingId && document.getElementById('chatEditInput-' + scope + '-' + editingId);
@@ -2135,6 +2064,7 @@ async function deleteOwnChatMsg(scope, id) {
     const res = await fetch(url, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId() }) });
     if (!res.ok) { const d = await res.json(); alert(d.error || 'Silinemedi'); return; }
   } catch { alert('Silinemedi.'); }
+  if (scope === 'general') chatGeneralEditingId = null; else chatDirectEditingId = null;
   if (scope === 'general') loadGeneralChat(); else loadDirectChat();
 }
 
@@ -2396,7 +2326,7 @@ async function loadAdminStats() {
         <div class="admin-box">
           <div style="font-size:11px;color:#888;">${formatTime(m.time)} · ${catNames[m.category] || 'Genel'}</div>
           <div style="font-size:13px;margin:4px 0;"><b>${esc(m.title)}</b></div>
-          <div style="font-size:12px;color:var(--clay);cursor:pointer;" onclick="showReads('${m.id}')">👁 ${m.readCount} kişi okudu — detay için tıklayın</div>
+          <div style="font-size:12px;color:var(--primary-blue);cursor:pointer;" onclick="showReads('${m.id}')">👁 ${m.readCount} kişi okudu — detay için tıklayın</div>
         </div>
       `).join('');
     }
@@ -2684,7 +2614,7 @@ async function mealsLoadRecords() {
       const tarih = new Date(k.tarih + 'T00:00:00').toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
       const durumRenk = k.odemeDurumu === 'Borçlu' ? 'var(--clay)' : 'var(--sage)';
       return `<div class="list-item"><div class="li-main">
-          <div class="li-top"><span class="li-time">${tarih}</span><span style="font-size:10px;font-weight:700;color:${durumRenk};">${esc(k.odemeDurumu || '')}</span></div>
+          <div class="li-top"><span class="li-time">${tarih}</span><span style="font-size:10px;font-weight:800;color:${durumRenk};">${esc(k.odemeDurumu || '')}</span></div>
           <div class="li-title">${esc(k.yemek || 'Menü bilgisi yok')}</div>
           <div class="li-body">Kendi: ${k.kendi} ${k.misafir ? '· Misafir: ' + k.misafir : ''} · Tutar: ${(k.tutar || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</div>
         </div></div>`;
