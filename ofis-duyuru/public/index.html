@@ -2,2622 +2,315 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Müdürlük Duyuru Sistemi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Müdürlük Duyuru Sistemi V2</title>
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#1F2430">
+<meta name="theme-color" content="#ffffff">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
   :root {
-    --ink: #1F2430;
-    --paper: #F7F5F0;
-    --paper-shadow: rgba(0,0,0,0.18);
-    --amber: #E0972C;
-    --sage: #6B8F71;
-    --clay: #B5674A;
-    --gold: #C9A24B;
-    --line: rgba(255,255,255,0.12);
-    --muted: #9AA0AE;
+    --primary: #2563EB; /* Modern Mavi */
+    --primary-light: #EFF6FF;
+    --surface: #FFFFFF;
+    --background: #F8FAFC;
+    --text-main: #0F172A;
+    --text-muted: #64748B;
+    --danger: #EF4444;
+    --success: #10B981;
+    --warning: #F59E0B;
+    --border: #E2E8F0;
+    --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    --radius-lg: 20px;
+    --radius-md: 12px;
   }
 
-  body[data-theme="lacivert"] { --amber: #3E8FD0; --gold: #5AA8E0; --ink: #0F1F33; }
-  body[data-theme="zeytin"] { --amber: #7C9A4A; --gold: #A3C15E; --ink: #1E2A1C; }
-  body[data-theme="bordo"] { --amber: #B5384A; --gold: #D46B7A; --ink: #2A1418; }
-
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
   body {
-    margin: 0; font-family: 'Inter', sans-serif; background: var(--ink);
-    background-image:
-      radial-gradient(circle at 20% 10%, rgba(224,151,44,0.06), transparent 40%),
-      radial-gradient(circle at 80% 80%, rgba(107,143,113,0.06), transparent 40%);
-    color: var(--paper); min-height: 100vh; padding: 32px 16px 90px;
+    margin: 0; 
+    font-family: 'Plus Jakarta Sans', sans-serif; 
+    background-color: var(--background);
+    color: var(--text-main); 
+    height: 100vh; 
+    display: flex; 
+    flex-direction: column;
+    overflow: hidden; /* Scroll sadece main içinde olacak */
   }
 
-  .wrap { max-width: 640px; margin: 0 auto; }
-
+  /* --- ÜST BİLGİ (APP BAR) --- */
   header {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 12px; margin-bottom: 22px; border-bottom: 1px solid var(--line);
-    padding-bottom: 18px; flex-wrap: wrap;
-  }
-  h1 { font-family: 'Fraunces', serif; font-weight: 700; font-size: clamp(20px, 6vw, 26px); margin: 0; }
-  .pin-count { font-size: 12px; color: var(--muted); }
-
-  /* SALLANAN LOGO VE ZİL ANİMASYONU */
-  .sway-logo {
-    display: inline-block;
-    animation: logo-sway 1.8s ease-in-out infinite alternate;
-    transform-origin: center center;
-  }
-  @keyframes logo-sway {
-    0% { transform: rotate(-14deg) scale(0.96); }
-    50% { transform: rotate(0deg) scale(1.08); }
-    100% { transform: rotate(14deg) scale(0.96); }
-  }
-
-  .status-card {
-    background: var(--paper); color: var(--ink); border-radius: 4px; padding: 16px 18px;
-    margin-bottom: 20px; box-shadow: 0 8px 24px var(--paper-shadow); position: relative;
-  }
-  .status-card::before {
-    content: ''; position: absolute; top: -6px; left: 24px; width: 12px; height: 12px;
-    border-radius: 50%; background: var(--clay);
-  }
-
-  .bell-status {
-    display: inline-flex; align-items: center; gap: 6px; background: var(--paper);
-    color: var(--sage); font-size: 12px; font-weight: 600; padding: 6px 12px;
-    border-radius: 20px; margin-bottom: 20px;
-  }
-
-  button {
-    font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px;
-    border: none; border-radius: 4px; padding: 10px 16px; cursor: pointer;
-    transition: transform 0.1s ease, opacity 0.15s ease;
-  }
-  button:active { transform: scale(0.97); }
-  .btn-primary { background: var(--ink); color: var(--paper); }
-  .btn-primary:hover { opacity: 0.85; }
-  .btn-success { background: var(--sage); color: #fff; }
-  .btn-warning { background: var(--amber); color: #fff; }
-  .btn-danger { background: var(--clay); color: #fff; padding: 5px 9px; font-size: 11px; }
-
-  .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--line); }
-  .tab-btn {
-    background: transparent; color: var(--muted); border-radius: 0;
-    padding: 10px 12px; font-size: 13px; font-weight: 600;
-    border-bottom: 2px solid transparent; flex: 1;
-  }
-  .tab-btn.active { color: var(--paper); border-bottom-color: var(--amber); }
-  .card .tab-btn.active { color: var(--ink); border-bottom-color: var(--clay, var(--amber)); }
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
-
-  .card {
-    background: var(--paper); color: var(--ink); border-radius: 4px; padding: 20px;
-    box-shadow: 0 12px 28px var(--paper-shadow); margin-bottom: 18px;
-  }
-  .card h2 { font-family: 'Fraunces', serif; font-size: 17px; margin: 0; }
-  .card .sub { font-size: 12.5px; color: #6b6b6b; margin-bottom: 16px; }
-  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-  .card-close {
-    background: none; border: none; color: #999; font-size: 20px; line-height: 1;
-    cursor: pointer; padding: 2px 8px; border-radius: 4px;
-    transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease;
-  }
-  .card-close:hover { color: var(--ink); background: rgba(0,0,0,0.06); transform: rotate(90deg); }
-
-  .card.anim-open { animation: card-in 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
-  .card.anim-close { animation: card-out 0.2s ease forwards; }
-  @keyframes card-in {
-    from { opacity: 0; transform: translateY(12px) scale(0.97); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-  }
-  @keyframes card-out {
-    from { opacity: 1; transform: translateY(0) scale(1); }
-    to { opacity: 0; transform: translateY(8px) scale(0.97); }
-  }
-
-  /* SOHBET — telefon ekranına göre otomatik boy, input her zaman altta sabit */
-  /* Artık sayfa akışında değil, sağ altta sabit yüzen (floating) bir pencere */
-  #chatModal {
+    background: var(--surface);
+    padding: 16px 20px;
     display: flex;
-    flex-direction: column;
-    position: fixed;
-    right: 18px;
-    bottom: 18px;
-    left: auto;
-    top: auto;
-    width: 380px;
-    max-width: calc(100vw - 24px);
-    max-height: 78vh;
-    border-radius: 22px;
-    box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 4px 14px rgba(0,0,0,0.25);
-    border: 1px solid rgba(0,0,0,0.06);
-    z-index: 1600;
-    margin-bottom: 0;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    z-index: 10;
   }
-  @media (max-width: 560px) {
-    #chatModal {
-      right: 8px; left: 8px; bottom: 8px; width: auto; max-width: none;
-      border-radius: 22px 22px 18px 18px;
-      max-height: 82vh;
-    }
+
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .header-left img { width: 40px; height: 40px; border-radius: 12px; }
+  
+  h1 { 
+    font-weight: 700; 
+    font-size: 18px; 
+    margin: 0; 
+    letter-spacing: -0.5px;
   }
-  #chatModal #chatUnlocked {
-    display: flex;
-    flex-direction: column;
+  
+  .sub-title { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+
+  /* --- ANA İÇERİK ALANI --- */
+  main {
     flex: 1;
-    min-height: 0;
-  }
-  .chat-panel {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-  }
-  .chat-box {
-    flex: 1;
-    min-height: 120px;
-    overflow-y: auto; background: #f5f3ee; border-radius: 8px;
-    padding: 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;
-  }
-  .chat-bubble {
-    max-width: 78%; padding: 8px 12px; border-radius: 14px; font-size: 13px; line-height: 1.4;
-    word-wrap: break-word; position: relative;
-  }
-  .chat-bubble.mine { align-self: flex-end; background: var(--bordo, #7A2331); color: #fff; border-bottom-right-radius: 3px; }
-  .chat-bubble.theirs { align-self: flex-start; background: #fff; color: var(--ink); border: 1px solid #e2ddd2; border-bottom-left-radius: 3px; }
-  .chat-bubble .cb-name { font-size: 10.5px; font-weight: 700; opacity: 0.75; margin-bottom: 2px; }
-  .chat-bubble .cb-time { font-size: 9.5px; opacity: 0.55; margin-top: 3px; text-align: right; }
-  .chat-bubble .cb-tick { opacity: 0.85; }
-  .chat-bubble .cb-tick.read { color: #7ec9ff; opacity: 1; }
-  .chat-bubble .cb-actions {
-    display: flex; gap: 4px; justify-content: flex-end; margin-top: 4px;
-    opacity: 0; transition: opacity 0.15s ease;
-  }
-  .chat-bubble.mine:hover .cb-actions, .chat-bubble.mine:focus-within .cb-actions { opacity: 1; }
-  .cb-action-btn {
-    background: rgba(255,255,255,0.18); border: none; color: inherit; font-size: 11px;
-    padding: 2px 6px; border-radius: 8px; cursor: pointer; line-height: 1.4;
-  }
-  .cb-action-btn:hover { background: rgba(255,255,255,0.32); }
-  .chat-bubble-editing { padding: 6px 8px; }
-  .chat-edit-input {
-    width: 100%; font-size: 13px; padding: 6px 8px; border-radius: 8px; border: none;
-    color: var(--ink); background: #fff;
-  }
-  .cb-edit-actions { display: flex; gap: 4px; justify-content: flex-end; margin-top: 4px; }
-  .chat-input-row { display: flex; gap: 8px; flex-shrink: 0; }
-  .chat-input-row input { flex: 1; }
-  .contact-row {
-    display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-radius: 6px;
-    cursor: pointer; transition: background 0.15s ease;
-  }
-  .contact-row:hover { background: #f5f3ee; }
-  .contact-avatar {
-    width: 36px; height: 36px; border-radius: 50%; background: #ddd; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700;
-    color: #777; object-fit: cover; position: relative;
-  }
-  .contact-online-dot {
-    width: 9px; height: 9px; border-radius: 50%; background: #3E7A4F; border: 2px solid #fff;
-    position: absolute; bottom: -1px; right: -1px;
-  }
-  .contact-name { font-size: 13.5px; font-weight: 600; }
-  .contact-status { font-size: 11px; color: #999; }
-
-  label {
-    display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.05em;
-    text-transform: uppercase; color: #777; margin-bottom: 6px; margin-top: 14px;
+    overflow-y: auto;
+    padding: 20px;
+    padding-bottom: 90px; /* Alt menü boşluğu */
   }
 
-  input[type="text"], input[type="tel"], input[type="password"], textarea, select {
-    width: 100%; font-family: 'Inter', sans-serif; font-size: 14px;
-    padding: 9px 11px; border: 1.5px solid #ddd; border-radius: 3px; background: #fff; color: var(--ink);
-  }
-  textarea { resize: vertical; min-height: 70px; }
-
-  .cat-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-  .cat-btn { background: #fff; border: 1.5px solid #ddd; color: #555; font-size: 12px; padding: 6px 12px; border-radius: 20px; }
-  .cat-btn.active[data-cat="genel"] { background: var(--ink); color: #fff; }
-  .cat-btn.active[data-cat="acil"] { background: var(--amber); color: #fff; }
-  .cat-btn.active[data-cat="yemek"] { background: var(--sage); color: #fff; }
-  .cat-btn.active[data-cat="vefat"] { background: var(--clay); color: #fff; }
-  .cat-btn.active[data-cat="dogum"] { background: var(--gold); color: #fff; }
-
-  .send-row { margin-top: 18px; display: flex; align-items: center; gap: 12px; }
-  .feedback-msg { font-size: 13px; margin-top: 10px; min-height: 18px; }
-  .feedback-msg.ok { color: var(--sage); }
-  .feedback-msg.err { color: var(--clay); }
-
-  /* TOAST BİLDİRİMİ */
-  #toastContainer { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 3000; display: flex; flex-direction: column; gap: 8px; align-items: center; }
-  .toast {
-    background: var(--ink); color: var(--paper); font-size: 13.5px; font-weight: 600;
-    padding: 12px 20px; border-radius: 30px; box-shadow: 0 8px 24px rgba(0,0,0,0.35);
-    display: flex; align-items: center; gap: 8px;
-    animation: toast-in 0.3s cubic-bezier(0.22,1,0.36,1), toast-out 0.3s ease 2.4s forwards;
-  }
-  .toast.ok { background: var(--sage); }
-  .toast.err { background: var(--clay); }
-  @keyframes toast-in { from { opacity: 0; transform: translateY(-14px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
-  @keyframes toast-out { to { opacity: 0; transform: translateY(-10px) scale(0.95); } }
-
-  /* OKUNDU İŞARETLEME */
-  .li-read-btn {
-    display: inline-flex; align-items: center; gap: 4px; background: none; border: 1.5px solid #ccc;
-    color: #888; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; cursor: pointer;
-    transition: all 0.15s ease; flex-shrink: 0;
-  }
-  .li-read-btn:hover { border-color: var(--sage); color: var(--sage); }
-  .li-read-btn.done { background: var(--sage); border-color: var(--sage); color: #fff; cursor: default; }
-
-  .list-section h3 { font-family: 'Fraunces', serif; font-size: 16px; margin: 0 0 12px; color: var(--paper); }
+  /* --- MODERN KARTLAR (DUYURULAR VB.) --- */
   .list-item {
-    background: var(--paper); color: var(--ink); border-radius: 4px;
-    padding: 13px 15px; margin-bottom: 9px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    border-left: 4px solid var(--ink); display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    transition: transform 0.2s, box-shadow 0.2s;
   }
-  .list-item.acil { border-left-color: var(--amber); }
-  .list-item.yemek { border-left-color: var(--sage); }
-  .list-item.vefat { border-left-color: var(--clay); }
-  .list-item.dogum { border-left-color: var(--gold); }
-  .list-item .li-main { flex: 1; min-width: 0; }
-  .list-item .li-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 3px; }
-  .li-toggle {
-    background: rgba(224,151,44,0.12); border: none; color: var(--amber); font-size: 26px; line-height: 1; cursor: pointer;
-    padding: 4px 10px; border-radius: 6px; transition: transform 0.2s ease, background 0.15s ease; flex-shrink: 0;
-    animation: chevron-bounce 1.6s ease-in-out infinite; font-weight: 900;
-  }
-  .li-toggle:hover { background: rgba(224,151,44,0.22); }
-  .li-toggle.open { transform: rotate(180deg); animation: none; }
-  @keyframes chevron-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
-  .attach-wrap { overflow: hidden; max-height: 0; transition: max-height 0.25s ease; }
-  .attach-wrap.open { max-height: 2000px; }
+  .list-item:active { transform: scale(0.98); }
 
-  /* SAYFALAMA */
-  .pagination-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 14px 0; flex-wrap: wrap; }
-  .page-size-select { width: auto; padding: 6px 10px; font-size: 12.5px; }
-  .page-nav { display: flex; align-items: center; gap: 8px; }
-  .page-nav button {
-    background: var(--paper); color: var(--ink); border: none; padding: 6px 12px;
-    border-radius: 20px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+  .li-top { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 10px; 
   }
-  .page-nav button:disabled { opacity: 0.35; cursor: default; }
-  .page-nav .page-info { font-size: 12.5px; color: var(--muted); }
-  .list-item .li-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #888; }
-  .list-item .li-time { font-size: 10.5px; color: #999; }
-  .list-item .li-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 14.5px; margin: 0 0 2px; }
-  .list-item .li-body { font-size: 12.5px; color: #555; line-height: 1.45; margin: 0; }
-  .list-item .li-phone { font-family: 'Fraunces', serif; font-weight: 700; font-size: 16px; color: var(--clay); text-decoration: none; }
-  .list-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 18px; }
+  
+  .li-tag {
+    background: var(--primary-light);
+    color: var(--primary);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  /* Kategori Renkleri */
+  .list-item.acil .li-tag { background: #FEF2F2; color: var(--danger); }
+  .list-item.yemek .li-tag { background: #ECFDF5; color: var(--success); }
 
-  /* MANŞET (öne çıkan duyuru carousel'i) */
-  .manset-wrap { margin-bottom: 18px; }
-  .manset-nav { display: flex; align-items: center; gap: 10px; }
-  .manset-nav-btn {
-    background: rgba(255,255,255,0.08); border: 1px solid var(--line); color: var(--paper);
-    width: 34px; height: 34px; min-width: 34px; border-radius: 50%; font-size: 17px; cursor: pointer;
-    flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: background 0.15s ease;
+  .li-time { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+  
+  .li-title { 
+    font-size: 16px; 
+    font-weight: 700; 
+    margin-bottom: 6px; 
+    line-height: 1.3;
   }
-  .manset-nav-btn:hover { background: rgba(255,255,255,0.16); }
-  .manset-card {
-    flex: 1; position: relative; border-radius: 14px; overflow: hidden; padding: 26px 24px;
-    min-height: 150px; display: flex; flex-direction: column; justify-content: center;
-    color: #fff; cursor: pointer; box-shadow: 0 14px 32px rgba(0,0,0,0.35);
-    background: linear-gradient(135deg, var(--manset-c1, var(--ink)), var(--manset-c2, #000));
-    transition: transform 0.15s ease;
-    animation: manset-fade-in 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  
+  .li-body { 
+    font-size: 14px; 
+    color: var(--text-muted); 
+    line-height: 1.5; 
   }
-  .manset-card::after {
-    content: ''; position: absolute; inset: 0; pointer-events: none;
-    background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.16) 45%, transparent 60%);
-    background-size: 220% 100%; background-position: 130% 0;
-    animation: manset-sheen 2.6s ease-out 0.15s 1;
-  }
-  @keyframes manset-fade-in {
-    from { opacity: 0; transform: translateY(10px) scale(0.97); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-  }
-  @keyframes manset-sheen {
-    from { background-position: 130% 0; }
-    to { background-position: -30% 0; }
-  }
-  .manset-card:hover { transform: translateY(-2px); }
-  .manset-tag {
-    display: inline-block; background: rgba(255,255,255,0.2); font-size: 10.5px; font-weight: 700;
-    letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 11px; border-radius: 20px;
-    margin-bottom: 12px; width: fit-content;
-  }
-  .manset-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 20px; margin: 0 0 8px; line-height: 1.25; }
-  .manset-date { font-size: 12px; opacity: 0.82; }
-  .manset-dots { display: flex; gap: 6px; justify-content: center; margin-top: 12px; }
-  .manset-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.28); cursor: pointer; border: none; padding: 0; transition: background 0.2s ease, transform 0.2s ease; }
-  .manset-dot.active { background: var(--paper); transform: scale(1.35); }
-  .li-detay-link { font-size: 11.5px; color: var(--clay); font-weight: 600; cursor: pointer; margin-top: 6px; display: inline-block; }
 
-  /* DUYURU DETAY POPUP */
-  #duyuruDetayOverlay .toast-box { max-width: 440px; text-align: left; position: relative; }
-  .dd-close { position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 18px; color: #999; cursor: pointer; line-height: 1; }
-  .dd-close:hover { color: var(--ink); }
-  .dd-tag { display: inline-block; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #fff; padding: 3px 10px; border-radius: 20px; margin-bottom: 10px; }
-  .dd-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 19px; margin: 0 0 6px; color: var(--ink); }
-  .dd-meta { font-size: 11.5px; color: #999; margin-bottom: 14px; }
-  .dd-body { font-size: 14px; line-height: 1.6; color: #333; margin-bottom: 8px; white-space: pre-wrap; }
-  .dd-read-info { font-size: 12px; color: #888; margin: 12px 0 4px; }
-  .dd-actions { display: flex; gap: 8px; margin-top: 16px; }
-  .dd-actions button { flex: 1; }
-  .btn-share { background: var(--sage); color: #fff; }
-  .btn-share:hover { opacity: 0.85; }
-
-  #splash {
-    position: fixed; inset: 0; background: var(--ink); display: flex;
-    align-items: center; justify-content: center; z-index: 999; transition: opacity 0.6s ease;
+  /* --- BUTONLAR --- */
+  button {
+    font-family: inherit;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
   }
-  #splash img { width: 110px; height: 110px; animation: splash-blink 1.4s ease-in-out infinite; border-radius: 50%; }
-  @keyframes splash-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
-  #splash.hide { opacity: 0; pointer-events: none; }
-
-  #notifBanner {
-    display: none; max-width: 640px; margin: 0 auto 20px; padding: 20px 22px;
-    border-radius: 4px; font-family: 'Inter', sans-serif; color: #fff;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+    padding: 12px 20px;
+    font-size: 14px;
+    width: 100%;
   }
-  #notifBanner.show { display: block; }
-  #notifBanner .tag { display: block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; margin-bottom: 8px; }
-  #notifBanner .btitle { font-family: 'Fraunces', serif; font-size: 24px; line-height: 1.2; font-weight: 700; margin: 0 0 8px; }
-  #notifBanner .bbody { font-size: 14px; line-height: 1.5; margin: 0; opacity: 0.95; }
-  #notifBanner.acil { background: linear-gradient(135deg, #E0972C, #B5674A); }
+  .btn-primary:active { background: #1D4ED8; transform: scale(0.98); }
 
-  .site-footer {
-    position: fixed; left: 0; right: 0; bottom: 0; background: var(--ink);
-    border-top: 1px solid var(--line); text-align: center; padding: 10px 12px;
-    font-size: 11.5px; z-index: 50;
+  /* --- SABİT ALT MENÜ (BOTTOM NAVIGATION) --- */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 10px 24px 10px; /* iPhone çentiği için alt boşluk */
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.04);
+    z-index: 100;
+    border-top: 1px solid var(--border);
   }
-  .site-footer a { color: var(--muted); text-decoration: none; }
-  .site-footer a:hover { color: var(--paper); }
-  .site-footer .fdot { color: var(--line); margin: 0 6px; }
 
-  /* ONBOARDING WIZARD STYLES */
-  .wizard-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 1000;
-    display: flex; align-items: center; justify-content: center; padding: 16px;
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-muted);
+    background: none;
+    font-size: 11px;
+    font-weight: 600;
+    flex: 1;
+    padding: 8px 0;
   }
-  .wizard-card {
-    background: var(--paper); color: var(--ink); max-width: 500px; width: 100%;
-    border-radius: 6px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border: 2px solid var(--amber);
-  }
-  .wizard-step { display: none; }
-  .wizard-step.active { display: block; }
-  .step-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
-  .dot { width: 10px; height: 10px; border-radius: 50%; background: #ccc; }
-  .dot.active { background: var(--amber); width: 24px; border-radius: 10px; }
-  .guide-box { background: #FAF5E9; border: 1px solid #E6D7B8; padding: 12px; border-radius: 4px; font-size: 12.5px; color: #555; margin: 12px 0; text-align: left; line-height: 1.5; }
 
-  /* TAKVİM */
-  .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-  .cal-nav button { background: var(--paper); color: var(--ink); padding: 8px 14px; font-size: 13px; font-weight: 600; }
-  .cal-nav .cal-title { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 700; color: var(--paper); }
-  .cal-view-toggle { display: flex; gap: 6px; margin-bottom: 16px; }
-  .cal-view-toggle button { background: rgba(255,255,255,0.12); color: var(--paper); padding: 7px 16px; font-size: 12.5px; border-radius: 20px; font-weight: 600; }
-  .cal-view-toggle button.active { background: var(--amber); color: var(--ink); }
-  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-  .cal-dow { text-align: center; font-size: 11px; font-weight: 700; color: var(--paper); opacity: 0.6; padding: 4px 0; letter-spacing: 0.05em; text-transform: uppercase; }
-  .cal-day {
-    aspect-ratio: 1; border-radius: 8px; padding: 6px; cursor: pointer; position: relative;
-    background: var(--paper); color: var(--ink); box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-    display: flex; align-items: flex-start; justify-content: flex-start;
-  }
-  .cal-day:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,0.25); }
-  .cal-day.empty { background: transparent; box-shadow: none; cursor: default; }
-  .cal-day.empty:hover { transform: none; }
-  .cal-day.today { outline: 2.5px solid var(--amber); outline-offset: 1px; }
-  .cal-day.weekend { background: #EFE7D6; }
-  .cal-day.holiday { background: #FDECEA; }
-  .cal-day.note-holiday { border: 2px solid #B03030; }
-  .cal-day .cd-num { font-family: 'Fraunces', serif; font-weight: 700; font-size: 15px; }
-  .cal-day .cd-dot { position: absolute; bottom: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 0 2px var(--paper); }
-  .cal-day .cd-holiday-dot { position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: #D93838; box-shadow: 0 0 0 2px var(--paper); animation: cd-blink 2.2s ease-in-out infinite; }
-  @keyframes cd-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
-  .cal-cat-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: #fff; }
-  .cal-year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-  .cal-mini-month { background: var(--paper); border-radius: 8px; padding: 12px; cursor: pointer; color: var(--ink); box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: transform 0.15s ease; }
-  .cal-mini-month:hover { transform: translateY(-2px); }
-  .cal-mini-month .cmm-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
-  .cal-mini-month .cmm-count { font-size: 11px; color: var(--clay); font-weight: 600; }
-  .cal-search-box { display: flex; gap: 8px; margin-bottom: 16px; }
-  .cal-search-box input { flex: 1; }
-  .toast-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
-  .toast-overlay.show { display: flex; }
-  .toast-box { background: var(--paper); color: var(--ink); border-radius: 8px; padding: 26px 24px; max-width: 360px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
-  .toast-box .ttitle { font-family: 'Fraunces', serif; font-weight: 700; font-size: 17px; margin-bottom: 8px; }
+  .nav-item.active { color: var(--primary); }
+  .nav-item .icon { font-size: 22px; margin-bottom: 2px; transition: transform 0.2s; }
+  .nav-item.active .icon { transform: translateY(-2px); }
 
-  /* İŞLER içindeki alt sekme (İşler / Takvim) */
-  .isler-subtabs { display: flex; gap: 6px; margin-bottom: 18px; }
-  .isler-subtabs button { background: rgba(255,255,255,0.08); color: var(--paper); padding: 8px 18px; font-size: 13px; font-weight: 600; border-radius: 20px; }
-  .isler-subtabs button.active { background: var(--amber); color: var(--ink); }
+  /* --- YÜZEN SOHBET BUTONU (FAB) --- */
+  .fab-chat {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    background: var(--primary);
+    color: white;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
+    z-index: 90;
+    transition: transform 0.2s;
+  }
+  .fab-chat:active { transform: scale(0.9); }
+
+  /* TAB PANELLERİ */
+  .tab-panel { display: none; animation: fadeIn 0.3s ease; }
+  .tab-panel.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
 </style>
 </head>
 <body>
-<div id="toastContainer"></div>
 
-<div id="splash"><img src="/icon-192.png" alt="Amasya İl Müdürlüğü" class="sway-logo"></div>
-<div id="notifBanner"></div>
-
-<!-- ADIM ADIM KURULUM VE GÖRSEL MARKA AYAR SİHİRBAZI -->
-<!-- KVKK AYDINLATMA METNİ MODALI -->
-<div id="kvkkModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:2000; align-items:center; justify-content:center; padding:16px;">
-  <div style="background:var(--paper); color:var(--ink); max-width:520px; width:100%; max-height:85vh; overflow-y:auto; border-radius:8px; padding:24px;">
-    <h2 style="font-family:'Fraunces',serif; font-size:18px; margin:0 0 14px;">KVKK Aydınlatma Metni</h2>
-    <div style="font-size:13px; line-height:1.7; color:#333;">
-      <p><b>Veri Sorumlusu:</b> Amasya Çevre, Şehircilik ve İklim Değişikliği İl Müdürlüğü.</p>
-      <p><b>İşlenen Kişisel Veriler:</b> Ad-soyad, telefon numarası, e-posta adresi, kan grubu, profil fotoğrafı, cihaz kimliği, uygulama içi sohbet mesajları ve bildirim okuma zaman bilgisi.</p>
-      <p><b>İşleme Amacı:</b> Bu veriler yalnızca kurum içi acil duyuru, bilgilendirme, iç iletişim (sohbet) ve acil durumlarda (kan grubu bilgisi gibi) personele hızlı ulaşım amacıyla işlenir. Herhangi bir ticari amaçla kullanılmaz, üçüncü taraflarla paylaşılmaz.</p>
-      <p><b>Hukuki Sebep:</b> 6698 sayılı Kişisel Verilerin Korunması Kanunu'nun 5. maddesi kapsamında açık rızanız ve kurumun meşru menfaati.</p>
-      <p><b>Saklama Süresi:</b> Verileriniz, uygulamayı kullandığınız süre boyunca ve kurumsal gereklilikler doğrultusunda saklanır; talebiniz halinde silinir.</p>
-      <p><b>Haklarınız:</b> KVKK'nın 11. maddesi uyarınca kişisel verilerinizin işlenip işlenmediğini öğrenme, işlenmişse bilgi talep etme, düzeltilmesini veya silinmesini isteme haklarına sahipsiniz. Bu haklarınızı kullanmak için kurum Bilgi İşlem Sorumlusu ile iletişime geçebilirsiniz.</p>
-    </div>
-    <button type="button" class="btn-primary" id="kvkkCloseBtn" style="width:100%; margin-top:16px;">Kapat</button>
-  </div>
-</div>
-
-<div class="wizard-overlay" id="wizardModal" style="display:none;">
-  <div class="wizard-card">
-    <div class="step-dots">
-      <div class="dot active" id="dot1"></div>
-      <div class="dot" id="dot2"></div>
-      <div class="dot" id="dot3"></div>
-      <div class="dot" id="dot4"></div>
-    </div>
-
-    <!-- ADIM 1: UYGULAMA İNDİR (tarayıcı) / KURULUM ÖZETİ (APK) -->
-    <div class="wizard-step active" id="step1">
-
-      <!-- Tarayıcıdan (PWA) açılıyorsa: indirme rehberi -->
-      <div id="step1-download">
-        <div style="font-size:36px; text-align:center; margin-bottom:8px;">📱</div>
-        <h2 style="text-align:center; margin:0 0 8px;">Adım 1: Uygulamayı İndir</h2>
-        <p style="font-size:13px; color:#555; text-align:center;">Duyuruların cebinize anında düşmesi için uygulamayı telefonunuza ekleyin.</p>
-
-        <div id="pwaInstallContainer" style="display:none; text-align:center; margin:16px 0;">
-          <button class="btn-primary" id="btnPwaInstall" style="width:100%; padding:12px; font-size:15px; background:var(--sage);">
-            📥 Uygulamayı Telefona Yükle
-          </button>
-        </div>
-
-        <div class="guide-box" id="iosPwaNotice" style="display:none;">
-          <b>iPhone (Safari) Kullanıcıları:</b><br>
-          1. Alt menüdeki <b>Paylaş (⬆️)</b> simgesine dokunun.<br>
-          2. Açılan listeden <b>"Ana Ekrana Ekle"</b> seçeneğini seçin.<br>
-          3. Ardından uygulamayı ana ekrandan açın.
-        </div>
-      </div>
-
-      <!-- Kurulu APK içinden açılıyorsa: kurulum sırasında görülen uyarıların özeti -->
-      <div id="step1-installed" style="display:none;">
-        <div style="font-size:36px; text-align:center; margin-bottom:8px;">✅</div>
-        <h2 style="text-align:center; margin:0 0 8px;">Kurulumu Başarıyla Tamamladınız</h2>
-        <p style="font-size:13px; color:#555; text-align:center; margin-bottom:14px;">Kurulum sırasında karşınıza çıkan uyarıları merak ettiyseniz — hepsi normal, işte kısaca nedenleri:</p>
-
-        <div class="guide-box" style="margin-bottom:10px;">
-          <b>🛡️ "Bilinmeyen uygulama engellendi"</b><br>
-          Play Store dışından gelen tüm dosyalar için Android'in standart uyarısıdır — WhatsApp'tan gelen her belgede de aynısını görürsünüz.
-        </div>
-        <div class="guide-box" style="margin-bottom:10px;">
-          <b>🛡️ "Google Play Protect" uyarısı</b><br>
-          Google, henüz Play Store'da yayınlanmamış her uygulama için bu uyarıyı gösterir. Zararlı olduğu anlamına gelmez, sadece "tanımıyorum" demektir.
-        </div>
-        <div class="guide-box">
-          <b>🔒 Verileriniz güvende</b><br>
-          Uygulama yalnızca duyuru bildirimlerini almak için çalışır. <b>Uzman Salih ÖZGEN</b> imzasıyla onaylanmıştır.
-        </div>
-      </div>
-
-      <button class="btn-primary" id="btnNext1" style="width:100%; margin-top:12px;">Devam Et (2/4) ➔</button>
-    </div>
-
-    <!-- ADIM 2: PROFİL BİLGİSİ -->
-    <div class="wizard-step" id="step2">
-      <div style="font-size:36px; text-align:center; margin-bottom:8px;">👤</div>
-      <h2 style="text-align:center; margin:0 0 8px;">Adım 2: Profilinizi Yazın</h2>
-
-      <label>Adınız Soyadınız *</label>
-      <input type="text" id="wizName" placeholder="Örn: Salih Özgen">
-      <label>Telefon Numarası (Opsiyonel)</label>
-      <input type="tel" id="wizPhone" placeholder="Örn: 0555 xxx xx xx">
-
-      <label style="display:flex; align-items:flex-start; gap:8px; margin-top:16px; cursor:pointer; text-transform:none; letter-spacing:normal; font-weight:400; font-size:12.5px; color:#555;">
-        <input type="checkbox" id="wizKvkkConsent" style="margin-top:2px; flex-shrink:0;">
-        <span>
-          <a href="#" id="kvkkLinkOpen" style="color:var(--clay); font-weight:600; text-decoration:underline;">KVKK Aydınlatma Metni</a>'ni okudum, kişisel verilerimin (ad, telefon, e-posta, kan grubu) yalnızca kurum içi duyuru ve iletişim amacıyla işlenmesini kabul ediyorum. *
-        </span>
-      </label>
-
-      <button class="btn-primary" id="btnNext2" style="width:100%; margin-top:16px;">Kaydet ve Devam Et ➔</button>
-      <div id="kvkkWarning" style="display:none; color:var(--clay); font-size:12px; margin-top:8px; text-align:center;">Devam etmek için KVKK metnini onaylamanız gerekiyor.</div>
-    </div>
-
-    <!-- ADIM 3: BİLDİRİM VE MARKA BAZLI SES REHBERİ -->
-    <div class="wizard-step" id="step3">
-      <div style="font-size:36px; text-align:center; margin-bottom:8px;"><span class="sway-logo">🔔</span></div>
-      <h2 style="text-align:center; margin:0 0 8px;">Adım 3: Bildirim & Ses İzni</h2>
-      <p style="font-size:13px; color:#555; text-align:center;">Acil duyuru ve toplantı haberlerini kaçırmamak için bildirim izni verin.</p>
-
-      <label>Telefon Markanızı Seçip Ayarı İnceleyin:</label>
-      <div style="display:flex; gap:6px; margin:8px 0 12px;">
-        <button type="button" class="btn-primary" onclick="showBrand('samsung')" style="flex:1; font-size:12px; padding:6px;">Samsung</button>
-        <button type="button" class="btn-primary" onclick="showBrand('xiaomi')" style="flex:1; font-size:12px; padding:6px;">Xiaomi/Redmi</button>
-        <button type="button" class="btn-primary" onclick="showBrand('iphone')" style="flex:1; font-size:12px; padding:6px;">iPhone</button>
-      </div>
-
-      <div id="brand-samsung" class="brand-guide guide-box">
-        <b>Samsung Ayarı:</b><br>
-        1. Bildirime basılı tutun > ⚙️ <b>Ayarlar</b>'a basın.<br>
-        2. <b>"Sesli ve Ekranda Göster"</b> seçeneğini seçin.<br>
-        3. Kilit Ekranı Bildirimleri'ni <b>"İçeriği Göster"</b> yapın.
-      </div>
-
-      <div id="brand-xiaomi" class="brand-guide guide-box" style="display:none;">
-        <b>Xiaomi / Redmi Ayarı:</b><br>
-        1. <i>Ayarlar > Uygulamalar > Chrome</i> yoluna gidin.<br>
-        2. <b>Bildirimler</b> kısmından <i>"Kilit Ekranı"</i> ve <i>"Sesi Çal"</i> izinlerini açın.<br>
-        3. Pil Tasarrufu'nu <b>"Kısıtlama Yok"</b> yapın.
-      </div>
-
-      <div id="brand-iphone" class="brand-guide guide-box" style="display:none;">
-        <b>iPhone (iOS) Ayarı:</b><br>
-        1. Safari alt menüsünden <b>Paylaş (⬆️) > Ana Ekrana Ekle</b> deyin.<br>
-        2. Ana ekrandan uygulamayı açıp izin verin.<br>
-        3. <i>Ayarlar > Bildirimler > Müdürlük Duyuru</i> altından Sesler'i açın.
-      </div>
-
-      <button class="btn-primary" id="btnGrantPush" style="width:100%; padding:12px; font-size:15px; background:var(--amber);">
-        🔔 Bildirimlere Şimdi İzin Ver
-      </button>
-
-      <div id="permFailedNotice" style="display:none; margin-top:14px; background:#FBEFE0; border:1.5px solid var(--amber); border-radius:6px; padding:12px 14px;">
-        <div style="font-size:13px; font-weight:700; margin-bottom:4px;">⚠️ Otomatik izin penceresi açılmadı</div>
-        <div style="font-size:12.5px; color:#555; margin-bottom:10px;">Bazı telefonlarda bu normal. Sizi ayar ekranına yönlendirmeyi deniyoruz — açılmazsa Ayarlar &gt; Uygulamalar &gt; Amasya CSB Acil Duyuru &gt; Bildirimler'e girip elle açın.</div>
-        <button type="button" class="btn-primary" onclick="tryOpenAndroidNotifSettings()" style="width:100%; font-size:12.5px; padding:8px; margin-bottom:8px;">⚙️ Ayarları Açmayı Tekrar Dene</button>
-        <button type="button" class="btn-success" id="permRetryBtn" style="width:100%; font-size:12.5px; padding:8px;">✓ Ayardan Açtım, Devam Et</button>
-      </div>
-    </div>
-
-    <!-- ADIM 4: SES VE KİLİT EKRANI TESTİ -->
-    <div class="wizard-step" id="step4">
-      <div style="font-size:36px; text-align:center; margin-bottom:8px;">🧪</div>
-      <h2 style="text-align:center; margin:0 0 8px;">Adım 4: Sesi ve Bildirimi Test Et</h2>
-      <p style="font-size:13px; color:#555; text-align:center;">Kurulum tamamlandı! Sesi ve kilit ekranı davranışını şimdi test edin.</p>
-
-      <button class="btn-success" id="wizTestSound" style="width:100%; margin-bottom:10px; padding:10px;">
-        🔊 Sesi Test Et (3 Defa Çalar)
-      </button>
-      
-      <button class="btn-warning" id="wizTestLock" style="width:100%; margin-bottom:16px; padding:10px;">
-        🧪 3 Sn Sonra Test Bildirimi At (Ekranı Kilitle)
-      </button>
-
-      <button class="btn-primary" id="btnFinishWizard" style="width:100%; background:var(--ink);">
-        ✅ Kurulumu Tamamla ve Giriş Yap
-      </button>
+<!-- ÜST BİLGİ ÇUBUĞU -->
+<header>
+  <div class="header-left">
+    <img src="/icon-192.png" alt="Logo" style="background:#f1f5f9;">
+    <div>
+      <h1>Duyuru Sistemi</h1>
+      <div class="sub-title" id="subCount">Amasya ÇŞİD İl Müdürlüğü</div>
     </div>
   </div>
-</div>
+  <!-- Profil Fotoğrafı veya Ayarlar İkonu buraya gelebilir -->
+  <div style="font-size: 20px; color: var(--text-muted);" onclick="openModal('profileModal')">⚙️</div>
+</header>
 
-<div class="wrap">
-  <header>
-    <div style="display:flex; align-items:center; gap:10px;">
-      <img src="/icon-192.png" alt="" class="sway-logo" style="width:34px; height:34px; border-radius:50%;">
-      <h1>Duyurular</h1>
-    </div>
-    <div style="display:flex; align-items:center; gap:10px;">
-      <select id="themeSelect" style="background:transparent; color:var(--muted); border:1px solid var(--line); border-radius:20px; font-size:11px; padding:4px 8px;">
-        <option value="klasik">🎨 Varsayılan</option>
-        <option value="lacivert">🔵 Lacivert</option>
-        <option value="zeytin">🟢 Zeytin</option>
-        <option value="bordo">🔴 Bordo</option>
-      </select>
-      <span class="pin-count" id="subCount">— abone</span>
-    </div>
-  </header>
-
-  <div class="status-card" id="subscribeCard">
-    <h2>Bildirimleri Aç</h2>
-    <p>Duyuruları telefonunuza anında anlık bildirim olarak almak için izin verin.</p>
-    <button class="btn-primary" id="subscribeBtn">Bildirim Kurulumunu Başlat</button>
-  </div>
-  <div class="bell-status" id="bellStatus" style="display:none;"><span class="sway-logo">🔔</span> <span>Bildirimler ve Ses Aktif</span></div>
-
-  <div class="tabs">
-    <button class="tab-btn active" data-tab="duyurular">Duyurular</button>
-    <button class="tab-btn" data-tab="notlar">Yemekhane</button>
-    <button class="tab-btn" data-tab="telefonlar">Telefonlar</button>
-    <button class="tab-btn" data-tab="isler">Takvim</button>
-  </div>
-
+<!-- ANA İÇERİK (Kaydırılabilir Alan) -->
+<main>
+  
+  <!-- DUYURULAR EKRANI -->
   <div class="tab-panel active" id="panel-duyurular">
-    <div id="upcomingBox" style="display:none; background:rgba(255,255,255,0.06); border-radius:8px; padding:14px 16px; margin-bottom:16px;">
-      <div style="font-family:'Fraunces',serif; font-weight:700; font-size:14px; color:var(--paper); margin-bottom:8px;">📅 Yaklaşanlar</div>
-      <div id="upcomingList"></div>
+    
+    <!-- İzin İsteği Kartı (Modernize edildi) -->
+    <div class="list-item" id="subscribeCard" style="background: var(--primary); color: white; border:none;">
+      <h2 style="margin:0 0 8px; font-size:16px;">Bildirimleri Açın 🔔</h2>
+      <p style="margin:0 0 16px; font-size:13px; opacity:0.9;">Acil duyuru ve toplantıları anında cebinize alın.</p>
+      <button class="btn-primary" style="background: white; color: var(--primary);" id="subscribeBtn">Kurulumu Başlat</button>
     </div>
-    <div class="manset-wrap" id="duyuruManset" style="display:none;"></div>
-    <div class="list-section">
-      <h3>Son Duyurular</h3>
-      <div id="historyList" class="list-empty">Yükleniyor...</div>
-      <div class="pagination-row" id="historyPagination" style="display:none;">
-        <select class="page-size-select" id="historyPageSize">
-          <option value="10">10 / sayfa</option>
-          <option value="20">20 / sayfa</option>
-          <option value="30">30 / sayfa</option>
-          <option value="40">40 / sayfa</option>
-          <option value="50">50 / sayfa</option>
-        </select>
-        <div class="page-nav">
-          <button type="button" id="historyPrevBtn">← Önceki</button>
-          <span class="page-info" id="historyPageInfo"></span>
-          <button type="button" id="historyNextBtn">Sonraki →</button>
+
+    <!-- Duyuru Listesi -->
+    <div id="historyList">
+      <!-- Örnek bir duyuru kartı render edilmiş hali -->
+      <div class="list-item acil">
+        <div class="li-top">
+          <span class="li-tag">Acil Duyuru</span>
+          <span class="li-time">Bugün 09:30</span>
         </div>
+        <div class="li-title">Müdürlük İçi Acil Toplantı</div>
+        <div class="li-body">Tüm personelin saat 10:00'da toplantı salonunda hazır bulunması rica olunur.</div>
+      </div>
+
+      <div class="list-item">
+        <div class="li-top">
+          <span class="li-tag">Genel</span>
+          <span class="li-time">Dün 14:15</span>
+        </div>
+        <div class="li-title">Maaş Promosyonları Hakkında</div>
+        <div class="li-body">Banka promosyon anlaşmaları tamamlanmış olup, detaylı belge ekte sunulmuştur.</div>
       </div>
     </div>
   </div>
 
+  <!-- YEMEKHANE EKRANI -->
   <div class="tab-panel" id="panel-notlar">
-    <div class="list-section">
-      <div class="cal-nav">
-        <button type="button" id="menuPrevWeekBtn">← Önceki Hafta</button>
-        <span class="cal-title" id="menuWeekTitle">Yemekhane Menüsü</span>
-        <button type="button" id="menuNextWeekBtn">Sonraki Hafta →</button>
-      </div>
-      <div id="menuWeekCards"></div>
-    </div>
+    <h2 style="font-size:18px; margin-top:0;">Yemekhane Menüsü</h2>
+    <!-- Eski kodundaki id'leri kullanarak JS'in burayı doldurmasını sağlayabilirsin -->
+    <div id="menuWeekCards"></div>
   </div>
 
-  <div class="tab-panel" id="panel-telefonlar">
-    <div class="list-section">
-      <h3>Acil Durum Telefonları</h3>
-      <div id="phonesList" class="list-empty">Yükleniyor...</div>
-    </div>
-  </div>
-
+  <!-- TAKVİM EKRANI -->
   <div class="tab-panel" id="panel-isler">
-    <div class="isler-subtabs">
-      <button type="button" class="active" id="islerSubTabCalendar">📅 Takvim</button>
-      <button type="button" id="islerSubTabTasks">✅ İşler</button>
-    </div>
-
+    <h2 style="font-size:18px; margin-top:0;">Takvim ve İşler</h2>
     <div id="islerSubPanelCalendar">
-      <div class="list-section">
-        <h3>Takvim</h3>
-        <div class="cal-search-box">
-          <input type="text" id="calSearchInput" placeholder="Notlarda ara...">
-          <button class="btn-primary" id="calSearchBtn">Ara</button>
-        </div>
-        <div id="calSearchResults" style="display:none; margin-bottom:16px;"></div>
-
-        <div class="cal-view-toggle">
-          <button type="button" id="calViewMonthBtn" class="active">Aylık</button>
-          <button type="button" id="calViewYearBtn">Yıllık</button>
-        </div>
-
-        <div id="calMonthView">
-          <div class="cal-nav">
-            <button type="button" id="calPrevBtn">← Önceki</button>
-            <span class="cal-title" id="calMonthTitle"></span>
-            <button type="button" id="calNextBtn">Sonraki →</button>
-          </div>
-          <div class="cal-grid" id="calGrid"></div>
-        </div>
-
-        <div id="calYearView" style="display:none;">
-          <div class="cal-nav">
-            <button type="button" id="calPrevYearBtn">← Önceki Yıl</button>
-            <span class="cal-title" id="calYearTitle"></span>
-            <button type="button" id="calNextYearBtn">Sonraki Yıl →</button>
-          </div>
-          <div class="cal-year-grid" id="calYearGrid"></div>
-        </div>
-      </div>
-    </div>
-
-    <div id="islerSubPanelTasks" style="display:none;">
-      <div class="list-section">
-        <h3>Aylık Yapılacak İşler</h3>
-        <div id="tasksList" class="list-empty">Yükleniyor...</div>
-      </div>
+       <div id="calMonthView">
+         <!-- JS Buraya takvimi çizecek -->
+       </div>
     </div>
   </div>
 
-  <div class="toast-overlay" id="calDayOverlay">
-    <div class="toast-box" style="max-width:420px; text-align:left;">
-      <div class="ttitle" id="calDayTitle" style="text-align:center;"></div>
-      <div id="calDayHolidayBanner" style="display:none; background:#FDECEA; color:#B03030; font-size:12.5px; font-weight:700; padding:8px 12px; border-radius:6px; margin-bottom:10px; text-align:center;"></div>
-      <div id="calDayNotesList" style="margin:14px 0; max-height:280px; overflow-y:auto;"></div>
-      <button class="btn-danger" id="calDayCloseBtn" style="width:100%; margin-top:10px;">Kapat</button>
-    </div>
-  </div>
+</main>
 
-  <!-- DUYURU DETAY POPUP (manşet / listeden ajax ile açılır) -->
-  <div class="toast-overlay" id="duyuruDetayOverlay">
-    <div class="toast-box">
-      <button type="button" class="dd-close" id="duyuruDetayCloseBtn" aria-label="Kapat">✕</button>
-      <div id="duyuruDetayTag" class="dd-tag"></div>
-      <div id="duyuruDetayTitle" class="dd-title"></div>
-      <div id="duyuruDetayMeta" class="dd-meta"></div>
-      <div id="duyuruDetayBody" class="dd-body"></div>
-      <div id="duyuruDetayAttach"></div>
-      <div id="duyuruDetayReadInfo" class="dd-read-info"></div>
-      <div class="dd-actions">
-        <button type="button" class="btn-primary" id="duyuruDetayReadBtn"></button>
-        <button type="button" class="btn-share" id="duyuruDetayShareBtn">🔗 Paylaş</button>
-      </div>
-    </div>
-  </div>
-
-
-  <!-- PROFİL MODALI -->
-  <div class="card" id="profileModal" style="display:none;">
-    <div class="card-header"><h2>Profilim</h2><button class="card-close" data-close="profileModal" aria-label="Kapat">✕</button></div>
-    <div class="sub">Adınızı girerek okundu kayıtlarında görünmesini sağlayabilirsiniz.</div>
-
-    <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
-      <img id="profileAvatarPreview" src="" alt="" style="width:64px; height:64px; border-radius:50%; object-fit:cover; background:#eee; display:none; border:2px solid var(--line);">
-      <div id="profileAvatarPlaceholder" style="width:64px; height:64px; border-radius:50%; background:#eee; display:flex; align-items:center; justify-content:center; font-size:26px; color:#aaa;">👤</div>
-      <div>
-        <input type="file" id="profileAvatarInput" accept="image/png,image/jpeg,image/webp" style="display:none;">
-        <button type="button" class="btn-primary" id="profileAvatarBtn" style="font-size:12px; padding:7px 12px;">Fotoğraf Yükle</button>
-      </div>
-    </div>
-
-    <label>Adınız Soyadınız</label>
-    <input type="text" id="profileName" placeholder="Örn: Salih Özgen">
-    <label>Telefon (opsiyonel)</label>
-    <input type="tel" id="profilePhone" placeholder="Örn: 0555 xxx xx xx">
-    <label>E-posta (opsiyonel)</label>
-    <input type="text" id="profileEmail" placeholder="Örn: ornek@amasya.gov.tr">
-    <label>Kan Grubu (opsiyonel — acil durumlarda kullanılır)</label>
-    <select id="profileBloodType">
-      <option value="">Seçiniz</option>
-      <option value="A Rh+">A Rh+</option>
-      <option value="A Rh-">A Rh-</option>
-      <option value="B Rh+">B Rh+</option>
-      <option value="B Rh-">B Rh-</option>
-      <option value="AB Rh+">AB Rh+</option>
-      <option value="AB Rh-">AB Rh-</option>
-      <option value="0 Rh+">0 Rh+</option>
-      <option value="0 Rh-">0 Rh-</option>
-    </select>
-    <div class="send-row"><button class="btn-primary" id="profileSaveBtn">Kaydet</button></div>
-    <div class="feedback-msg" id="profileFeedback"></div>
-
-    <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--line);">
-      <label style="margin-top:0;">🔔 Bildirim & Ses Testi</label>
-      <button class="btn-success" id="testSoundBtn" style="width:100%; margin-bottom:8px; margin-top:6px;">🔊 Sesi Çal (3 Defa)</button>
-      <button class="btn-warning" id="testLockBtn" style="width:100%;">🧪 Kilit Ekranı Bildirim Testi (3 Sn)</button>
-    </div>
-  </div>
-
-  <!-- GÖRÜŞ MODALI -->
-  <div class="card" id="feedbackModal" style="display:none;">
-    <div class="card-header"><h2>Öneri</h2><button class="card-close" data-close="feedbackModal" aria-label="Kapat">✕</button></div>
-    <div class="sub">Yönetime iletmek istediğiniz not veya talebiniz:</div>
-    <label>Adınız (opsiyonel)</label>
-    <input type="text" id="feedbackName" placeholder="İsimsiz bırakabilirsiniz">
-    <label>Mesajınız</label>
-    <textarea id="feedbackText" placeholder="Mesajınızı yazın..."></textarea>
-    <div class="send-row"><button class="btn-primary" id="feedbackSendBtn">Gönder</button></div>
-    <div class="feedback-msg" id="feedbackModalFeedback"></div>
-  </div>
-
-  <!-- SOHBET MODALI -->
-  <div class="card" id="chatModal" style="display:none;">
-    <div class="card-header"><h2>🗨️ Sohbet</h2><button class="card-close" data-close="chatModal" aria-label="Kapat">✕</button></div>
-
-    <div id="chatLockedNotice" style="display:none;">
-      <div class="sub" style="color:#b23b3b;">Sohbete katılmak için önce adınızı ve telefon numaranızı kaydetmeniz gerekiyor.</div>
-      <button class="btn-primary" id="chatGoProfileBtn" style="width:100%;">👤 Profilime Git</button>
-    </div>
-
-    <div id="chatUnlocked" style="display:none;">
-      <div class="tabs" style="margin-bottom:12px;">
-        <button class="tab-btn active" id="chatTabGeneral">Sohbet</button>
-        <button class="tab-btn" id="chatTabDirect">Online Üyeler</button>
-      </div>
-
-      <div id="chatPanelGeneral" class="chat-panel">
-        <div id="chatGeneralMessages" class="chat-box"></div>
-        <div class="chat-input-row">
-          <input type="text" id="chatGeneralInput" placeholder="Mesajınızı yazın..." maxlength="1000">
-          <button class="btn-primary" id="chatGeneralSendBtn">Gönder</button>
-        </div>
-      </div>
-
-      <div id="chatPanelDirect" class="chat-panel" style="display:none;">
-        <div id="chatContactList" class="list-empty">Yükleniyor...</div>
-        <div id="chatDirectConversation" style="display:none;" class="chat-panel">
-          <button type="button" id="chatBackToContacts" style="background:none;border:none;color:var(--clay);font-size:12px;cursor:pointer;padding:0 0 8px;">← Kişi Listesine Dön</button>
-          <div id="chatDirectTitle" style="font-weight:700;font-size:14px;margin-bottom:8px;"></div>
-          <div id="chatDirectMessages" class="chat-box"></div>
-          <div class="chat-input-row">
-            <input type="text" id="chatDirectInput" placeholder="Mesajınızı yazın..." maxlength="1000">
-            <button class="btn-primary" id="chatDirectSendBtn">Gönder</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- YEMEK KAYDIM MODALI (self-servis kayıt/giriş + kişisel yemekhane geçmişi) -->
-  <div class="card" id="mealsModal" style="display:none;">
-    <div class="card-header"><h2>🍽️ Yemek Kaydım</h2><button class="card-close" data-close="mealsModal" aria-label="Kapat">✕</button></div>
-
-    <!-- Adım: Kayıt formu -->
-    <div id="mealsStepRegister">
-      <div class="sub">Kendi yemekhane geçmişini ve borcunu görebilmek için kişisel e-postanla kayıt ol.</div>
-      <div style="background:#eff6ff; border:1px solid #dbeafe; border-radius:10px; padding:10px 12px; font-size:12px; color:#1e40af; margin-bottom:14px;">
-        ℹ️ Yalnızca kişisel <b>Gmail</b> veya <b>Hotmail</b> adresiyle kayıt olabilirsin. Kurumsal e-postalar kabul edilmiyor.
-      </div>
-      <label>Adın Soyadın</label>
-      <input type="text" id="mealsRegName" placeholder="Örn: Ahmet Yılmaz">
-      <label>Telefon Numaran</label>
-      <input type="tel" id="mealsRegPhone" placeholder="Örn: 0555 111 22 33">
-      <label>E-posta (Gmail veya Hotmail)</label>
-      <input type="email" id="mealsRegEmail" placeholder="ornek@gmail.com">
-      <label>Şifre</label>
-      <input type="password" id="mealsRegPass" placeholder="En az 6 karakter">
-      <div class="send-row"><button class="btn-primary" id="mealsRegisterBtn" style="width:100%;">Kayıt Ol ve Kod Gönder</button></div>
-      <div class="feedback-msg" id="mealsRegFeedback"></div>
-      <div style="text-align:center; margin-top:14px; font-size:12.5px; color:#777;">
-        Zaten hesabın var mı? <a href="#" id="mealsGoLoginLink" style="color:var(--clay); font-weight:600;">Giriş yap</a>
-      </div>
-    </div>
-
-    <!-- Adım: OTP doğrulama -->
-    <div id="mealsStepVerify" style="display:none;">
-      <div class="sub">E-postana gönderilen 6 haneli kodu gir.</div>
-      <input type="text" id="mealsVerifyCode" maxlength="6" inputmode="numeric" placeholder="000000"
-        style="text-align:center; font-size:1.6rem; letter-spacing:8px; font-weight:800; padding:16px;">
-      <div class="send-row"><button class="btn-primary" id="mealsVerifyBtn" style="width:100%;">Doğrula</button></div>
-      <button type="button" id="mealsResendBtn" style="width:100%; background:none; color:#777; font-weight:600; font-size:12.5px; margin-top:8px;">Kodu Tekrar Gönder</button>
-      <div class="feedback-msg" id="mealsVerifyFeedback"></div>
-    </div>
-
-    <!-- Adım: Giriş formu -->
-    <div id="mealsStepLogin" style="display:none;">
-      <div class="sub">Kayıtlı e-posta ve şifrenle giriş yap.</div>
-      <label>E-posta</label>
-      <input type="email" id="mealsLoginEmail" placeholder="ornek@gmail.com">
-      <label>Şifre</label>
-      <input type="password" id="mealsLoginPass" placeholder="Şifren">
-      <div class="send-row"><button class="btn-primary" id="mealsLoginBtn" style="width:100%;">Giriş Yap</button></div>
-      <div class="feedback-msg" id="mealsLoginFeedback"></div>
-      <div style="text-align:center; margin-top:14px; font-size:12.5px; color:#777;">
-        Hesabın yok mu? <a href="#" id="mealsGoRegisterLink" style="color:var(--clay); font-weight:600;">Kayıt ol</a>
-      </div>
-    </div>
-
-    <!-- Adım: Kendi kayıtlarım -->
-    <div id="mealsStepRecords" style="display:none;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <div class="sub" style="margin:0;" id="mealsRecordsWho"></div>
-        <button type="button" id="mealsLogoutBtn" style="background:none; border:1px solid #ccc; color:#888; font-size:11px; padding:5px 10px; border-radius:20px;">Çıkış</button>
-      </div>
-      <div id="mealsDebtBox" style="background:var(--ink); color:var(--paper); border-radius:10px; padding:16px; text-align:center; margin-bottom:14px;">
-        <div style="font-size:11px; opacity:0.7; text-transform:uppercase; letter-spacing:0.05em;">Toplam Borç</div>
-        <div style="font-family:'Fraunces',serif; font-size:1.8rem; font-weight:700;" id="mealsDebtAmount">—</div>
-      </div>
-      <div id="mealsRecordsList" class="list-empty">Yükleniyor...</div>
-    </div>
-  </div>
-
-  <!-- YÖNETİCİ MODALI -->
-  <div class="card" id="adminModal" style="display:none;">
-    <div class="card-header"><h2>Yönetici Paneli</h2><button class="card-close" data-close="adminModal" aria-label="Kapat">✕</button></div>
-    <div id="adminAuthSection">
-      <label>Yönetici Şifresi</label>
-      <input type="password" id="adminGlobalPassword" placeholder="Şifrenizi girin">
-      <div class="send-row"><button class="btn-primary" id="adminLoginBtn">Giriş Yap</button></div>
-      <div class="feedback-msg" id="adminAuthFeedback"></div>
-    </div>
-
-    <div id="adminControls" style="display:none;">
-      <div class="tabs" style="margin-top:15px;">
-        <button class="tab-btn active" id="admTabSend">Duyuru Gönder</button>
-        <button class="tab-btn" id="admTabStats">İstatistikler</button>
-        <button class="tab-btn" id="admTabItems">Not/Tel/İş Ekle</button>
-        <button class="tab-btn" id="admTabInbox">Gelen Mesajlar</button>
-        <button class="tab-btn" id="admTabDevices">Cihazlar</button>
-      </div>
-
-      <div id="admPanelSend">
-        <label>Kategori</label>
-        <div class="cat-row" id="catRow">
-          <button type="button" class="cat-btn active" data-cat="genel">Genel</button>
-          <button type="button" class="cat-btn" data-cat="acil">Acil</button>
-          <button type="button" class="cat-btn" data-cat="yemek">Yemek Listesi</button>
-          <button type="button" class="cat-btn" data-cat="vefat">Vefat</button>
-          <button type="button" class="cat-btn" data-cat="dogum">Doğum</button>
-        </div>
-        <label>Başlık</label>
-        <input type="text" id="sendTitle" placeholder="Örn: Yarınki Toplantı Hakkında">
-        <label>Mesaj</label>
-        <textarea id="sendBody" placeholder="Duyuru detayları..."></textarea>
-        <label>Ek Dosya (Görsel / PDF - Opsiyonel)</label>
-        <input type="file" id="sendAttachment" accept="image/jpeg,image/png,application/pdf">
-        <div class="send-row"><button class="btn-primary" id="doSendBtn">Push Bildirimi İle Gönder</button></div>
-        <div class="feedback-msg" id="sendFeedback"></div>
-      </div>
-
-      <div id="admPanelItems" style="display:none;">
-        <label>Eklenilecek Tür</label>
-        <select id="itemTypeSelect">
-          <option value="notes">Not Ekle</option>
-          <option value="phones">Telefon Ekle</option>
-          <option value="tasks">Aylık İş Ekle</option>
-        </select>
-        <label id="itemField1Label">Not Metni</label>
-        <input type="text" id="itemField1" placeholder="Metin girin">
-        <div id="itemField2Wrapper" style="display:none;">
-          <label>Telefon Numarası</label>
-          <input type="text" id="itemField2" placeholder="Örn: 0358 xxx xx xx">
-        </div>
-        <label>Ek Dosya (PDF/Görsel)</label>
-        <input type="file" id="itemAttachment" accept="image/jpeg,image/png,application/pdf">
-        <div class="send-row"><button class="btn-primary" id="doAddItemBtn">Ekle</button></div>
-        <div class="feedback-msg" id="itemFeedback"></div>
-      </div>
-
-      <div id="admPanelInbox" style="display:none;">
-        <h4>Gelen Görüş & Öneriler</h4>
-        <div id="adminFeedbackList" class="list-empty">Yükleniyor...</div>
-      </div>
-
-      <div id="admPanelDevices" style="display:none;">
-        <h4>Kayıtlı Cihazlar & İsim Verme</h4>
-        <div id="adminDeviceList" class="list-empty">Yükleniyor...</div>
-      </div>
-
-      <div id="admPanelStats" style="display:none;">
-        <h4>Günlük İstatistikler</h4>
-        <div id="adminStatsSummary" class="list-empty">Yükleniyor...</div>
-        <h4 style="margin-top:16px;">Duyuru Bazında Okunma</h4>
-        <div id="adminStatsPerMessage" class="list-empty">Yükleniyor...</div>
-      </div>
-    </div>
-  </div>
+<!-- YÜZEN SOHBET BUTONU -->
+<div class="fab-chat" onclick="openModal('chatModal')">
+  💬
 </div>
 
-<footer class="site-footer">
-  <a href="#" id="profileLink">👤 Profilim</a>
-  <span class="fdot">·</span>
-  <a href="#" id="feedbackLink">💬 Öneri</a>
-  <span class="fdot">·</span>
-  <a href="#" id="chatLink">🗨️ Sohbet</a>
-  <span class="fdot">·</span>
-  <a href="#" id="mealsLink">🍽️ Yemek Kaydım</a>
-  <span class="fdot">·</span>
-  <a href="/admin/" id="adminSecretBtn" title="" style="color:var(--line); text-decoration:none; padding:0 4px; font-size:14px;">•</a>
-</footer>
+<!-- MODERN ALT MENÜ (Gezinme) -->
+<nav class="bottom-nav">
+  <button class="nav-item active" data-tab="duyurular">
+    <span class="icon">📢</span>
+    <span>Duyurular</span>
+  </button>
+  <button class="nav-item" data-tab="notlar">
+    <span class="icon">🍽️</span>
+    <span>Yemekhane</span>
+  </button>
+  <button class="nav-item" data-tab="isler">
+    <span class="icon">📅</span>
+    <span>Takvim</span>
+  </button>
+  <button class="nav-item" onclick="openModal('mealsModal')">
+    <span class="icon">👤</span>
+    <span>Hesabım</span>
+  </button>
+</nav>
 
 <script>
-// --- OTOMATİK SES KİLİDİ AÇICI (AUTOPLAY UNLOCKER) ---
-let audioUnlocked = false;
-function unlockAudioEngine() {
-  if (audioUnlocked) return;
-  try {
-    const dummy = new Audio('/notify.wav');
-    dummy.volume = 0.01;
-    dummy.play().then(() => {
-      dummy.pause();
-      audioUnlocked = true;
-      console.log('Ses motoru başarısıyla açıldı.');
-    }).catch(e => console.log('Ses motoru açılamadı:', e));
-  } catch(e) {}
-}
-
-document.addEventListener('click', unlockAudioEngine, { once: true });
-document.addEventListener('touchstart', unlockAudioEngine, { once: true });
-
-// --- MARKA AYAR SEÇİMİ ---
-function showBrand(brand) {
-  document.querySelectorAll('.brand-guide').forEach(el => el.style.display = 'none');
-  const b = document.getElementById('brand-' + brand);
-  if (b) b.style.display = 'block';
-}
-
-// --- SEKMELER & TEMA ---
-document.querySelectorAll('.tabs .tab-btn').forEach(btn => {
-  if (btn.dataset.tab) {
+  // Yeni Alt Menü Tab Mantığı (Eski tabs mantığını güncelledik)
+  document.querySelectorAll('.bottom-nav .nav-item[data-tab]').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.tabs .tab-btn').forEach(b => { if(b.dataset.tab) b.classList.remove('active'); });
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      // Aktif buton stilini değiştir
+      document.querySelectorAll('.bottom-nav .nav-item').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+      
+      // Panelleri değiştir
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      const targetPanel = document.getElementById('panel-' + btn.dataset.tab);
+      if(targetPanel) targetPanel.classList.add('active');
     });
-  }
-});
-
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    const s = document.getElementById('splash');
-    if (s) { s.classList.add('hide'); setTimeout(() => s.remove(), 600); }
-  }, 1200);
-});
-
-const themeSelect = document.getElementById('themeSelect');
-const savedTheme = localStorage.getItem('theme') || 'klasik';
-if (savedTheme !== 'klasik') document.body.setAttribute('data-theme', savedTheme);
-themeSelect.value = savedTheme;
-themeSelect.addEventListener('change', () => {
-  const val = themeSelect.value;
-  if (val === 'klasik') document.body.removeAttribute('data-theme');
-  else document.body.setAttribute('data-theme', val);
-  localStorage.setItem('theme', val);
-});
-
-function getDeviceId() {
-  let id = localStorage.getItem('deviceId');
-  if (!id) {
-    id = (crypto.randomUUID ? crypto.randomUUID() : (Date.now().toString(36) + Math.random().toString(36).slice(2)));
-    localStorage.setItem('deviceId', id);
-  }
-  return id;
-}
-
-// --- ŞIK TOAST BİLDİRİMİ ---
-function showToast(message, type) {
-  const container = document.getElementById('toastContainer');
-  const t = document.createElement('div');
-  t.className = 'toast ' + (type || '');
-  t.innerHTML = (type === 'ok' ? '✓ ' : type === 'err' ? '✕ ' : '') + message;
-  container.appendChild(t);
-  setTimeout(() => t.remove(), 2700);
-}
-
-// --- OKUNDU İŞARETLEME ---
-function getReadIds() {
-  try { return JSON.parse(localStorage.getItem('readMsgIds') || '[]'); } catch { return []; }
-}
-function markReadLocally(id) {
-  const ids = getReadIds();
-  if (!ids.includes(id)) { ids.push(id); localStorage.setItem('readMsgIds', JSON.stringify(ids)); }
-}
-async function markAsRead(id, btn) {
-  if (btn && btn.classList.contains('done')) return;
-  markReadLocally(id);
-  if (btn) { btn.classList.add('done'); btn.innerHTML = '✓ Okundu'; }
-  try {
-    await fetch('/api/messages/' + id + '/read', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ deviceId: getDeviceId() })
-    });
-    showToast('Okundu olarak kaydedildi.', 'ok');
-  } catch {}
-}
-
-// --- PWA İNDİR / İZİN SİHİRBAZI MANTIĞI ---
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  document.getElementById('pwaInstallContainer').style.display = 'block';
-});
-
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-if (isIOS) {
-  document.getElementById('iosPwaNotice').style.display = 'block';
-}
-
-// Uygulama, kurulu APK (TWA) içinden mi açıldı? (tarayıcıdan mı yoksa yüklü uygulamadan mı)
-// Uygulama, kurulu APK (TWA) içinden mi açıldı? (Android'e özel — iOS Ana Ekran modunu bu kapsamın dışında tutuyoruz,
-// çünkü Android'e özel "Bilinmeyen uygulama / Play Protect" mesajları iPhone'da anlamsız kalır)
-const isInstalledApp = !isIOS && (document.referrer.startsWith('android-app://') || window.matchMedia('(display-mode: standalone)').matches);
-if (isInstalledApp) {
-  document.getElementById('step1-download').style.display = 'none';
-  document.getElementById('step1-installed').style.display = 'block';
-}
-
-function showWizardStep(stepNum) {
-  for (let i = 1; i <= 4; i++) {
-    document.getElementById('step' + i).classList.remove('active');
-    document.getElementById('dot' + i).classList.remove('active');
-  }
-  document.getElementById('step' + stepNum).classList.add('active');
-  document.getElementById('dot' + stepNum).classList.add('active');
-}
-
-function checkFirstRunWizard() {
-  const perm = Notification.permission;
-  const hasName = localStorage.getItem('selfName');
-  if (perm !== 'granted' || !hasName) {
-    document.getElementById('wizardModal').style.display = 'flex';
-    // Kurulu APK'da ve izin daha hiç sorulmadıysa: direkt izin adımına atla, isim/adım1'i bekletme.
-    if (isInstalledApp && perm === 'default') {
-      showWizardStep(3);
-    } else {
-      showWizardStep(1);
-    }
-  }
-}
-
-document.getElementById('subscribeBtn').addEventListener('click', () => {
-  unlockAudioEngine();
-  document.getElementById('wizardModal').style.display = 'flex';
-  if (isInstalledApp && Notification.permission === 'default') {
-    showWizardStep(3);
-  } else {
-    showWizardStep(1);
-  }
-});
-
-document.getElementById('btnPwaInstall').addEventListener('click', async () => {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      document.getElementById('pwaInstallContainer').style.display = 'none';
-    }
-    deferredPrompt = null;
-  }
-});
-
-document.getElementById('btnNext1').addEventListener('click', () => showWizardStep(2));
-
-document.getElementById('btnNext2').addEventListener('click', async () => {
-  const name = document.getElementById('wizName').value.trim();
-  const phone = document.getElementById('wizPhone').value.trim();
-  const kvkkOk = document.getElementById('wizKvkkConsent').checked;
-  if (!name) { alert('Lütfen adınızı soyadınızı girin.'); return; }
-  if (!kvkkOk) { document.getElementById('kvkkWarning').style.display = 'block'; return; }
-  document.getElementById('kvkkWarning').style.display = 'none';
-
-  localStorage.setItem('selfName', name);
-  localStorage.setItem('selfPhone', phone);
-  localStorage.setItem('kvkkConsent', 'true');
-
-  try {
-    await fetch('/api/self-profile', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ deviceId: getDeviceId(), name, phone, kvkkConsent: true, kvkkConsentAt: new Date().toISOString() })
-    });
-  } catch(e){}
-
-  // İzin bu adımdan önce (kurulu APK akışında) zaten verilmiş olabilir, o zaman direkt bitir.
-  showWizardStep(Notification.permission === 'granted' ? 4 : 3);
-});
-
-document.getElementById('kvkkLinkOpen').addEventListener('click', (e) => {
-  e.preventDefault();
-  document.getElementById('kvkkModal').style.display = 'flex';
-});
-document.getElementById('kvkkCloseBtn').addEventListener('click', () => {
-  document.getElementById('kvkkModal').style.display = 'none';
-});
-
-document.getElementById('btnGrantPush').addEventListener('click', async () => {
-  unlockAudioEngine();
-  const ok = await doSubscribe(false);
-  if (ok) {
-    // Kurulu APK akışında izin adımı isimden ÖNCE geldiyse, şimdi ismi soralım.
-    showWizardStep(localStorage.getItem('selfName') ? 4 : 2);
-  } else {
-    // İzin penceresi hiç çıkmadıysa ya da reddedildiyse: doğrudan ayar ekranına götürmeyi dene.
-    document.getElementById('permFailedNotice').style.display = 'block';
-    if (isInstalledApp) tryOpenAndroidNotifSettings();
-  }
-});
-
-document.getElementById('permRetryBtn').addEventListener('click', async () => {
-  const ok = await doSubscribe(false);
-  if (ok) {
-    document.getElementById('permFailedNotice').style.display = 'none';
-    showWizardStep(localStorage.getItem('selfName') ? 4 : 2);
-  }
-});
-
-document.getElementById('wizTestSound').addEventListener('click', () => playNotifSound());
-document.getElementById('wizTestLock').addEventListener('click', () => triggerLockTest());
-document.getElementById('btnFinishWizard').addEventListener('click', () => {
-  document.getElementById('wizardModal').style.display = 'none';
-});
-
-// --- PUSH VE DÜĞMELER ---
-function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const rawData = atob(base64);
-  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
-}
-
-async function refreshCount() {
-  try {
-    const res = await fetch('/api/subscriber-count');
-    const data = await res.json();
-    document.getElementById('subCount').textContent = data.total + ' abone';
-  } catch { document.getElementById('subCount').textContent = ''; }
-}
-
-async function doSubscribe(silent) {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    if (!silent) alert('Bu tarayıcı push bildirimi desteklemiyor.');
-    return false;
-  }
-  const permission = silent ? Notification.permission : await Notification.requestPermission();
-  if (permission !== 'granted') return false;
-  const reg = await navigator.serviceWorker.register('/sw.js');
-  let subscription = await reg.pushManager.getSubscription();
-  if (!subscription) {
-    const { publicKey } = await (await fetch('/api/vapid-public-key')).json();
-    subscription = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicKey) });
-  }
-  await fetch('/api/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...subscription.toJSON(), deviceId: getDeviceId() }) });
-  document.getElementById('subscribeCard').style.display = 'none';
-  document.getElementById('bellStatus').style.display = 'inline-flex';
-  refreshCount();
-  return true;
-}
-
-if ('Notification' in window && Notification.permission === 'granted') doSubscribe(true);
-setTimeout(checkFirstRunWizard, 1600);
-refreshCount();
-
-// --- SES DÖNGÜSÜ (TAM 3 DEFA ÇALAR) ---
-function playNotifSound() {
-  try {
-    let count = 0;
-    const audio = new Audio('/notify.wav');
-    audio.volume = 1.0;
-
-    const playOnce = () => {
-      count++;
-      audio.currentTime = 0;
-      audio.play().then(() => {
-        console.log('Ses çalıyor:', count);
-      }).catch(e => console.log('Ses çalma engellendi:', e));
-    };
-
-    audio.addEventListener('ended', () => {
-      if (count < 3) playOnce();
-    });
-
-    playOnce();
-  } catch (e) { console.log('Ses hatası:', e); }
-}
-
-function showNotifBanner(category, title, body) {
-  const el = document.getElementById('notifBanner');
-  if (!el) return;
-  el.className = 'show ' + (category || 'genel');
-  const tagNames = { acil: 'ACİL DUYURU', yemek: 'YEMEK LİSTESİ', vefat: 'VEFAT', dogum: 'DOĞUM', genel: 'DUYURU' };
-  el.innerHTML = `<div class="tag">${tagNames[category] || tagNames.genel}</div><div class="btitle">${title || ''}</div><div class="bbody">${body || ''}</div>`;
-  playNotifSound();
-}
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'NOTIF_OPENED') {
-      showNotifBanner(event.data.category, event.data.title, event.data.body);
-      loadHistory();
-    }
   });
-}
 
-// --- İÇERİK YÜKLEME ---
-const catNames = { acil: 'Acil', yemek: 'Yemek Listesi', vefat: 'Vefat', dogum: 'Doğum', genel: 'Genel' };
-function formatTime(iso) { return new Date(iso).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); }
-function esc(s) { return (s || '').replace(/</g, '&lt;'); }
-
-const TR_MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
-
-// --- RESMİ TATİLLER (2026-2027, doğrulanmış kaynaklardan) ---
-const TR_HOLIDAYS_FIXED = [
-  { m: 1, d: 1, name: 'Yılbaşı' },
-  { m: 4, d: 23, name: 'Ulusal Egemenlik ve Çocuk Bayramı' },
-  { m: 5, d: 1, name: 'Emek ve Dayanışma Günü' },
-  { m: 5, d: 19, name: "Atatürk'ü Anma, Gençlik ve Spor Bayramı" },
-  { m: 7, d: 15, name: 'Demokrasi ve Millî Birlik Günü' },
-  { m: 8, d: 30, name: 'Zafer Bayramı' },
-  { m: 10, d: 29, name: 'Cumhuriyet Bayramı' },
-];
-const TR_HOLIDAYS_RELIGIOUS = {
-  '2026-03-19': 'Ramazan Bayramı Arifesi', '2026-03-20': 'Ramazan Bayramı (1. Gün)',
-  '2026-03-21': 'Ramazan Bayramı (2. Gün)', '2026-03-22': 'Ramazan Bayramı (3. Gün)',
-  '2026-05-26': 'Kurban Bayramı Arifesi', '2026-05-27': 'Kurban Bayramı (1. Gün)',
-  '2026-05-28': 'Kurban Bayramı (2. Gün)', '2026-05-29': 'Kurban Bayramı (3. Gün)',
-  '2026-05-30': 'Kurban Bayramı (4. Gün)', '2026-10-28': 'Cumhuriyet Bayramı Arifesi',
-  '2027-03-08': 'Ramazan Bayramı Arifesi', '2027-03-09': 'Ramazan Bayramı (1. Gün)',
-  '2027-03-10': 'Ramazan Bayramı (2. Gün)', '2027-03-11': 'Ramazan Bayramı (3. Gün)',
-  '2027-05-15': 'Kurban Bayramı Arifesi', '2027-05-16': 'Kurban Bayramı (1. Gün)',
-  '2027-05-17': 'Kurban Bayramı (2. Gün)', '2027-05-18': 'Kurban Bayramı (3. Gün)',
-  '2027-05-19': 'Kurban Bayramı (4. Gün)', '2027-10-28': 'Cumhuriyet Bayramı Arifesi',
-};
-function getHolidayName(dateKey) {
-  if (TR_HOLIDAYS_RELIGIOUS[dateKey]) return TR_HOLIDAYS_RELIGIOUS[dateKey];
-  const parts = dateKey.split('-').map(Number);
-  const fixed = TR_HOLIDAYS_FIXED.find(h => h.m === parts[1] && h.d === parts[2]);
-  return fixed ? fixed.name : null;
-}
-
-// --- TAKVİM KATEGORİLERİ ---
-const CAL_CATEGORIES = {
-  genel: { label: 'Genel', color: '#7A2331' },
-  toplanti: { label: 'Toplantı', color: '#6B8F71' },
-  hatirlatma: { label: 'Hatırlatma', color: '#E0972C' },
-  etkinlik: { label: 'Etkinlik', color: '#C9A24B' },
-};
-
-function renderAttachment(att) {
-  if (!att) return '';
-  if (att.type === 'image') return `<a href="${att.url}" target="_blank"><img src="${att.url}" style="max-width:100%;border-radius:4px;margin-top:8px;display:block;"></a>`;
-  return `<a href="${att.url}" target="_blank" style="display:inline-block;margin-top:8px;font-size:12px;color:var(--clay);font-weight:600;">📄 ${esc(att.name || 'Dosyayı Aç')}</a>`;
-}
-
-let activeAdminPassword = '';
-
-let historyPage = 1;
-let historyPageSize = parseInt(localStorage.getItem('historyPageSize') || '10', 10);
-
-let historyItemsCache = [];
-
-async function loadHistory() {
-  const listEl = document.getElementById('historyList');
-  const pagRow = document.getElementById('historyPagination');
-  const pageSizeSelect = document.getElementById('historyPageSize');
-  pageSizeSelect.value = String(historyPageSize);
-  try {
-    const res = await fetch(`/api/messages?page=${historyPage}&pageSize=${historyPageSize}`);
-    const data = await res.json();
-    const total = data.total || 0;
-    if (!data.messages || data.messages.length === 0) {
-      listEl.className = 'list-empty';
-      listEl.textContent = total === 0 ? 'Henüz duyuru gönderilmedi.' : 'Bu sayfada duyuru yok.';
-      pagRow.style.display = total > historyPageSize ? 'flex' : 'none';
-    } else {
-      listEl.className = '';
-      historyItemsCache = historyItemsCache.concat(data.messages).filter((m, i, arr) => arr.findIndex(x => x.id === m.id) === i);
-      const readIds = getReadIds();
-      listEl.innerHTML = data.messages.map(m => {
-        const isRead = readIds.includes(m.id);
-        return `
-        <div class="list-item ${m.category || 'genel'}">
-          <div class="li-main">
-            <div class="li-top">
-              <span class="li-tag">${catNames[m.category] || 'Genel'}</span>
-              <span style="display:flex; align-items:center; gap:8px;">
-                <span class="li-time">${formatTime(m.time)}</span>
-                <button type="button" class="li-read-btn ${isRead ? 'done' : ''}" data-read-id="${m.id}">${isRead ? '✓ Okundu' : '👁 Okudum'}</button>
-                ${m.attachment ? `<button type="button" class="li-toggle" data-toggle-attach="${m.id}" aria-label="Detayı göster">▾</button>` : ''}
-              </span>
-            </div>
-            <div class="li-title" style="cursor:pointer;" data-detay-id="${m.id}">${esc(m.title)}</div>
-            <div class="li-body">${esc(m.body)}</div>
-            <div class="attach-wrap" id="attach-${m.id}">${renderAttachment(m.attachment)}</div>
-            <span class="li-detay-link" data-detay-id="${m.id}">🔎 Detay / Paylaş</span>
-            ${activeAdminPassword ? `<div style="margin-top:8px;"><span class="reads-badge" onclick="showReads('${m.id}')">👁 Okundu Bilgisi</span> <button class="btn-danger" onclick="deleteMessage('${m.id}')">Sil</button></div>` : ''}
-          </div>
-        </div>
-      `;
-      }).join('');
-      listEl.querySelectorAll('[data-toggle-attach]').forEach(el => {
-        el.addEventListener('click', () => {
-          const id = el.dataset.toggleAttach;
-          document.getElementById('attach-' + id).classList.toggle('open');
-          listEl.querySelectorAll(`[data-toggle-attach="${id}"].li-toggle`).forEach(btn => btn.classList.toggle('open'));
-        });
-      });
-      listEl.querySelectorAll('[data-read-id]').forEach(btn => {
-        btn.addEventListener('click', () => markAsRead(btn.dataset.readId, btn));
-      });
-      listEl.querySelectorAll('[data-detay-id]').forEach(el => {
-        el.addEventListener('click', () => openDuyuruDetay(el.dataset.detayId));
-      });
-
-      const totalPages = Math.max(1, Math.ceil(total / historyPageSize));
-      pagRow.style.display = total > historyPageSize ? 'flex' : 'none';
-      document.getElementById('historyPageInfo').textContent = `Sayfa ${historyPage} / ${totalPages}`;
-      document.getElementById('historyPrevBtn').disabled = historyPage <= 1;
-      document.getElementById('historyNextBtn').disabled = historyPage >= totalPages;
-    }
-  } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
-}
-
-document.getElementById('historyPageSize').addEventListener('change', (e) => {
-  historyPageSize = parseInt(e.target.value, 10);
-  localStorage.setItem('historyPageSize', String(historyPageSize));
-  historyPage = 1;
-  loadHistory();
-});
-document.getElementById('historyPrevBtn').addEventListener('click', () => { if (historyPage > 1) { historyPage--; loadHistory(); } });
-document.getElementById('historyNextBtn').addEventListener('click', () => { historyPage++; loadHistory(); });
-loadHistory();
-
-// ---------- MANŞET (öne çıkan duyuru carousel'i) ----------
-let mansetItems = [];
-let mansetIdx = 0;
-let mansetTimer = null;
-
-function mansetColors(cat) {
-  const map = {
-    acil: ['#E0972C', '#B5674A'],
-    yemek: ['#6B8F71', '#3E5C43'],
-    vefat: ['#4A4A52', '#1F2430'],
-    dogum: ['#C9A24B', '#8A6D2F'],
-    genel: ['#7A2331', '#5A1622'],
-  };
-  return map[cat] || map.genel;
-}
-
-async function loadManset() {
-  try {
-    const res = await fetch('/api/messages?page=1&pageSize=8');
-    const data = await res.json();
-    mansetItems = data.messages || [];
-    historyItemsCache = historyItemsCache.concat(mansetItems).filter((m, i, arr) => arr.findIndex(x => x.id === m.id) === i);
-  } catch { mansetItems = []; }
-  mansetIdx = 0;
-  renderManset();
-  if (mansetTimer) clearInterval(mansetTimer);
-  if (mansetItems.length > 1) {
-    mansetTimer = setInterval(() => { mansetIdx = (mansetIdx + 1) % mansetItems.length; renderManset(); }, 6000);
+  // Eski modal açma fonksiyonu taslağı (Senin JS kodunla entegre çalışacak)
+  function openModal(id) {
+    console.log(id + " açılıyor... (Eski JS kodundaki toggleModal mantığı buraya bağlanacak)");
   }
-}
-
-function renderManset() {
-  const wrap = document.getElementById('duyuruManset');
-  if (!wrap) return;
-  if (mansetItems.length === 0) { wrap.style.display = 'none'; return; }
-  wrap.style.display = 'block';
-  const m = mansetItems[mansetIdx];
-  const [c1, c2] = mansetColors(m.category);
-  wrap.innerHTML = `
-    <div class="manset-nav">
-      ${mansetItems.length > 1 ? '<button type="button" class="manset-nav-btn" id="mansetPrevBtn" aria-label="Önceki">‹</button>' : ''}
-      <div class="manset-card" style="--manset-c1:${c1}; --manset-c2:${c2};" id="mansetCard">
-        <span class="manset-tag">${catNames[m.category] || 'Genel'}</span>
-        <div class="manset-title">${esc(m.title)}</div>
-        <div class="manset-date">📅 ${formatTime(m.time)}</div>
-      </div>
-      ${mansetItems.length > 1 ? '<button type="button" class="manset-nav-btn" id="mansetNextBtn" aria-label="Sonraki">›</button>' : ''}
-    </div>
-    ${mansetItems.length > 1 ? `<div class="manset-dots">${mansetItems.map((_, i) => `<button type="button" class="manset-dot ${i === mansetIdx ? 'active' : ''}" data-dot-idx="${i}" aria-label="Duyuru ${i + 1}"></button>`).join('')}</div>` : ''}
-  `;
-  document.getElementById('mansetCard').addEventListener('click', () => openDuyuruDetay(m.id));
-  const prevBtn = document.getElementById('mansetPrevBtn');
-  const nextBtn = document.getElementById('mansetNextBtn');
-  if (prevBtn) prevBtn.addEventListener('click', () => { mansetIdx = (mansetIdx - 1 + mansetItems.length) % mansetItems.length; renderManset(); });
-  if (nextBtn) nextBtn.addEventListener('click', () => { mansetIdx = (mansetIdx + 1) % mansetItems.length; renderManset(); });
-  wrap.querySelectorAll('[data-dot-idx]').forEach(d => {
-    d.addEventListener('click', () => { mansetIdx = parseInt(d.dataset.dotIdx, 10); renderManset(); });
-  });
-}
-
-loadManset();
-
-// ---------- DUYURU DETAY POPUP (ajax) ----------
-let duyuruDetayCurrent = null;
-
-async function openDuyuruDetay(id) {
-  const m = historyItemsCache.find(x => x.id === id);
-  if (!m) return;
-  duyuruDetayCurrent = m;
-  const [c1] = mansetColors(m.category);
-  document.getElementById('duyuruDetayTag').textContent = catNames[m.category] || 'Genel';
-  document.getElementById('duyuruDetayTag').style.background = c1;
-  document.getElementById('duyuruDetayTitle').textContent = m.title;
-  document.getElementById('duyuruDetayMeta').textContent = '📅 ' + formatTime(m.time) + (m.editedAt ? ' · düzenlendi' : '');
-  document.getElementById('duyuruDetayBody').textContent = m.body;
-  document.getElementById('duyuruDetayAttach').innerHTML = renderAttachment(m.attachment);
-
-  const readCount = (m.reads && m.reads.length) || 0;
-  document.getElementById('duyuruDetayReadInfo').textContent = `👁 ${readCount} kişi okudu`;
-
-  const isRead = getReadIds().includes(m.id);
-  const readBtn = document.getElementById('duyuruDetayReadBtn');
-  readBtn.textContent = isRead ? '✓ Okundu' : '👁 Okudum';
-  readBtn.disabled = isRead;
-  readBtn.onclick = async () => {
-    await markAsRead(m.id);
-    readBtn.textContent = '✓ Okundu';
-    readBtn.disabled = true;
-    const listBtn = document.querySelector(`[data-read-id="${m.id}"]`);
-    if (listBtn) { listBtn.classList.add('done'); listBtn.innerHTML = '✓ Okundu'; }
-    const cur = historyItemsCache.find(x => x.id === m.id);
-    if (cur) {
-      cur.reads = cur.reads || [];
-      document.getElementById('duyuruDetayReadInfo').textContent = `👁 ${cur.reads.length} kişi okudu`;
-    }
-  };
-
-  document.getElementById('duyuruDetayOverlay').classList.add('show');
-}
-
-document.getElementById('duyuruDetayCloseBtn').addEventListener('click', () => {
-  document.getElementById('duyuruDetayOverlay').classList.remove('show');
-});
-document.getElementById('duyuruDetayOverlay').addEventListener('click', (e) => {
-  if (e.target.id === 'duyuruDetayOverlay') document.getElementById('duyuruDetayOverlay').classList.remove('show');
-});
-
-document.getElementById('duyuruDetayShareBtn').addEventListener('click', async () => {
-  const m = duyuruDetayCurrent;
-  if (!m) return;
-  const shareText = `📢 ${m.title}\n\n${m.body}`;
-  if (navigator.share) {
-    try { await navigator.share({ title: m.title, text: shareText }); } catch {}
-  } else {
-    try {
-      await navigator.clipboard.writeText(shareText);
-      showToast('Duyuru metni panoya kopyalandı.', 'ok');
-    } catch {
-      showToast('Paylaşım desteklenmiyor, metni elle kopyalayın.', 'err');
-    }
-  }
-});
-
-async function loadReadOnlyList(endpoint, listId, emptyText, renderItem, allowToggle) {
-  const listEl = document.getElementById(listId);
-  try {
-    const res = await fetch(endpoint);
-    const data = await res.json();
-    if (!data.items || data.items.length === 0) { listEl.className = 'list-empty'; listEl.textContent = emptyText; return; }
-    listEl.className = '';
-    listEl.innerHTML = data.items.map(renderItem).join('');
-    if (allowToggle) {
-      listEl.querySelectorAll('[data-toggle-id]').forEach(c => c.addEventListener('change', async () => {
-        try { await fetch(endpoint + '/' + c.dataset.toggleId + '/toggle', { method: 'POST' }); } catch {}
-      }));
-    }
-  } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
-}
-
-// --- YEMEKHANE MENÜSÜ (haftalık, salt okunur — ekleme admin panelinden yapılır) ---
-const DISH_LABELS = ['Çorba', 'Ana Yemek', 'Yardımcı Yemek', 'Tatlı / Ekstra'];
-const DISH_ICONS = ['🍲', '🍗', '🍚', '🍰'];
-const TR_DOW_NAMES = ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
-
-let menuAllItems = [];
-let menuWeekStart = (() => {
-  const d = new Date();
-  const dow = (d.getDay() + 6) % 7; // Pzt=0
-  d.setDate(d.getDate() - dow);
-  d.setHours(0,0,0,0);
-  return d;
-})();
-
-function menuPad2(n) { return String(n).padStart(2, '0'); }
-function menuDateKeyFromDate(d) { return d.getFullYear() + '-' + menuPad2(d.getMonth()+1) + '-' + menuPad2(d.getDate()); }
-
-async function loadMenuData() {
-  try {
-    const res = await fetch('/api/menu');
-    const data = await res.json();
-    menuAllItems = data.items || [];
-  } catch {}
-  renderMenuWeek();
-}
-
-function renderMenuWeek() {
-  const weekEnd = new Date(menuWeekStart); weekEnd.setDate(weekEnd.getDate() + 4);
-  document.getElementById('menuWeekTitle').textContent = menuWeekStart.getDate() + ' ' + TR_MONTHS[menuWeekStart.getMonth()].slice(0,3) + ' – ' + weekEnd.getDate() + ' ' + TR_MONTHS[weekEnd.getMonth()].slice(0,3);
-
-  const today = new Date(); today.setHours(0,0,0,0);
-  const cardsEl = document.getElementById('menuWeekCards');
-  let html = '';
-  for (let i = 0; i < 5; i++) {
-    const d = new Date(menuWeekStart); d.setDate(d.getDate() + i);
-    const key = menuDateKeyFromDate(d);
-    const isToday = d.getTime() === today.getTime();
-    const item = menuAllItems.find(m => m.date === key);
-    const holidayName = getHolidayName(key);
-    html += '<div class="list-item" style="flex-direction:column; align-items:stretch;' + (isToday ? ' border-left-width:6px;' : '') + '">' +
-      '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">' +
-        '<span style="font-family:\'Fraunces\',serif; font-weight:700; font-size:14px;">' + TR_DOW_NAMES[i] + ' — ' + d.getDate() + ' ' + TR_MONTHS[d.getMonth()] + (isToday ? ' <span style="color:var(--amber); font-size:11px;">(Bugün)</span>' : '') + '</span>' +
-      '</div>' +
-      (holidayName ? '<div style="font-size:11.5px; color:var(--clay); margin-bottom:6px;">🎉 ' + esc(holidayName) + ' — yemekhane kapalı olabilir</div>' : '') +
-      (item
-        ? '<div style="display:grid; grid-template-columns:1fr 1fr; gap:6px 14px;">' +
-            item.dishes.map((dish, idx) => dish ? '<div style="font-size:12.5px; color:#444;">' + DISH_ICONS[idx] + ' ' + esc(dish) + '</div>' : '').join('') +
-          '</div>'
-        : '<div style="font-size:12px; color:#999;">Menü henüz girilmedi.</div>') +
-    '</div>';
-  }
-  cardsEl.innerHTML = html;
-}
-
-document.getElementById('menuPrevWeekBtn').addEventListener('click', () => {
-  menuWeekStart.setDate(menuWeekStart.getDate() - 7);
-  renderMenuWeek();
-});
-document.getElementById('menuNextWeekBtn').addEventListener('click', () => {
-  menuWeekStart.setDate(menuWeekStart.getDate() + 7);
-  renderMenuWeek();
-});
-
-loadMenuData();
-
-
-loadReadOnlyList('/api/phones', 'phonesList', 'Henüz telefon eklenmedi.', p => `
-  <div class="list-item"><div class="li-main"><div class="li-title">${esc(p.name)}</div><a class="li-phone" href="tel:${esc(p.number)}">${esc(p.number)}</a>${renderAttachment(p.attachment)}${activeAdminPassword ? `<div style="margin-top:6px;"><button class="btn-danger" onclick="deleteGeneric('phones','${p.id}')">Sil</button></div>`:''}</div></div>
-`);
-
-loadReadOnlyList('/api/tasks', 'tasksList', 'Henüz görev eklenmedi.', t => `
-  <div class="list-item ${t.done ? 'done' : ''}"><input type="checkbox" class="checkbox" data-toggle-id="${t.id}" ${t.done ? 'checked' : ''}><div class="li-main"><div class="li-title">${esc(t.text)}</div>${renderAttachment(t.attachment)}${activeAdminPassword ? `<div style="margin-top:6px;"><button class="btn-danger" onclick="deleteGeneric('tasks','${t.id}')">Sil</button></div>`:''}</div></div>
-`, true);
-
-// --- TAKVİM (salt okunur — ekleme/silme admin panelinden yapılır) ---
-const TR_DOWS = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
-let calAllItems = [];
-let calCurrentDate = new Date();
-let calCurrentView = 'month';
-
-function calPad2(n) { return String(n).padStart(2, '0'); }
-function calDateKey(y, m, d) { return y + '-' + calPad2(m + 1) + '-' + calPad2(d); }
-function calDaysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
-function calFirstWeekday(y, m) { return (new Date(y, m, 1).getDay() + 6) % 7; }
-
-async function loadCalendar() {
-  try {
-    const res = await fetch('/api/calendar');
-    const data = await res.json();
-    calAllItems = data.items || [];
-  } catch {}
-  renderCalendarCurrentView();
-}
-function calNotesForDate(dateKey) { return calAllItems.filter(i => i.date === dateKey); }
-
-async function loadUpcomingBox() {
-  try {
-    const res = await fetch('/api/calendar');
-    const data = await res.json();
-    const items = data.items || [];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const in7 = new Date(today); in7.setDate(in7.getDate() + 7);
-    const upcoming = items
-      .filter(i => { const d = new Date(i.date + 'T00:00:00'); return d >= today && d <= in7; })
-      .sort((a, b) => a.date.localeCompare(b.date));
-    const box = document.getElementById('upcomingBox');
-    const list = document.getElementById('upcomingList');
-    if (upcoming.length === 0) { box.style.display = 'none'; return; }
-    list.innerHTML = upcoming.map(u => {
-      const d = new Date(u.date + 'T00:00:00');
-      const cat = CAL_CATEGORIES[u.category] || CAL_CATEGORIES.genel;
-      const holidayName = getHolidayName(u.date);
-      return '<div style="display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.08); font-size:12.5px; color:var(--paper);">' +
-        '<span style="font-weight:700; min-width:60px;">' + d.getDate() + ' ' + TR_MONTHS[d.getMonth()].slice(0,3) + '</span>' +
-        '<span class="cal-cat-badge" style="background:' + cat.color + ';">' + cat.label + '</span>' +
-        '<span style="opacity:0.9;">' + esc(u.text) + '</span>' +
-        (holidayName ? '<span style="opacity:0.6; font-size:11px;">🎉 ' + esc(holidayName) + '</span>' : '') +
-      '</div>';
-    }).join('');
-    box.style.display = 'block';
-  } catch {}
-}
-loadUpcomingBox();
-function renderCalendarCurrentView() { if (calCurrentView === 'month') renderCalMonth(); else renderCalYear(); }
-
-function renderCalMonth() {
-  const y = calCurrentDate.getFullYear();
-  const m = calCurrentDate.getMonth();
-  document.getElementById('calMonthTitle').textContent = TR_MONTHS[m] + ' ' + y;
-  const grid = document.getElementById('calGrid');
-  let html = TR_DOWS.map(d => '<div class="cal-dow">' + d + '</div>').join('');
-  const firstWd = calFirstWeekday(y, m);
-  const totalDays = calDaysInMonth(y, m);
-  const today = new Date();
-  const todayKey = calDateKey(today.getFullYear(), today.getMonth(), today.getDate());
-  for (let i = 0; i < firstWd; i++) html += '<div class="cal-day empty"></div>';
-  for (let d = 1; d <= totalDays; d++) {
-    const key = calDateKey(y, m, d);
-    const notes = calNotesForDate(key);
-    const isToday = key === todayKey;
-    const holidayName = getHolidayName(key);
-    const dow = new Date(y, m, d).getDay(); // 0=Paz,6=Cmt
-    const isWeekend = dow === 0 || dow === 6;
-    const hasNotesAndHoliday = notes.length > 0 && holidayName;
-    const dotColor = notes.length ? ((CAL_CATEGORIES[notes[0].category] || CAL_CATEGORIES.genel).color) : null;
-    const classes = ['cal-day'];
-    if (isToday) classes.push('today');
-    if (holidayName) classes.push('holiday');
-    if (isWeekend) classes.push('weekend');
-    if (hasNotesAndHoliday) classes.push('note-holiday');
-    html += '<div class="' + classes.join(' ') + '" data-day-key="' + key + '" title="' + (holidayName ? esc(holidayName) : '') + '">' +
-      '<div class="cd-num">' + d + '</div>' +
-      (holidayName ? '<div class="cd-holiday-dot"></div>' : '') +
-      (dotColor ? '<div class="cd-dot" style="background:' + dotColor + ';"></div>' : '') +
-    '</div>';
-  }
-  grid.innerHTML = html;
-  grid.querySelectorAll('[data-day-key]').forEach(el => el.addEventListener('click', () => openCalDay(el.dataset.dayKey)));
-}
-
-function renderCalYear() {
-  const y = calCurrentDate.getFullYear();
-  document.getElementById('calYearTitle').textContent = String(y);
-  const grid = document.getElementById('calYearGrid');
-  let html = '';
-  for (let m = 0; m < 12; m++) {
-    const count = calAllItems.filter(i => i.date.startsWith(y + '-' + calPad2(m + 1))).length;
-    html += '<div class="cal-mini-month" data-mini-month="' + m + '"><div class="cmm-title">' + TR_MONTHS[m] + '</div><div class="cmm-count">' + (count > 0 ? count + ' not' : 'Not yok') + '</div></div>';
-  }
-  grid.innerHTML = html;
-  grid.querySelectorAll('[data-mini-month]').forEach(el => el.addEventListener('click', () => {
-    calCurrentDate = new Date(y, parseInt(el.dataset.miniMonth, 10), 1);
-    switchCalView('month');
-  }));
-}
-
-function switchCalView(view) {
-  calCurrentView = view;
-  document.getElementById('calMonthView').style.display = view === 'month' ? 'block' : 'none';
-  document.getElementById('calYearView').style.display = view === 'year' ? 'block' : 'none';
-  document.getElementById('calViewMonthBtn').classList.toggle('active', view === 'month');
-  document.getElementById('calViewYearBtn').classList.toggle('active', view === 'year');
-  renderCalendarCurrentView();
-}
-document.getElementById('calViewMonthBtn').addEventListener('click', () => switchCalView('month'));
-document.getElementById('calViewYearBtn').addEventListener('click', () => switchCalView('year'));
-document.getElementById('calPrevBtn').addEventListener('click', () => { calCurrentDate = new Date(calCurrentDate.getFullYear(), calCurrentDate.getMonth() - 1, 1); renderCalMonth(); });
-document.getElementById('calNextBtn').addEventListener('click', () => { calCurrentDate = new Date(calCurrentDate.getFullYear(), calCurrentDate.getMonth() + 1, 1); renderCalMonth(); });
-document.getElementById('calPrevYearBtn').addEventListener('click', () => { calCurrentDate = new Date(calCurrentDate.getFullYear() - 1, calCurrentDate.getMonth(), 1); renderCalYear(); });
-document.getElementById('calNextYearBtn').addEventListener('click', () => { calCurrentDate = new Date(calCurrentDate.getFullYear() + 1, calCurrentDate.getMonth(), 1); renderCalYear(); });
-
-function openCalDay(dateKey) {
-  const d = new Date(dateKey + 'T00:00:00');
-  document.getElementById('calDayTitle').textContent = d.getDate() + ' ' + TR_MONTHS[d.getMonth()] + ' ' + d.getFullYear();
-  const holidayName = getHolidayName(dateKey);
-  const banner = document.getElementById('calDayHolidayBanner');
-  if (banner) {
-    if (holidayName) { banner.textContent = '🎉 ' + holidayName; banner.style.display = 'block'; }
-    else { banner.style.display = 'none'; }
-  }
-  const notes = calNotesForDate(dateKey);
-  const el = document.getElementById('calDayNotesList');
-  el.innerHTML = notes.length === 0
-    ? '<div class="list-empty">Bu güne ait not yok.</div>'
-    : notes.map(n => {
-        const cat = CAL_CATEGORIES[n.category] || CAL_CATEGORIES.genel;
-        return '<div class="list-item" style="margin-bottom:8px;"><div class="li-main">' +
-          '<span class="cal-cat-badge" style="background:' + cat.color + ';">' + cat.label + '</span>' +
-          '<div class="li-body" style="margin-top:6px;">' + esc(n.text) + '</div>' +
-        '</div></div>';
-      }).join('');
-  document.getElementById('calDayOverlay').classList.add('show');
-}
-document.getElementById('calDayCloseBtn').addEventListener('click', () => document.getElementById('calDayOverlay').classList.remove('show'));
-
-document.getElementById('calSearchBtn').addEventListener('click', () => {
-  const q = document.getElementById('calSearchInput').value.trim().toLocaleLowerCase('tr');
-  const resEl = document.getElementById('calSearchResults');
-  if (!q) { resEl.style.display = 'none'; return; }
-  const matches = calAllItems.filter(i => i.text.toLocaleLowerCase('tr').includes(q));
-  resEl.innerHTML = matches.length === 0 ? '<div class="list-empty">Sonuç bulunamadı.</div>' : matches.map(m => {
-    const d = new Date(m.date + 'T00:00:00');
-    const cat = CAL_CATEGORIES[m.category] || CAL_CATEGORIES.genel;
-    return '<div class="list-item" data-goto-date="' + m.date + '" style="cursor:pointer;"><div class="li-main"><div class="li-top"><span class="li-tag">' + d.getDate() + ' ' + TR_MONTHS[d.getMonth()] + ' ' + d.getFullYear() + '</span><span class="cal-cat-badge" style="background:' + cat.color + ';">' + cat.label + '</span></div><div class="li-body">' + esc(m.text) + '</div></div></div>';
-  }).join('');
-  resEl.querySelectorAll('[data-goto-date]').forEach(el => el.addEventListener('click', () => {
-    const dt = new Date(el.dataset.gotoDate + 'T00:00:00');
-    calCurrentDate = new Date(dt.getFullYear(), dt.getMonth(), 1);
-    switchCalView('month');
-    resEl.style.display = 'none';
-    document.getElementById('calSearchInput').value = '';
-    setTimeout(() => openCalDay(el.dataset.gotoDate), 100);
-  }));
-  resEl.style.display = 'block';
-});
-document.getElementById('calSearchInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('calSearchBtn').click(); });
-
-renderCalMonth();
-loadCalendar();
-
-// --- Takvim / İşler alt sekme geçişi ---
-document.getElementById('islerSubTabTasks').addEventListener('click', () => {
-  document.getElementById('islerSubTabTasks').classList.add('active');
-  document.getElementById('islerSubTabCalendar').classList.remove('active');
-  document.getElementById('islerSubPanelTasks').style.display = 'block';
-  document.getElementById('islerSubPanelCalendar').style.display = 'none';
-});
-document.getElementById('islerSubTabCalendar').addEventListener('click', () => {
-  document.getElementById('islerSubTabCalendar').classList.add('active');
-  document.getElementById('islerSubTabTasks').classList.remove('active');
-  document.getElementById('islerSubPanelCalendar').style.display = 'block';
-  document.getElementById('islerSubPanelTasks').style.display = 'none';
-});
-
-// --- MODALLAR VE TEST ---
-function openModal(modalId) {
-  ['profileModal', 'feedbackModal', 'adminModal', 'chatModal', 'mealsModal'].forEach(id => {
-    if (id !== modalId) {
-      const el = document.getElementById(id);
-      el.classList.remove('anim-open');
-      el.style.display = 'none';
-    }
-  });
-  const m = document.getElementById(modalId);
-  m.style.display = (modalId === 'chatModal') ? 'flex' : 'block';
-  m.classList.remove('anim-close');
-  m.classList.add('anim-open');
-  if (modalId !== 'chatModal') m.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-function closeModal(modalId) {
-  const m = document.getElementById(modalId);
-  if (m.style.display === 'none') return;
-  m.classList.remove('anim-open');
-  m.classList.add('anim-close');
-  setTimeout(() => {
-    m.style.display = 'none';
-    m.classList.remove('anim-close');
-  }, 200);
-}
-function toggleModal(modalId) {
-  const m = document.getElementById(modalId);
-  const showing = m.style.display !== 'none';
-  if (showing) closeModal(modalId);
-  else openModal(modalId);
-}
-document.querySelectorAll('.card-close').forEach(btn => {
-  btn.addEventListener('click', () => closeModal(btn.dataset.close));
-});
-
-document.getElementById('testSoundBtn').addEventListener('click', () => { unlockAudioEngine(); playNotifSound(); });
-
-async function triggerLockTest() {
-  unlockAudioEngine();
-  if (!('serviceWorker' in navigator)) return;
-  const reg = await navigator.serviceWorker.ready;
-  alert('3 saniye içinde test bildirimi gönderilecek. Lütfen hemen ekranınızı kilitleyin!');
-  setTimeout(() => {
-    reg.showNotification('🚨 TEST BİLDİRİMİ', {
-      body: 'Bu kilit ekranı ve ses test mesajıdır.',
-      icon: '/icon-192.png',
-      vibrate: [800, 100, 800, 100, 800, 100, 800],
-      requireInteraction: true,
-      silent: false
-    });
-  }, 3000);
-}
-document.getElementById('testLockBtn').addEventListener('click', triggerLockTest);
-
-document.getElementById('profileLink').addEventListener('click', async (e) => {
-  e.preventDefault();
-  toggleModal('profileModal');
-  document.getElementById('profileName').value = localStorage.getItem('selfName') || '';
-  document.getElementById('profilePhone').value = localStorage.getItem('selfPhone') || '';
-  document.getElementById('profileEmail').value = localStorage.getItem('selfEmail') || '';
-  document.getElementById('profileBloodType').value = localStorage.getItem('selfBloodType') || '';
-  // Sunucudan güncel profili (avatar dahil) çek
-  try {
-    const res = await fetch('/api/self-profile/' + getDeviceId());
-    const data = await res.json();
-    if (data.profile) {
-      if (data.profile.email) document.getElementById('profileEmail').value = data.profile.email;
-      if (data.profile.bloodType) document.getElementById('profileBloodType').value = data.profile.bloodType;
-      if (data.profile.avatar) {
-        const img = document.getElementById('profileAvatarPreview');
-        img.src = data.profile.avatar; img.style.display = 'block';
-        document.getElementById('profileAvatarPlaceholder').style.display = 'none';
-      }
-    }
-  } catch {}
-});
-
-document.getElementById('profileAvatarBtn').addEventListener('click', () => {
-  document.getElementById('profileAvatarInput').click();
-});
-document.getElementById('profileAvatarInput').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const fb = document.getElementById('profileFeedback');
-  const fd = new FormData();
-  fd.append('avatar', file);
-  fd.append('deviceId', getDeviceId());
-  try {
-    const res = await fetch('/api/self-profile/avatar', { method: 'POST', body: fd });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Yüklenemedi');
-    const img = document.getElementById('profileAvatarPreview');
-    img.src = data.avatar; img.style.display = 'block';
-    document.getElementById('profileAvatarPlaceholder').style.display = 'none';
-    fb.textContent = 'Fotoğraf güncellendi.'; fb.className = 'feedback-msg ok';
-  } catch (err) { fb.textContent = err.message || 'Fotoğraf yüklenemedi.'; fb.className = 'feedback-msg err'; }
-});
-
-document.getElementById('profileSaveBtn').addEventListener('click', async () => {
-  const name = document.getElementById('profileName').value.trim();
-  const phone = document.getElementById('profilePhone').value.trim();
-  const email = document.getElementById('profileEmail').value.trim();
-  const bloodType = document.getElementById('profileBloodType').value;
-  const fb = document.getElementById('profileFeedback');
-  try {
-    await fetch('/api/self-profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), name, phone, email, bloodType }) });
-    localStorage.setItem('selfName', name); localStorage.setItem('selfPhone', phone);
-    localStorage.setItem('selfEmail', email); localStorage.setItem('selfBloodType', bloodType);
-    fb.textContent = ''; showToast('Profil kaydedildi.', 'ok');
-  } catch { fb.textContent = ''; showToast('Hata oluştu.', 'err'); }
-});
-
-document.getElementById('feedbackLink').addEventListener('click', (e) => { e.preventDefault(); toggleModal('feedbackModal'); });
-document.getElementById('feedbackSendBtn').addEventListener('click', async () => {
-  const text = document.getElementById('feedbackText').value.trim();
-  const name = document.getElementById('feedbackName').value.trim();
-  const fb = document.getElementById('feedbackModalFeedback');
-  if (!text) { showToast('Mesaj boş bırakılamaz.', 'err'); return; }
-  try {
-    const res = await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, name }) });
-    if (!res.ok) throw new Error();
-    document.getElementById('feedbackText').value = '';
-    fb.textContent = ''; showToast('İletildi, teşekkürler.', 'ok');
-  } catch { showToast('Gönderilemedi.', 'err'); }
-});
-
-// --- SOHBET ---
-let chatGeneralPoll = null;
-let chatDirectPoll = null;
-let presencePoll = null;
-let currentChatContact = null; // { deviceId, name }
-
-function hasCompleteProfile() {
-  return !!(localStorage.getItem('selfName') && localStorage.getItem('selfPhone'));
-}
-
-function escChat(s) { return (s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-function escChatAttr(s) { return escChat(s).replace(/"/g, '&quot;'); }
-function chatTime(iso) { return new Date(iso).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }); }
-
-let chatGeneralEditingId = null;
-let chatDirectEditingId = null;
-
-function chatReadTick(m, scope) {
-  if (scope === 'general') {
-    const n = (m.reads || []).length;
-    return n > 0 ? ` <span class="cb-tick read" title="${n} kişi gördü">✓✓</span>` : ' <span class="cb-tick" title="Gönderildi">✓</span>';
-  }
-  return m.read ? ' <span class="cb-tick read" title="Görüldü">✓✓</span>' : ' <span class="cb-tick" title="Gönderildi">✓</span>';
-}
-
-function renderChatMessages(container, messages, isMine, scope, editingId) {
-  const wasAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 30;
-  container.innerHTML = messages.map(m => {
-    const mine = isMine(m);
-    const name = m.name || m.fromName || '';
-
-    if (mine && editingId === m.id) {
-      return `<div class="chat-bubble mine chat-bubble-editing" data-msg-id="${m.id}">
-        <input type="text" class="chat-edit-input" id="chatEditInput-${scope}-${m.id}" value="${escChatAttr(m.text)}" maxlength="1000">
-        <div class="cb-edit-actions">
-          <button type="button" class="cb-action-btn" onclick="saveEditChatMsg('${scope}','${m.id}')" title="Kaydet">✓ Kaydet</button>
-          <button type="button" class="cb-action-btn" onclick="cancelEditChatMsg('${scope}')" title="Vazgeç">✕</button>
-        </div>
-      </div>`;
-    }
-
-    const readTick = mine ? chatReadTick(m, scope) : '';
-    const actions = mine ? `<div class="cb-actions">
-        <button type="button" class="cb-action-btn" onclick="startEditChatMsg('${scope}','${m.id}')" title="Düzenle">✏️</button>
-        <button type="button" class="cb-action-btn" onclick="deleteOwnChatMsg('${scope}','${m.id}')" title="Sil">🗑️</button>
-      </div>` : '';
-
-    return `<div class="chat-bubble ${mine ? 'mine' : 'theirs'}" data-msg-id="${m.id}">
-      ${!mine ? `<div class="cb-name">${escChat(name)}</div>` : ''}
-      <div>${escChat(m.text)}</div>
-      <div class="cb-time">${chatTime(m.time)}${m.editedAt ? ' · düzenlendi' : ''}${readTick}</div>
-      ${actions}
-    </div>`;
-  }).join('') || '<div style="text-align:center;color:#999;font-size:12px;padding:20px 0;">Henüz mesaj yok. İlk mesajı sen yaz!</div>';
-  if (wasAtBottom || messages.length <= 1) container.scrollTop = container.scrollHeight;
-
-  const editEl = editingId && document.getElementById('chatEditInput-' + scope + '-' + editingId);
-  if (editEl) {
-    editEl.focus();
-    editEl.setSelectionRange(editEl.value.length, editEl.value.length);
-    editEl.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') saveEditChatMsg(scope, editingId);
-      if (e.key === 'Escape') cancelEditChatMsg(scope);
-    });
-  }
-}
-
-function startEditChatMsg(scope, id) {
-  if (scope === 'general') chatGeneralEditingId = id; else chatDirectEditingId = id;
-  if (scope === 'general') loadGeneralChat(); else loadDirectChat();
-}
-function cancelEditChatMsg(scope) {
-  if (scope === 'general') chatGeneralEditingId = null; else chatDirectEditingId = null;
-  if (scope === 'general') loadGeneralChat(); else loadDirectChat();
-}
-async function saveEditChatMsg(scope, id) {
-  const input = document.getElementById('chatEditInput-' + scope + '-' + id);
-  const text = input.value.trim();
-  if (!text) return;
-  try {
-    const url = scope === 'general' ? '/api/chat/general/' + id : '/api/chat/direct/' + id;
-    const res = await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), text }) });
-    const data = await res.json();
-    if (!res.ok) { alert(data.error || 'Güncellenemedi'); return; }
-  } catch { alert('Güncellenemedi.'); }
-  if (scope === 'general') chatGeneralEditingId = null; else chatDirectEditingId = null;
-  if (scope === 'general') loadGeneralChat(); else loadDirectChat();
-}
-async function deleteOwnChatMsg(scope, id) {
-  if (!confirm('Bu mesajı silmek istediğine emin misin?')) return;
-  try {
-    const url = scope === 'general' ? '/api/chat/general/' + id : '/api/chat/direct/' + id;
-    const res = await fetch(url, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId() }) });
-    if (!res.ok) { const d = await res.json(); alert(d.error || 'Silinemedi'); return; }
-  } catch { alert('Silinemedi.'); }
-  if (scope === 'general') loadGeneralChat(); else loadDirectChat();
-}
-
-async function markGeneralRead(ids) {
-  if (!ids.length) return;
-  try { await fetch('/api/chat/general/read-bulk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), ids }) }); } catch {}
-}
-async function markDirectRead(ids) {
-  if (!ids.length) return;
-  try { await fetch('/api/chat/direct/read-bulk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), ids }) }); } catch {}
-}
-
-async function sendPresenceHeartbeat() {
-  if (!hasCompleteProfile()) return;
-  try { await fetch('/api/presence', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId() }) }); } catch {}
-}
-
-// Sohbet açıkken bile telefon arka plana düşünce (ekran kilitlendi, başka uygulamaya geçildi)
-// "hayattayım" sinyalini durdur — yoksa kişi saatlerdir uygulamayı görmese bile "Çevrimiçi" görünmeye devam eder.
-// Öne gelince hemen bir sinyal daha at ve pollamayı yeniden başlat.
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') {
-    if (presencePoll) { clearInterval(presencePoll); presencePoll = null; }
-  } else if (document.visibilityState === 'visible' && hasCompleteProfile()) {
-    sendPresenceHeartbeat();
-    if (presencePoll) clearInterval(presencePoll);
-    presencePoll = setInterval(sendPresenceHeartbeat, 45000);
-  }
-});
-
-async function loadGeneralChat() {
-  try {
-    const res = await fetch('/api/chat/general');
-    const data = await res.json();
-    const messages = data.messages || [];
-    const myId = getDeviceId();
-    renderChatMessages(document.getElementById('chatGeneralMessages'), messages, m => m.deviceId === myId, 'general', chatGeneralEditingId);
-    const unreadIds = messages.filter(m => m.deviceId !== myId && !(m.reads || []).includes(myId)).map(m => m.id);
-    markGeneralRead(unreadIds);
-  } catch {}
-}
-
-async function sendGeneralChat() {
-  const input = document.getElementById('chatGeneralInput');
-  const text = input.value.trim();
-  if (!text) return;
-  input.value = '';
-  try {
-    const res = await fetch('/api/chat/general', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), text }) });
-    const data = await res.json();
-    if (!res.ok) { alert(data.error || 'Gönderilemedi'); return; }
-    loadGeneralChat();
-  } catch { alert('Gönderilemedi.'); }
-}
-
-function formatLastSeen(ts) {
-  if (!ts) return '';
-  const d = new Date(ts);
-  const now = new Date();
-  const time = d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-  if (d.toDateString() === now.toDateString()) return time;
-  const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
-  if (d.toDateString() === yesterday.toDateString()) return 'dün ' + time;
-  return d.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' }) + ' ' + time;
-}
-
-async function loadContacts() {
-  const el = document.getElementById('chatContactList');
-  try {
-    const res = await fetch('/api/chat/contacts?deviceId=' + encodeURIComponent(getDeviceId()));
-    const data = await res.json();
-    if (!data.contacts || data.contacts.length === 0) {
-      el.className = 'list-empty'; el.textContent = 'Henüz profilini tamamlamış başka kullanıcı yok.'; return;
-    }
-    el.className = '';
-    el.innerHTML = data.contacts.map(c => {
-      const statusHtml = c.online
-        ? 'Çevrimiçi'
-        : (c.lastSeen ? `<i>Son görülme: ${formatLastSeen(c.lastSeen)}</i>` : 'Çevrimdışı');
-      return `
-      <div class="contact-row" onclick="openDirectChat('${c.deviceId}', '${escChat(c.name).replace(/'/g, "\\'")}')">
-        <div class="contact-avatar">${c.avatar ? `<img src="${c.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : (c.name || '?').charAt(0).toUpperCase()}
-          ${c.online ? '<span class="contact-online-dot"></span>' : ''}
-        </div>
-        <div>
-          <div class="contact-name">${escChat(c.name)}</div>
-          <div class="contact-status">${statusHtml}</div>
-        </div>
-      </div>
-    `;
-    }).join('');
-  } catch { el.className = 'list-empty'; el.textContent = 'Yüklenemedi.'; }
-}
-
-function openDirectChat(deviceId, name) {
-  currentChatContact = { deviceId, name };
-  document.getElementById('chatContactList').style.display = 'none';
-  document.getElementById('chatDirectConversation').style.display = 'block';
-  document.getElementById('chatDirectTitle').textContent = name;
-  loadDirectChat();
-  if (chatDirectPoll) clearInterval(chatDirectPoll);
-  chatDirectPoll = setInterval(loadDirectChat, 4000);
-}
-
-document.getElementById('chatBackToContacts').addEventListener('click', () => {
-  document.getElementById('chatDirectConversation').style.display = 'none';
-  document.getElementById('chatContactList').style.display = 'block';
-  currentChatContact = null;
-  if (chatDirectPoll) { clearInterval(chatDirectPoll); chatDirectPoll = null; }
-  loadContacts();
-});
-
-async function loadDirectChat() {
-  if (!currentChatContact) return;
-  try {
-    const res = await fetch(`/api/chat/direct?deviceId=${encodeURIComponent(getDeviceId())}&withId=${encodeURIComponent(currentChatContact.deviceId)}`);
-    const data = await res.json();
-    const messages = data.messages || [];
-    const myId = getDeviceId();
-    renderChatMessages(document.getElementById('chatDirectMessages'), messages, m => m.fromDeviceId === myId, 'direct', chatDirectEditingId);
-    const unreadIds = messages.filter(m => m.toDeviceId === myId && !m.read).map(m => m.id);
-    markDirectRead(unreadIds);
-  } catch {}
-}
-
-async function sendDirectChat() {
-  if (!currentChatContact) return;
-  const input = document.getElementById('chatDirectInput');
-  const text = input.value.trim();
-  if (!text) return;
-  input.value = '';
-  try {
-    const res = await fetch('/api/chat/direct', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ deviceId: getDeviceId(), toDeviceId: currentChatContact.deviceId, text })
-    });
-    const data = await res.json();
-    if (!res.ok) { alert(data.error || 'Gönderilemedi'); return; }
-    loadDirectChat();
-  } catch { alert('Gönderilemedi.'); }
-}
-
-document.getElementById('chatGeneralSendBtn').addEventListener('click', sendGeneralChat);
-document.getElementById('chatGeneralInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendGeneralChat(); });
-document.getElementById('chatDirectSendBtn').addEventListener('click', sendDirectChat);
-document.getElementById('chatDirectInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendDirectChat(); });
-
-document.getElementById('chatTabGeneral').addEventListener('click', () => {
-  document.getElementById('chatTabGeneral').classList.add('active');
-  document.getElementById('chatTabDirect').classList.remove('active');
-  document.getElementById('chatPanelGeneral').style.display = 'block';
-  document.getElementById('chatPanelDirect').style.display = 'none';
-  if (chatDirectPoll) { clearInterval(chatDirectPoll); chatDirectPoll = null; }
-  loadGeneralChat();
-  if (chatGeneralPoll) clearInterval(chatGeneralPoll);
-  chatGeneralPoll = setInterval(loadGeneralChat, 4000);
-});
-
-document.getElementById('chatTabDirect').addEventListener('click', () => {
-  document.getElementById('chatTabDirect').classList.add('active');
-  document.getElementById('chatTabGeneral').classList.remove('active');
-  document.getElementById('chatPanelDirect').style.display = 'block';
-  document.getElementById('chatPanelGeneral').style.display = 'none';
-  if (chatGeneralPoll) { clearInterval(chatGeneralPoll); chatGeneralPoll = null; }
-  document.getElementById('chatDirectConversation').style.display = 'none';
-  document.getElementById('chatContactList').style.display = 'block';
-  currentChatContact = null;
-  loadContacts();
-});
-
-document.getElementById('chatGoProfileBtn').addEventListener('click', () => {
-  closeModal('chatModal');
-  document.getElementById('profileLink').click();
-});
-
-document.getElementById('chatLink').addEventListener('click', (e) => {
-  e.preventDefault();
-  openModal('chatModal');
-  if (hasCompleteProfile()) {
-    document.getElementById('chatLockedNotice').style.display = 'none';
-    document.getElementById('chatUnlocked').style.display = 'block';
-    sendPresenceHeartbeat();
-    if (presencePoll) clearInterval(presencePoll);
-    presencePoll = setInterval(sendPresenceHeartbeat, 45000);
-    loadGeneralChat();
-    if (chatGeneralPoll) clearInterval(chatGeneralPoll);
-    chatGeneralPoll = setInterval(loadGeneralChat, 4000);
-  } else {
-    document.getElementById('chatLockedNotice').style.display = 'block';
-    document.getElementById('chatUnlocked').style.display = 'none';
-  }
-});
-
-// Sohbet kapatılınca polling'i durdur
-document.querySelectorAll('.card-close').forEach(btn => {
-  if (btn.dataset.close === 'chatModal') {
-    btn.addEventListener('click', () => {
-      if (chatGeneralPoll) { clearInterval(chatGeneralPoll); chatGeneralPoll = null; }
-      if (chatDirectPoll) { clearInterval(chatDirectPoll); chatDirectPoll = null; }
-    });
-  }
-});
-
-
-let selectedCategory = 'genel';
-document.getElementById('catRow').addEventListener('click', (e) => {
-  const btn = e.target.closest('.cat-btn'); if (!btn) return;
-  document.querySelectorAll('#catRow .cat-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active'); selectedCategory = btn.dataset.cat;
-});
-
-
-document.getElementById('adminLoginBtn').addEventListener('click', async () => {
-  const pass = document.getElementById('adminGlobalPassword').value.trim();
-  const fb = document.getElementById('adminAuthFeedback');
-  try {
-    const res = await fetch('/api/admin-check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pass }) });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Şifre hatalı');
-    activeAdminPassword = pass;
-    document.getElementById('adminAuthSection').style.display = 'none';
-    document.getElementById('adminControls').style.display = 'block';
-    loadHistory();
-  } catch (err) { fb.textContent = err.message; fb.className = 'feedback-msg err'; }
-});
-
-const admTabs = { send: 'admPanelSend', stats: 'admPanelStats', items: 'admPanelItems', inbox: 'admPanelInbox', devices: 'admPanelDevices' };
-Object.keys(admTabs).forEach(key => {
-  document.getElementById('admTab' + key.charAt(0).toUpperCase() + key.slice(1)).addEventListener('click', () => {
-    Object.keys(admTabs).forEach(k => {
-      document.getElementById('admTab' + k.charAt(0).toUpperCase() + k.slice(1)).classList.remove('active');
-      document.getElementById(admTabs[k]).style.display = 'none';
-    });
-    document.getElementById('admTab' + key.charAt(0).toUpperCase() + key.slice(1)).classList.add('active');
-    document.getElementById(admTabs[key]).style.display = 'block';
-    if (key === 'inbox') loadAdminInbox();
-    if (key === 'devices') loadAdminDevices();
-    if (key === 'stats') loadAdminStats();
-  });
-});
-
-async function loadAdminStats() {
-  const sumEl = document.getElementById('adminStatsSummary');
-  const perMsgEl = document.getElementById('adminStatsPerMessage');
-  try {
-    const res = await fetch('/api/stats?password=' + encodeURIComponent(activeAdminPassword));
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Yüklenemedi');
-    sumEl.className = '';
-    sumEl.innerHTML = `
-      <div class="admin-box" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div><div style="font-size:22px;font-weight:700;">${data.totalSubscribers}</div><div style="font-size:11px;color:#888;">Toplam Abone</div></div>
-        <div><div style="font-size:22px;font-weight:700;">${data.namedDevices}</div><div style="font-size:11px;color:#888;">Adını Girmiş Kişi</div></div>
-        <div><div style="font-size:22px;font-weight:700;">${data.todaysMessages}</div><div style="font-size:11px;color:#888;">Bugün Gönderilen Duyuru</div></div>
-        <div><div style="font-size:22px;font-weight:700;">${data.totalMessages}</div><div style="font-size:11px;color:#888;">Toplam Duyuru</div></div>
-        <div><div style="font-size:22px;font-weight:700;">${data.todaysFeedback}</div><div style="font-size:11px;color:#888;">Bugünkü Görüş/Öneri</div></div>
-        <div><div style="font-size:22px;font-weight:700;">${data.totalFeedback}</div><div style="font-size:11px;color:#888;">Toplam Görüş/Öneri</div></div>
-      </div>`;
-
-    if (!data.perMessage || data.perMessage.length === 0) {
-      perMsgEl.className = 'list-empty'; perMsgEl.textContent = 'Henüz duyuru yok.';
-    } else {
-      perMsgEl.className = '';
-      perMsgEl.innerHTML = data.perMessage.map(m => `
-        <div class="admin-box">
-          <div style="font-size:11px;color:#888;">${formatTime(m.time)} · ${catNames[m.category] || 'Genel'}</div>
-          <div style="font-size:13px;margin:4px 0;"><b>${esc(m.title)}</b></div>
-          <div style="font-size:12px;color:var(--clay);cursor:pointer;" onclick="showReads('${m.id}')">👁 ${m.readCount} kişi okudu — detay için tıklayın</div>
-        </div>
-      `).join('');
-    }
-  } catch (err) {
-    sumEl.className = 'list-empty'; sumEl.textContent = err.message;
-    perMsgEl.className = ''; perMsgEl.innerHTML = '';
-  }
-}
-
-document.getElementById('doSendBtn').addEventListener('click', async () => {
-  const title = document.getElementById('sendTitle').value.trim();
-  const body = document.getElementById('sendBody').value.trim();
-  const fileInput = document.getElementById('sendAttachment');
-  const fb = document.getElementById('sendFeedback');
-
-  if (!title || !body) { fb.textContent = 'Başlık ve mesaj zorunludur.'; fb.className = 'feedback-msg err'; return; }
-
-  const formData = new FormData();
-  formData.append('password', activeAdminPassword);
-  formData.append('category', selectedCategory);
-  formData.append('title', title);
-  formData.append('body', body);
-  if (fileInput.files[0]) formData.append('attachment', fileInput.files[0]);
-
-  fb.textContent = 'Gönderiliyor...'; fb.className = 'feedback-msg';
-  try {
-    const res = await fetch('/api/send', { method: 'POST', body: formData });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Gönderilemedi');
-    fb.textContent = `Gönderildi: ${data.sent} kişiye ulaştı.`; fb.className = 'feedback-msg ok';
-    document.getElementById('sendTitle').value = ''; document.getElementById('sendBody').value = ''; fileInput.value = '';
-    loadHistory();
-  } catch (err) { fb.textContent = err.message; fb.className = 'feedback-msg err'; }
-});
-
-document.getElementById('itemTypeSelect').addEventListener('change', (e) => {
-  const val = e.target.value;
-  document.getElementById('itemField1Label').textContent = val === 'phones' ? 'İsim / Birim' : 'Metin / Açıklama';
-  document.getElementById('itemField2Wrapper').style.display = val === 'phones' ? 'block' : 'none';
-});
-
-document.getElementById('doAddItemBtn').addEventListener('click', async () => {
-  const type = document.getElementById('itemTypeSelect').value;
-  const f1 = document.getElementById('itemField1').value.trim();
-  const f2 = document.getElementById('itemField2').value.trim();
-  const fileInput = document.getElementById('itemAttachment');
-  const fb = document.getElementById('itemFeedback');
-
-  if (!f1) { fb.textContent = 'Gerekli alanları doldurun.'; fb.className = 'feedback-msg err'; return; }
-
-  const formData = new FormData();
-  formData.append('password', activeAdminPassword);
-  if (type === 'phones') { formData.append('name', f1); formData.append('number', f2); }
-  else { formData.append('text', f1); }
-  if (fileInput.files[0]) formData.append('attachment', fileInput.files[0]);
-
-  try {
-    const res = await fetch(`/api/${type}`, { method: 'POST', body: formData });
-    if (!res.ok) throw new Error('Eklenemedi');
-    fb.textContent = 'Başarıyla eklendi.'; fb.className = 'feedback-msg ok';
-    document.getElementById('itemField1').value = ''; document.getElementById('itemField2').value = ''; fileInput.value = '';
-    location.reload();
-  } catch (err) { fb.textContent = err.message; fb.className = 'feedback-msg err'; }
-});
-
-async function loadAdminInbox() {
-  const el = document.getElementById('adminFeedbackList');
-  try {
-    const res = await fetch(`/api/feedback?password=${encodeURIComponent(activeAdminPassword)}`);
-    const data = await res.json();
-    if (!data.items || data.items.length === 0) { el.className = 'list-empty'; el.textContent = 'Gelen mesaj yok.'; return; }
-    el.className = '';
-    el.innerHTML = data.items.map(i => `
-      <div class="admin-box">
-        <div style="font-size:11px;color:#888;">${formatTime(i.time)} - <b>${esc(i.name || 'İsimsiz')}</b></div>
-        <div style="font-size:13px;margin-top:4px;color:#222;">${esc(i.text)}</div>
-      </div>
-    `).join('');
-  } catch { el.className = 'list-empty'; el.textContent = 'Yüklenemedi.'; }
-}
-
-async function loadAdminDevices() {
-  const el = document.getElementById('adminDeviceList');
-  try {
-    const res = await fetch('/api/devices');
-    const data = await res.json();
-    if (!data.devices || data.devices.length === 0) { el.className = 'list-empty'; el.textContent = 'Kayıtlı cihaz yok.'; return; }
-    el.className = '';
-    el.innerHTML = data.devices.map(d => `
-      <div class="admin-box">
-        <div style="font-size:11px;color:#888;">Cihaz ID: ...${d.deviceId.slice(-6)}${d.email ? ' · ' + esc(d.email) : ''}${d.bloodType ? ' · Kan: ' + esc(d.bloodType) : ''}</div>
-        <div style="font-size:12px;margin:4px 0;">Mevcut İsim: <b>${esc(d.name || d.suggestedName || 'Tanımlanmamış')}</b>${d.suggestedPhone ? ' · Tel: ' + esc(d.suggestedPhone) : ''}</div>
-        <div style="display:flex;gap:6px;margin-bottom:8px;">
-          <input type="text" id="dev_${d.deviceId}" placeholder="Yeni İsim Ata" style="font-size:12px;padding:4px 6px;">
-          <button class="btn-primary" style="padding:4px 8px;font-size:12px;" onclick="assignDevName('${d.deviceId}')">Kaydet</button>
-        </div>
-        <button type="button" class="btn-warning" style="padding:5px 10px;font-size:12px;" onclick="togglePersonalMsg('${d.deviceId}')">📩 Kişiye Özel Mesaj Gönder</button>
-        <div id="pm_${d.deviceId}" style="display:none;margin-top:8px;padding-top:8px;border-top:1px dashed #ddd;">
-          <input type="text" id="pmTitle_${d.deviceId}" placeholder="Başlık (örn: Yemekhane Borcu)" style="font-size:12px;padding:6px;margin-bottom:6px;">
-          <textarea id="pmBody_${d.deviceId}" placeholder="Mesaj..." style="font-size:12px;padding:6px;min-height:50px;margin-bottom:6px;"></textarea>
-          <button class="btn-primary" style="padding:5px 10px;font-size:12px;" onclick="sendPersonalMsg('${d.deviceId}')">Sadece Bu Kişiye Gönder</button>
-          <div class="feedback-msg" id="pmFeedback_${d.deviceId}"></div>
-        </div>
-      </div>
-    `).join('');
-  } catch { el.className = 'list-empty'; el.textContent = 'Yüklenemedi.'; }
-}
-
-function togglePersonalMsg(deviceId) {
-  const box = document.getElementById('pm_' + deviceId);
-  box.style.display = box.style.display === 'none' ? 'block' : 'none';
-}
-
-async function sendPersonalMsg(deviceId) {
-  const title = document.getElementById('pmTitle_' + deviceId).value.trim();
-  const body = document.getElementById('pmBody_' + deviceId).value.trim();
-  const fb = document.getElementById('pmFeedback_' + deviceId);
-  if (!title || !body) { fb.textContent = 'Başlık ve mesaj zorunlu.'; fb.className = 'feedback-msg err'; return; }
-  try {
-    const res = await fetch('/api/send-to', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: activeAdminPassword, deviceId, title, body, category: 'genel' })
-    });
-    const data = await res.json();
-    if (!res.ok || !data.ok) throw new Error(data.error || 'Gönderilemedi');
-    fb.textContent = `Gönderildi (${data.sent} cihaza ulaştı).`; fb.className = 'feedback-msg ok';
-    document.getElementById('pmTitle_' + deviceId).value = '';
-    document.getElementById('pmBody_' + deviceId).value = '';
-  } catch (err) { fb.textContent = err.message; fb.className = 'feedback-msg err'; }
-}
-
-async function assignDevName(deviceId) {
-  const val = document.getElementById('dev_' + deviceId).value.trim();
-  if (!val) return;
-  try {
-    await fetch('/api/devices/name', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: activeAdminPassword, deviceId, name: val })
-    });
-    alert('İsim atandı.'); loadAdminDevices();
-  } catch { alert('Atanamadı.'); }
-}
-
-async function showReads(msgId) {
-  try {
-    const res = await fetch(`/api/messages/${msgId}/reads`);
-    const data = await res.json();
-    const names = data.reads.map(r => r.name).join('\n') || 'Henüz kimse okumadı.';
-    alert(`Okuyanlar (${data.reads.length}/${data.totalSubscribers}):\n\n` + names);
-  } catch { alert('Okuma bilgisi alınamadı.'); }
-}
-
-async function deleteMessage(id) {
-  if (!confirm('Bu duyuruyu silmek istediğinize emin misiniz?')) return;
-  try {
-    await fetch('/api/messages/' + id, { method: 'DELETE', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ password: activeAdminPassword }) });
-    loadHistory();
-  } catch { alert('Silinemedi.'); }
-}
-
-async function deleteGeneric(type, id) {
-  if (!confirm('Silmek istediğinize emin misiniz?')) return;
-  try {
-    await fetch(`/api/${type}/${id}`, { method: 'DELETE', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ password: activeAdminPassword }) });
-    location.reload();
-  } catch { alert('Silinemedi.'); }
-}
-
-// ---------- YEMEK KAYDIM (self-servis kayıt / giriş / OTP / kişisel yemekhane geçmişi) ----------
-function mealsGetToken() { return localStorage.getItem('mealsToken') || ''; }
-function mealsSetToken(t) { if (t) localStorage.setItem('mealsToken', t); else localStorage.removeItem('mealsToken'); }
-let mealsPendingEmail = '';
-
-function mealsShowStep(step) {
-  ['mealsStepRegister', 'mealsStepVerify', 'mealsStepLogin', 'mealsStepRecords'].forEach(id => {
-    document.getElementById(id).style.display = (id === step) ? 'block' : 'none';
-  });
-}
-
-document.getElementById('mealsLink').addEventListener('click', (e) => {
-  e.preventDefault();
-  openModal('mealsModal');
-  if (mealsGetToken()) { mealsShowStep('mealsStepRecords'); mealsLoadRecords(); }
-  else { mealsShowStep('mealsStepRegister'); }
-});
-
-document.getElementById('mealsGoLoginLink').addEventListener('click', (e) => { e.preventDefault(); mealsShowStep('mealsStepLogin'); });
-document.getElementById('mealsGoRegisterLink').addEventListener('click', (e) => { e.preventDefault(); mealsShowStep('mealsStepRegister'); });
-
-document.getElementById('mealsRegisterBtn').addEventListener('click', async () => {
-  const adSoyad = document.getElementById('mealsRegName').value.trim();
-  const telefon = document.getElementById('mealsRegPhone').value.trim();
-  const email = document.getElementById('mealsRegEmail').value.trim();
-  const sifre = document.getElementById('mealsRegPass').value;
-  const fb = document.getElementById('mealsRegFeedback');
-  if (!adSoyad || !telefon || !email || !sifre) { fb.textContent = 'Tüm alanları doldurun.'; fb.className = 'feedback-msg err'; return; }
-  const btn = document.getElementById('mealsRegisterBtn');
-  btn.disabled = true; fb.textContent = 'Gönderiliyor...'; fb.className = 'feedback-msg';
-  try {
-    const res = await fetch('/api/self-register', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ adSoyad, telefon, email, sifre })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Kayıt olunamadı.');
-    mealsPendingEmail = email;
-    fb.textContent = ''; fb.className = 'feedback-msg';
-    mealsShowStep('mealsStepVerify');
-  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
-  finally { btn.disabled = false; }
-});
-
-document.getElementById('mealsVerifyBtn').addEventListener('click', async () => {
-  const kod = document.getElementById('mealsVerifyCode').value.trim();
-  const fb = document.getElementById('mealsVerifyFeedback');
-  if (!kod) { fb.textContent = 'Kodu girin.'; fb.className = 'feedback-msg err'; return; }
-  const btn = document.getElementById('mealsVerifyBtn');
-  btn.disabled = true; fb.textContent = 'Doğrulanıyor...'; fb.className = 'feedback-msg';
-  try {
-    const res = await fetch('/api/self-verify', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: mealsPendingEmail, kod })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Doğrulanamadı.');
-    fb.textContent = 'E-posta doğrulandı! Şimdi giriş yapabilirsin.'; fb.className = 'feedback-msg ok';
-    document.getElementById('mealsLoginEmail').value = mealsPendingEmail;
-    setTimeout(() => mealsShowStep('mealsStepLogin'), 900);
-  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
-  finally { btn.disabled = false; }
-});
-
-document.getElementById('mealsResendBtn').addEventListener('click', async () => {
-  const fb = document.getElementById('mealsVerifyFeedback');
-  try {
-    const res = await fetch('/api/self-resend', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: mealsPendingEmail })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Gönderilemedi.');
-    fb.textContent = 'Yeni kod gönderildi.'; fb.className = 'feedback-msg ok';
-  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
-});
-
-document.getElementById('mealsLoginBtn').addEventListener('click', async () => {
-  const email = document.getElementById('mealsLoginEmail').value.trim();
-  const sifre = document.getElementById('mealsLoginPass').value;
-  const fb = document.getElementById('mealsLoginFeedback');
-  if (!email || !sifre) { fb.textContent = 'E-posta ve şifre gerekli.'; fb.className = 'feedback-msg err'; return; }
-  const btn = document.getElementById('mealsLoginBtn');
-  btn.disabled = true; fb.textContent = 'Giriş yapılıyor...'; fb.className = 'feedback-msg';
-  try {
-    const res = await fetch('/api/self-login', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, sifre })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Giriş yapılamadı.');
-    mealsSetToken(data.token);
-    fb.textContent = ''; fb.className = 'feedback-msg';
-    mealsShowStep('mealsStepRecords');
-    mealsLoadRecords();
-  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
-  finally { btn.disabled = false; }
-});
-
-document.getElementById('mealsLogoutBtn').addEventListener('click', () => {
-  mealsSetToken(null);
-  mealsShowStep('mealsStepLogin');
-});
-
-async function mealsLoadRecords() {
-  const listEl = document.getElementById('mealsRecordsList');
-  const whoEl = document.getElementById('mealsRecordsWho');
-  const debtEl = document.getElementById('mealsDebtAmount');
-  listEl.className = 'list-empty'; listEl.textContent = 'Yükleniyor...';
-  try {
-    const res = await fetch('/api/my-meals', { headers: { 'Authorization': 'Bearer ' + mealsGetToken() } });
-    const data = await res.json();
-    if (res.status === 401) { mealsSetToken(null); mealsShowStep('mealsStepLogin'); return; }
-    if (!data.ok) { listEl.textContent = data.error || 'Kayıtlar alınamadı.'; return; }
-
-    whoEl.textContent = `${data.adSoyad || ''}${data.birim ? ' · ' + data.birim : ''}`;
-    debtEl.textContent = (data.toplamBorc || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₺';
-
-    if (!data.kayitlar || data.kayitlar.length === 0) {
-      listEl.className = 'list-empty'; listEl.textContent = 'Henüz yemek kaydın yok.'; return;
-    }
-    listEl.className = '';
-    listEl.innerHTML = data.kayitlar.map(k => {
-      const tarih = new Date(k.tarih + 'T00:00:00').toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
-      const durumRenk = k.odemeDurumu === 'Borçlu' ? 'var(--clay)' : 'var(--sage)';
-      return `<div class="list-item"><div class="li-main">
-          <div class="li-top"><span class="li-time">${tarih}</span><span style="font-size:10px;font-weight:700;color:${durumRenk};">${esc(k.odemeDurumu || '')}</span></div>
-          <div class="li-title">${esc(k.yemek || 'Menü bilgisi yok')}</div>
-          <div class="li-body">Kendi: ${k.kendi} ${k.misafir ? '· Misafir: ' + k.misafir : ''} · Tutar: ${(k.tutar || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</div>
-        </div></div>`;
-    }).join('');
-  } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
-}
 </script>
 </body>
 </html>
