@@ -320,10 +320,13 @@
   .cal-day.empty { background: transparent; box-shadow: none; cursor: default; }
   .cal-day.empty:hover { transform: none; }
   .cal-day.today { outline: 2.5px solid var(--amber); outline-offset: 1px; }
+  .cal-day.weekend .cd-num { color: var(--clay); }
   .cal-day.holiday { background: #FDECEA; }
+  .cal-day.note-holiday { border: 2px solid #B03030; }
   .cal-day .cd-num { font-family: 'Fraunces', serif; font-weight: 700; font-size: 15px; }
   .cal-day .cd-dot { position: absolute; bottom: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 0 2px var(--paper); }
-  .cal-day .cd-holiday-dot { position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: #D93838; box-shadow: 0 0 0 2px var(--paper); }
+  .cal-day .cd-holiday-dot { position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: #D93838; box-shadow: 0 0 0 2px var(--paper); animation: cd-blink 2.2s ease-in-out infinite; }
+  @keyframes cd-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
   .cal-cat-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: #fff; }
   .cal-year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
   .cal-mini-month { background: var(--paper); border-radius: 8px; padding: 12px; cursor: pointer; color: var(--ink); box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: transform 0.15s ease; }
@@ -1403,8 +1406,16 @@ function renderCalMonth() {
     const notes = calNotesForDate(key);
     const isToday = key === todayKey;
     const holidayName = getHolidayName(key);
+    const dow = new Date(y, m, d).getDay(); // 0=Paz,6=Cmt
+    const isWeekend = dow === 0 || dow === 6;
+    const hasNotesAndHoliday = notes.length > 0 && holidayName;
     const dotColor = notes.length ? ((CAL_CATEGORIES[notes[0].category] || CAL_CATEGORIES.genel).color) : null;
-    html += '<div class="cal-day' + (isToday ? ' today' : '') + (holidayName ? ' holiday' : '') + '" data-day-key="' + key + '" title="' + (holidayName ? esc(holidayName) : '') + '">' +
+    const classes = ['cal-day'];
+    if (isToday) classes.push('today');
+    if (holidayName) classes.push('holiday');
+    if (isWeekend) classes.push('weekend');
+    if (hasNotesAndHoliday) classes.push('note-holiday');
+    html += '<div class="' + classes.join(' ') + '" data-day-key="' + key + '" title="' + (holidayName ? esc(holidayName) : '') + '">' +
       '<div class="cd-num">' + d + '</div>' +
       (holidayName ? '<div class="cd-holiday-dot"></div>' : '') +
       (dotColor ? '<div class="cd-dot" style="background:' + dotColor + ';"></div>' : '') +
