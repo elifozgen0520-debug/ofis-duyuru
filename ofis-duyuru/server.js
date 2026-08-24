@@ -347,8 +347,15 @@ app.post('/api/personnel/bulk-add', async (req, res) => {
   }
 
   const profiles = await loadJson(PROFILES_KEY, {});
+
+  function normName(s) { return (s || '').toLocaleLowerCase('tr').trim().replace(/\s+/g, ' '); }
+  function normPhone(s) { return (s || '').replace(/\D/g, ''); }
+
+  const existing = Object.values(profiles).map(p => ({ name: normName(p.name), phone: normPhone(p.phone) }));
+
   let added = 0;
   const errors = [];
+  const duplicates = [];
 
   for (const entry of entries) {
     const name = (entry.name || '').trim();
@@ -356,6 +363,11 @@ app.post('/api/personnel/bulk-add', async (req, res) => {
     const email = (entry.email || '').trim();
     if (!name) { errors.push('İsimsiz satır atlandı.'); continue; }
     if (!phone && !email) { errors.push(`"${name}" için telefon veya e-posta yok, atlandı.`); continue; }
+
+    const nName = normName(name);
+    const nPhone = normPhone(phone);
+    const isDup = nPhone && existing.some(e => e.name === nName && e.phone === nPhone);
+    if (isDup) { duplicates.push(name); continue; }
 
     const deviceId = 'manual-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
     profiles[deviceId] = {
@@ -366,11 +378,12 @@ app.post('/api/personnel/bulk-add', async (req, res) => {
       manual: true,
       addedAt: new Date().toISOString(),
     };
+    existing.push({ name: nName, phone: nPhone });
     added++;
   }
 
   await saveJson(PROFILES_KEY, profiles);
-  res.json({ ok: true, added, errors });
+  res.json({ ok: true, added, errors, duplicates });
 });
 
 // --- ELLE EKLENEN (henüz uygulama kurmamış) PERSONEL LİSTESİ ---
