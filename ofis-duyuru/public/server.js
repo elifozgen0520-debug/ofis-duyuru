@@ -464,6 +464,30 @@ app.get('/api/feedback', async (req, res) => {
   res.json({ items: (await loadJson(FEEDBACK_KEY)).slice().reverse() });
 });
 
+app.put('/api/feedback/:id', async (req, res) => {
+  const { password, text, name } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  if (!text || !text.trim()) return res.status(400).json({ ok: false, error: 'Mesaj boş olamaz.' });
+  const list = await loadJson(FEEDBACK_KEY);
+  const item = list.find(i => i.id === req.params.id);
+  if (!item) return res.status(404).json({ ok: false, error: 'Bulunamadı.' });
+  item.text = text.trim();
+  item.name = (name || '').trim() || null;
+  item.editedAt = new Date().toISOString();
+  await saveJson(FEEDBACK_KEY, list);
+  res.json({ ok: true, item });
+});
+
+app.delete('/api/feedback/:id', async (req, res) => {
+  const { password } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const list = (await loadJson(FEEDBACK_KEY)).filter(i => i.id !== req.params.id);
+  await saveJson(FEEDBACK_KEY, list);
+  res.json({ ok: true });
+});
+
 app.post('/api/devices/name', async (req, res) => {
   const { password, deviceId, name } = req.body;
   const result = checkPassword(password, req);
@@ -471,6 +495,23 @@ app.post('/api/devices/name', async (req, res) => {
   const subs = await loadJson(SUBS_KEY);
   for (const s of subs) { if (s.deviceId === deviceId) s.name = (name || '').trim() || null; }
   await saveJson(SUBS_KEY, subs);
+  res.json({ ok: true });
+});
+
+// --- CİHAZ SİLME (test/gereksiz aboneliklerini temizlemek için) ---
+app.delete('/api/devices/:deviceId', async (req, res) => {
+  const { password } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const { deviceId } = req.params;
+
+  const subs = (await loadJson(SUBS_KEY)).filter(s => s.deviceId !== deviceId);
+  await saveJson(SUBS_KEY, subs);
+
+  const profiles = await loadJson(PROFILES_KEY, {});
+  delete profiles[deviceId];
+  await saveJson(PROFILES_KEY, profiles);
+
   res.json({ ok: true });
 });
 
