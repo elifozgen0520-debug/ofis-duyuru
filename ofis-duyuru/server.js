@@ -408,6 +408,22 @@ app.delete('/api/personnel/manual/:deviceId', async (req, res) => {
   res.json({ ok: true });
 });
 
+app.put('/api/personnel/manual/:deviceId', async (req, res) => {
+  const { password, name, phone, email } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  if (!name || !name.trim()) return res.status(400).json({ ok: false, error: 'Adı Soyadı zorunlu.' });
+  const profiles = await loadJson(PROFILES_KEY, {});
+  const p = profiles[req.params.deviceId];
+  if (!p) return res.status(404).json({ ok: false, error: 'Bulunamadı.' });
+  p.name = name.trim();
+  p.phone = (phone || '').trim() || null;
+  p.email = (email || '').trim() || null;
+  p.editedAt = new Date().toISOString();
+  await saveJson(PROFILES_KEY, profiles);
+  res.json({ ok: true });
+});
+
 app.post('/api/self-profile', async (req, res) => {
   const { deviceId, name, phone, email, bloodType, kvkkConsent, kvkkConsentAt } = req.body;
   if (!deviceId) return res.status(400).json({ ok: false, error: 'Cihaz kimliği eksik.' });
@@ -1009,6 +1025,19 @@ function makeListApi(name, key) {
     const items = (await loadJson(key)).filter(i => i.id !== req.params.id);
     await saveJson(key, items);
     res.json({ ok: true });
+  });
+
+  app.put(`/api/${name}/:id`, async (req, res) => {
+    const { password, ...fields } = req.body;
+    const result = checkPassword(password, req);
+    if (passwordCheckResponse(res, result)) return;
+    const items = await loadJson(key);
+    const item = items.find(i => i.id === req.params.id);
+    if (!item) return res.status(404).json({ ok: false, error: 'Bulunamadı.' });
+    Object.assign(item, fields);
+    item.editedAt = new Date().toISOString();
+    await saveJson(key, items);
+    res.json({ ok: true, item });
   });
 
   app.post(`/api/${name}/:id/toggle`, async (req, res) => {
