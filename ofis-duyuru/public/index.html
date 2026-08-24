@@ -5,20 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Müdürlük Duyuru Sistemi</title>
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#1F2430">
+<meta name="theme-color" content="#0077C8">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
 
   :root {
-    --ink: #1F2430;
-    --paper: #F7F5F0;
-    --paper-shadow: rgba(0,0,0,0.18);
-    --amber: #E0972C;
-    --sage: #6B8F71;
-    --clay: #B5674A;
-    --gold: #C9A24B;
-    --line: rgba(255,255,255,0.12);
-    --muted: #9AA0AE;
+    --primary-blue: #0077C8;
+    --cyan-accent: #00A3E0;
+    --amber: #F36F21;
+    --amber-gradient: linear-gradient(135deg, #FF7A29, #F36F21);
+    --sage: #10B981;
+    --clay: #EF4444;
+    --gold: #F59E0B;
+    --ink: #0F172A;
+    --paper: #FFFFFF;
+    --paper-shadow: rgba(0, 102, 178, 0.08);
+    --line: #E2E8F0;
+    --muted: #64748B;
+    --bg-main: #F4F6F9;
   }
 
   body[data-theme="lacivert"] { --amber: #3E8FD0; --gold: #5AA8E0; --ink: #0F1F33; }
@@ -28,22 +32,21 @@
   * { box-sizing: border-box; }
 
   body {
-    margin: 0; font-family: 'Inter', sans-serif; background: var(--ink);
-    background-image:
-      radial-gradient(circle at 20% 10%, rgba(224,151,44,0.06), transparent 40%),
-      radial-gradient(circle at 80% 80%, rgba(107,143,113,0.06), transparent 40%);
-    color: var(--paper); min-height: 100vh; padding: 32px 16px 90px;
+    margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-main);
+    background-image: linear-gradient(180deg, var(--primary-blue) 0%, var(--cyan-accent) 210px, var(--bg-main) 210px, var(--bg-main) 100%);
+    background-repeat: no-repeat;
+    color: var(--ink); min-height: 100vh; padding: 32px 16px 90px;
   }
 
   .wrap { max-width: 640px; margin: 0 auto; }
 
   header {
     display: flex; align-items: center; justify-content: space-between;
-    gap: 12px; margin-bottom: 22px; border-bottom: 1px solid var(--line);
-    padding-bottom: 18px; flex-wrap: wrap;
+    gap: 12px; margin-bottom: 22px; border-bottom: 1px solid rgba(255,255,255,0.2);
+    padding-bottom: 18px; flex-wrap: wrap; color: #FFFFFF;
   }
-  h1 { font-family: 'Fraunces', serif; font-weight: 700; font-size: clamp(20px, 6vw, 26px); margin: 0; }
-  .pin-count { font-size: 12px; color: var(--muted); }
+  h1 { font-family: 'Fraunces', serif; font-weight: 700; font-size: clamp(20px, 6vw, 26px); margin: 0; color: #FFFFFF; }
+  .pin-count { font-size: 12px; color: rgba(255,255,255,0.85); }
 
   /* SALLANAN LOGO VE ZİL ANİMASYONU */
   .sway-logo {
@@ -58,46 +61,47 @@
   }
 
   .status-card {
-    background: var(--paper); color: var(--ink); border-radius: 4px; padding: 16px 18px;
-    margin-bottom: 20px; box-shadow: 0 8px 24px var(--paper-shadow); position: relative;
+    background: var(--paper); color: var(--ink); border-radius: 12px; padding: 16px 18px;
+    margin-bottom: 20px; box-shadow: 0 8px 24px var(--paper-shadow); position: relative; border: 1px solid var(--line);
   }
   .status-card::before {
     content: ''; position: absolute; top: -6px; left: 24px; width: 12px; height: 12px;
-    border-radius: 50%; background: var(--clay);
+    border-radius: 50%; background: var(--amber);
   }
 
   .bell-status {
     display: inline-flex; align-items: center; gap: 6px; background: var(--paper);
     color: var(--sage); font-size: 12px; font-weight: 600; padding: 6px 12px;
-    border-radius: 20px; margin-bottom: 20px;
+    border-radius: 20px; margin-bottom: 20px; border: 1px solid var(--line);
   }
 
   button {
     font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px;
-    border: none; border-radius: 4px; padding: 10px 16px; cursor: pointer;
+    border: none; border-radius: 8px; padding: 10px 16px; cursor: pointer;
     transition: transform 0.1s ease, opacity 0.15s ease;
   }
   button:active { transform: scale(0.97); }
-  .btn-primary { background: var(--ink); color: var(--paper); }
-  .btn-primary:hover { opacity: 0.85; }
+  .btn-primary { background: var(--amber-gradient); color: #fff; box-shadow: 0 4px 14px rgba(243, 111, 33, 0.3); }
+  .btn-primary:hover { opacity: 0.9; }
   .btn-success { background: var(--sage); color: #fff; }
   .btn-warning { background: var(--amber); color: #fff; }
   .btn-danger { background: var(--clay); color: #fff; padding: 5px 9px; font-size: 11px; }
 
-  .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--line); }
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.2); }
   .tab-btn {
-    background: transparent; color: var(--muted); border-radius: 0;
+    background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.85); border-radius: 8px 8px 0 0;
     padding: 10px 12px; font-size: 13px; font-weight: 600;
-    border-bottom: 2px solid transparent; flex: 1;
+    border-bottom: 2px solid transparent; flex: 1; text-align: center;
   }
-  .tab-btn.active { color: var(--paper); border-bottom-color: var(--amber); }
-  .card .tab-btn.active { color: var(--ink); border-bottom-color: var(--clay, var(--amber)); }
+  .tab-btn.active { color: #FFFFFF; border-bottom-color: #FFFFFF; background: rgba(255,255,255,0.25); }
+  .card .tab-btn { background: #f1f5f9; color: var(--muted); border-radius: 4px; }
+  .card .tab-btn.active { color: var(--ink); background: #fff; border-bottom-color: var(--amber); }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
 
   .card {
-    background: var(--paper); color: var(--ink); border-radius: 4px; padding: 20px;
-    box-shadow: 0 12px 28px var(--paper-shadow); margin-bottom: 18px;
+    background: var(--paper); color: var(--ink); border-radius: 12px; padding: 20px;
+    box-shadow: 0 12px 28px var(--paper-shadow); margin-bottom: 18px; border: 1px solid var(--line);
   }
   .card h2 { font-family: 'Fraunces', serif; font-size: 17px; margin: 0; }
   .card .sub { font-size: 12.5px; color: #6b6b6b; margin-bottom: 16px; }
@@ -120,8 +124,7 @@
     to { opacity: 0; transform: translateY(8px) scale(0.97); }
   }
 
-  /* SOHBET — telefon ekranına göre otomatik boy, input her zaman altta sabit */
-  /* Artık sayfa akışında değil, sağ altta sabit yüzen (floating) bir pencere */
+  /* SOHBET MODALI */
   #chatModal {
     display: flex;
     flex-direction: column;
@@ -133,16 +136,16 @@
     width: 380px;
     max-width: calc(100vw - 24px);
     max-height: 78vh;
-    border-radius: 22px;
-    box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 4px 14px rgba(0,0,0,0.25);
-    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 16px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+    border: 1px solid var(--line);
     z-index: 1600;
     margin-bottom: 0;
   }
   @media (max-width: 560px) {
     #chatModal {
       right: 8px; left: 8px; bottom: 8px; width: auto; max-width: none;
-      border-radius: 22px 22px 18px 18px;
+      border-radius: 16px;
       max-height: 82vh;
     }
   }
@@ -161,15 +164,15 @@
   .chat-box {
     flex: 1;
     min-height: 120px;
-    overflow-y: auto; background: #f5f3ee; border-radius: 8px;
-    padding: 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;
+    overflow-y: auto; background: #f8fafc; border-radius: 8px;
+    padding: 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; border: 1px solid var(--line);
   }
   .chat-bubble {
     max-width: 78%; padding: 8px 12px; border-radius: 14px; font-size: 13px; line-height: 1.4;
     word-wrap: break-word; position: relative;
   }
-  .chat-bubble.mine { align-self: flex-end; background: var(--bordo, #7A2331); color: #fff; border-bottom-right-radius: 3px; }
-  .chat-bubble.theirs { align-self: flex-start; background: #fff; color: var(--ink); border: 1px solid #e2ddd2; border-bottom-left-radius: 3px; }
+  .chat-bubble.mine { align-self: flex-end; background: var(--primary-blue); color: #fff; border-bottom-right-radius: 3px; }
+  .chat-bubble.theirs { align-self: flex-start; background: #fff; color: var(--ink); border: 1px solid #e2e8f0; border-bottom-left-radius: 3px; }
   .chat-bubble .cb-name { font-size: 10.5px; font-weight: 700; opacity: 0.75; margin-bottom: 2px; }
   .chat-bubble .cb-time { font-size: 9.5px; opacity: 0.55; margin-top: 3px; text-align: right; }
   .chat-bubble .cb-tick { opacity: 0.85; }
@@ -196,14 +199,14 @@
     display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-radius: 6px;
     cursor: pointer; transition: background 0.15s ease;
   }
-  .contact-row:hover { background: #f5f3ee; }
+  .contact-row:hover { background: #f8fafc; }
   .contact-avatar {
-    width: 36px; height: 36px; border-radius: 50%; background: #ddd; flex-shrink: 0;
+    width: 36px; height: 36px; border-radius: 50%; background: #e2e8f0; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700;
-    color: #777; object-fit: cover; position: relative;
+    color: var(--primary-blue); object-fit: cover; position: relative;
   }
   .contact-online-dot {
-    width: 9px; height: 9px; border-radius: 50%; background: #3E7A4F; border: 2px solid #fff;
+    width: 9px; height: 9px; border-radius: 50%; background: var(--sage); border: 2px solid #fff;
     position: absolute; bottom: -1px; right: -1px;
   }
   .contact-name { font-size: 13.5px; font-weight: 600; }
@@ -211,22 +214,23 @@
 
   label {
     display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.05em;
-    text-transform: uppercase; color: #777; margin-bottom: 6px; margin-top: 14px;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 6px; margin-top: 14px;
   }
 
-  input[type="text"], input[type="tel"], input[type="password"], textarea, select {
+  input[type="text"], input[type="tel"], input[type="password"], input[type="email"], textarea, select {
     width: 100%; font-family: 'Inter', sans-serif; font-size: 14px;
-    padding: 9px 11px; border: 1.5px solid #ddd; border-radius: 3px; background: #fff; color: var(--ink);
+    padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; background: #fff; color: var(--ink);
   }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--amber); box-shadow: 0 0 0 3px rgba(243, 111, 33, 0.15); }
   textarea { resize: vertical; min-height: 70px; }
 
   .cat-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-  .cat-btn { background: #fff; border: 1.5px solid #ddd; color: #555; font-size: 12px; padding: 6px 12px; border-radius: 20px; }
-  .cat-btn.active[data-cat="genel"] { background: var(--ink); color: #fff; }
-  .cat-btn.active[data-cat="acil"] { background: var(--amber); color: #fff; }
-  .cat-btn.active[data-cat="yemek"] { background: var(--sage); color: #fff; }
-  .cat-btn.active[data-cat="vefat"] { background: var(--clay); color: #fff; }
-  .cat-btn.active[data-cat="dogum"] { background: var(--gold); color: #fff; }
+  .cat-btn { background: #fff; border: 1.5px solid #cbd5e1; color: #555; font-size: 12px; padding: 6px 12px; border-radius: 20px; }
+  .cat-btn.active[data-cat="genel"] { background: var(--primary-blue); color: #fff; border-color: var(--primary-blue); }
+  .cat-btn.active[data-cat="acil"] { background: var(--amber); color: #fff; border-color: var(--amber); }
+  .cat-btn.active[data-cat="yemek"] { background: var(--sage); color: #fff; border-color: var(--sage); }
+  .cat-btn.active[data-cat="vefat"] { background: var(--clay); color: #fff; border-color: var(--clay); }
+  .cat-btn.active[data-cat="dogum"] { background: var(--gold); color: #fff; border-color: var(--gold); }
 
   .send-row { margin-top: 18px; display: flex; align-items: center; gap: 12px; }
   .feedback-msg { font-size: 13px; margin-top: 10px; min-height: 18px; }
@@ -237,7 +241,7 @@
   #toastContainer { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 3000; display: flex; flex-direction: column; gap: 8px; align-items: center; }
   .toast {
     background: var(--ink); color: var(--paper); font-size: 13.5px; font-weight: 600;
-    padding: 12px 20px; border-radius: 30px; box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    padding: 12px 20px; border-radius: 30px; box-shadow: 0 8px 24px rgba(0,0,0,0.25);
     display: flex; align-items: center; gap: 8px;
     animation: toast-in 0.3s cubic-bezier(0.22,1,0.36,1), toast-out 0.3s ease 2.4s forwards;
   }
@@ -248,18 +252,19 @@
 
   /* OKUNDU İŞARETLEME */
   .li-read-btn {
-    display: inline-flex; align-items: center; gap: 4px; background: none; border: 1.5px solid #ccc;
-    color: #888; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 4px; background: none; border: 1.5px solid #cbd5e1;
+    color: var(--muted); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; cursor: pointer;
     transition: all 0.15s ease; flex-shrink: 0;
   }
   .li-read-btn:hover { border-color: var(--sage); color: var(--sage); }
   .li-read-btn.done { background: var(--sage); border-color: var(--sage); color: #fff; cursor: default; }
 
-  .list-section h3 { font-family: 'Fraunces', serif; font-size: 16px; margin: 0 0 12px; color: var(--paper); }
+  .list-section h3 { font-family: 'Fraunces', serif; font-size: 16px; margin: 0 0 12px; color: #FFFFFF; }
   .list-item {
-    background: var(--paper); color: var(--ink); border-radius: 4px;
-    padding: 13px 15px; margin-bottom: 9px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    border-left: 4px solid var(--ink); display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
+    background: var(--paper); color: var(--ink); border-radius: 12px;
+    padding: 14px 16px; margin-bottom: 10px; box-shadow: 0 4px 16px rgba(0, 102, 178, 0.06);
+    border-left: 5px solid var(--primary-blue); display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
+    border-top: 1px solid var(--line); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
   }
   .list-item.acil { border-left-color: var(--amber); }
   .list-item.yemek { border-left-color: var(--sage); }
@@ -268,63 +273,47 @@
   .list-item .li-main { flex: 1; min-width: 0; }
   .list-item .li-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 3px; }
   .li-toggle {
-    background: rgba(224,151,44,0.12); border: none; color: var(--amber); font-size: 26px; line-height: 1; cursor: pointer;
-    padding: 4px 10px; border-radius: 6px; transition: transform 0.2s ease, background 0.15s ease; flex-shrink: 0;
-    animation: chevron-bounce 1.6s ease-in-out infinite; font-weight: 900;
+    background: rgba(243, 111, 33, 0.12); border: none; color: var(--amber); font-size: 22px; line-height: 1; cursor: pointer;
+    padding: 4px 10px; border-radius: 8px; transition: transform 0.2s ease, background 0.15s ease; flex-shrink: 0;
+    font-weight: 900;
   }
-  .li-toggle:hover { background: rgba(224,151,44,0.22); }
-  .li-toggle.open { transform: rotate(180deg); animation: none; }
-  @keyframes chevron-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+  .li-toggle:hover { background: rgba(243, 111, 33, 0.22); }
+  .li-toggle.open { transform: rotate(180deg); }
   .attach-wrap { overflow: hidden; max-height: 0; transition: max-height 0.25s ease; }
   .attach-wrap.open { max-height: 2000px; }
 
   /* SAYFALAMA */
   .pagination-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 14px 0; flex-wrap: wrap; }
-  .page-size-select { width: auto; padding: 6px 10px; font-size: 12.5px; }
+  .page-size-select { width: auto; padding: 6px 10px; font-size: 12.5px; border-radius: 8px; }
   .page-nav { display: flex; align-items: center; gap: 8px; }
   .page-nav button {
-    background: var(--paper); color: var(--ink); border: none; padding: 6px 12px;
+    background: var(--paper); color: var(--ink); border: 1px solid var(--line); padding: 6px 12px;
     border-radius: 20px; font-size: 12.5px; font-weight: 600; cursor: pointer;
   }
   .page-nav button:disabled { opacity: 0.35; cursor: default; }
-  .page-nav .page-info { font-size: 12.5px; color: var(--muted); }
-  .list-item .li-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #888; }
-  .list-item .li-time { font-size: 10.5px; color: #999; }
+  .page-nav .page-info { font-size: 12.5px; color: #FFFFFF; }
+  .list-item .li-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--muted); }
+  .list-item .li-time { font-size: 10.5px; color: var(--muted); }
   .list-item .li-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 14.5px; margin: 0 0 2px; }
-  .list-item .li-body { font-size: 12.5px; color: #555; line-height: 1.45; margin: 0; }
-  .list-item .li-phone { font-family: 'Fraunces', serif; font-weight: 700; font-size: 16px; color: var(--clay); text-decoration: none; }
-  .list-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 18px; }
+  .list-item .li-body { font-size: 12.5px; color: #475569; line-height: 1.45; margin: 0; }
+  .list-item .li-phone { font-family: 'Fraunces', serif; font-weight: 700; font-size: 16px; color: var(--primary-blue); text-decoration: none; }
+  .list-empty { color: #FFFFFF; font-size: 13px; text-align: center; padding: 18px; }
 
-  /* MANŞET (öne çıkan duyuru carousel'i) */
+  /* MANŞET */
   .manset-wrap { margin-bottom: 18px; }
   .manset-nav { display: flex; align-items: center; gap: 10px; }
   .manset-nav-btn {
-    background: rgba(255,255,255,0.08); border: 1px solid var(--line); color: var(--paper);
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #FFFFFF;
     width: 34px; height: 34px; min-width: 34px; border-radius: 50%; font-size: 17px; cursor: pointer;
     flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: background 0.15s ease;
   }
-  .manset-nav-btn:hover { background: rgba(255,255,255,0.16); }
+  .manset-nav-btn:hover { background: rgba(255,255,255,0.25); }
   .manset-card {
     flex: 1; position: relative; border-radius: 14px; overflow: hidden; padding: 26px 24px;
     min-height: 150px; display: flex; flex-direction: column; justify-content: center;
-    color: #fff; cursor: pointer; box-shadow: 0 14px 32px rgba(0,0,0,0.35);
-    background: linear-gradient(135deg, var(--manset-c1, var(--ink)), var(--manset-c2, #000));
+    color: #fff; cursor: pointer; box-shadow: 0 14px 32px rgba(0,0,0,0.15);
+    background: linear-gradient(135deg, var(--manset-c1, var(--primary-blue)), var(--manset-c2, #005AA7));
     transition: transform 0.15s ease;
-    animation: manset-fade-in 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-  .manset-card::after {
-    content: ''; position: absolute; inset: 0; pointer-events: none;
-    background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.16) 45%, transparent 60%);
-    background-size: 220% 100%; background-position: 130% 0;
-    animation: manset-sheen 2.6s ease-out 0.15s 1;
-  }
-  @keyframes manset-fade-in {
-    from { opacity: 0; transform: translateY(10px) scale(0.97); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-  }
-  @keyframes manset-sheen {
-    from { background-position: 130% 0; }
-    to { background-position: -30% 0; }
   }
   .manset-card:hover { transform: translateY(-2px); }
   .manset-tag {
@@ -333,11 +322,11 @@
     margin-bottom: 12px; width: fit-content;
   }
   .manset-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 20px; margin: 0 0 8px; line-height: 1.25; }
-  .manset-date { font-size: 12px; opacity: 0.82; }
+  .manset-date { font-size: 12px; opacity: 0.85; }
   .manset-dots { display: flex; gap: 6px; justify-content: center; margin-top: 12px; }
-  .manset-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.28); cursor: pointer; border: none; padding: 0; transition: background 0.2s ease, transform 0.2s ease; }
-  .manset-dot.active { background: var(--paper); transform: scale(1.35); }
-  .li-detay-link { font-size: 11.5px; color: var(--clay); font-weight: 600; cursor: pointer; margin-top: 6px; display: inline-block; }
+  .manset-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.4); cursor: pointer; border: none; padding: 0; }
+  .manset-dot.active { background: #FFFFFF; transform: scale(1.35); }
+  .li-detay-link { font-size: 11.5px; color: var(--primary-blue); font-weight: 600; cursor: pointer; margin-top: 6px; display: inline-block; }
 
   /* DUYURU DETAY POPUP */
   #duyuruDetayOverlay .toast-box { max-width: 440px; text-align: left; position: relative; }
@@ -354,92 +343,86 @@
   .btn-share:hover { opacity: 0.85; }
 
   #splash {
-    position: fixed; inset: 0; background: var(--ink); display: flex;
+    position: fixed; inset: 0; background: var(--primary-blue); display: flex;
     align-items: center; justify-content: center; z-index: 999; transition: opacity 0.6s ease;
   }
-  #splash img { width: 110px; height: 110px; animation: splash-blink 1.4s ease-in-out infinite; border-radius: 50%; }
-  @keyframes splash-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+  #splash img { width: 110px; height: 110px; border-radius: 50%; }
   #splash.hide { opacity: 0; pointer-events: none; }
 
   #notifBanner {
     display: none; max-width: 640px; margin: 0 auto 20px; padding: 20px 22px;
-    border-radius: 4px; font-family: 'Inter', sans-serif; color: #fff;
+    border-radius: 12px; font-family: 'Inter', sans-serif; color: #fff;
     box-shadow: 0 8px 20px rgba(0,0,0,0.25);
   }
   #notifBanner.show { display: block; }
   #notifBanner .tag { display: block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; margin-bottom: 8px; }
   #notifBanner .btitle { font-family: 'Fraunces', serif; font-size: 24px; line-height: 1.2; font-weight: 700; margin: 0 0 8px; }
   #notifBanner .bbody { font-size: 14px; line-height: 1.5; margin: 0; opacity: 0.95; }
-  #notifBanner.acil { background: linear-gradient(135deg, #E0972C, #B5674A); }
+  #notifBanner.acil { background: linear-gradient(135deg, #FF7A29, #F36F21); }
 
   .site-footer {
-    position: fixed; left: 0; right: 0; bottom: 0; background: var(--ink);
-    border-top: 1px solid var(--line); text-align: center; padding: 10px 12px;
-    font-size: 11.5px; z-index: 50;
+    position: fixed; left: 0; right: 0; bottom: 0; background: #FFFFFF;
+    border-top: 1px solid #E2E8F0; text-align: center; padding: 10px 12px;
+    font-size: 11.5px; z-index: 50; box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
   }
-  .site-footer a { color: var(--muted); text-decoration: none; }
-  .site-footer a:hover { color: var(--paper); }
+  .site-footer a { color: var(--muted); text-decoration: none; font-weight: 600; }
+  .site-footer a:hover { color: var(--primary-blue); }
   .site-footer .fdot { color: var(--line); margin: 0 6px; }
 
   /* ONBOARDING WIZARD STYLES */
   .wizard-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 1000;
-    display: flex; align-items: center; justify-content: center; padding: 16px;
+    position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8); z-index: 1000;
+    display: flex; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(4px);
   }
   .wizard-card {
     background: var(--paper); color: var(--ink); max-width: 500px; width: 100%;
-    border-radius: 6px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border: 2px solid var(--amber);
+    border-radius: 16px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 1px solid var(--line);
   }
   .wizard-step { display: none; }
   .wizard-step.active { display: block; }
   .step-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
-  .dot { width: 10px; height: 10px; border-radius: 50%; background: #ccc; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; }
   .dot.active { background: var(--amber); width: 24px; border-radius: 10px; }
-  .guide-box { background: #FAF5E9; border: 1px solid #E6D7B8; padding: 12px; border-radius: 4px; font-size: 12.5px; color: #555; margin: 12px 0; text-align: left; line-height: 1.5; }
+  .guide-box { background: #F8FAFC; border: 1px solid var(--line); padding: 12px; border-radius: 8px; font-size: 12.5px; color: #475569; margin: 12px 0; text-align: left; line-height: 1.5; }
 
   /* TAKVİM */
   .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-  .cal-nav button { background: var(--paper); color: var(--ink); padding: 8px 14px; font-size: 13px; font-weight: 600; }
-  .cal-nav .cal-title { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 700; color: var(--paper); }
+  .cal-nav button { background: #f1f5f9; color: var(--ink); padding: 8px 14px; font-size: 13px; font-weight: 600; border-radius: 8px; }
+  .cal-nav .cal-title { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 700; color: var(--ink); }
   .cal-view-toggle { display: flex; gap: 6px; margin-bottom: 16px; }
-  .cal-view-toggle button { background: rgba(255,255,255,0.12); color: var(--paper); padding: 7px 16px; font-size: 12.5px; border-radius: 20px; font-weight: 600; }
-  .cal-view-toggle button.active { background: var(--amber); color: var(--ink); }
+  .cal-view-toggle button { background: #f1f5f9; color: var(--muted); padding: 7px 16px; font-size: 12.5px; border-radius: 20px; font-weight: 600; }
+  .cal-view-toggle button.active { background: var(--primary-blue); color: #fff; }
   .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-  .cal-dow { text-align: center; font-size: 11px; font-weight: 700; color: var(--paper); opacity: 0.6; padding: 4px 0; letter-spacing: 0.05em; text-transform: uppercase; }
+  .cal-dow { text-align: center; font-size: 11px; font-weight: 700; color: var(--muted); padding: 4px 0; letter-spacing: 0.05em; text-transform: uppercase; }
   .cal-day {
     aspect-ratio: 1; border-radius: 8px; padding: 6px; cursor: pointer; position: relative;
-    background: var(--paper); color: var(--ink); box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    background: #fff; color: var(--ink); box-shadow: 0 2px 6px rgba(0,0,0,0.06); border: 1px solid var(--line);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
     display: flex; align-items: flex-start; justify-content: flex-start;
   }
-  .cal-day:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,0.25); }
-  .cal-day.empty { background: transparent; box-shadow: none; cursor: default; }
+  .cal-day:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,0.1); }
+  .cal-day.empty { background: transparent; box-shadow: none; border: none; cursor: default; }
   .cal-day.empty:hover { transform: none; }
-  .cal-day.today { outline: 2.5px solid var(--amber); outline-offset: 1px; }
-  .cal-day.weekend { background: #EFE7D6; }
+  .cal-day.today { outline: 2px solid var(--amber); outline-offset: 1px; }
+  .cal-day.weekend { background: #f8fafc; }
   .cal-day.holiday { background: #FDECEA; }
   .cal-day.note-holiday { border: 2px solid #B03030; }
   .cal-day .cd-num { font-family: 'Fraunces', serif; font-weight: 700; font-size: 15px; }
   .cal-day .cd-dot { position: absolute; bottom: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 0 2px var(--paper); }
-  .cal-day .cd-holiday-dot { position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: #D93838; box-shadow: 0 0 0 2px var(--paper); animation: cd-blink 2.2s ease-in-out infinite; }
-  @keyframes cd-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+  .cal-day .cd-holiday-dot { position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: #D93838; }
   .cal-cat-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: #fff; }
   .cal-year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-  .cal-mini-month { background: var(--paper); border-radius: 8px; padding: 12px; cursor: pointer; color: var(--ink); box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: transform 0.15s ease; }
-  .cal-mini-month:hover { transform: translateY(-2px); }
-  .cal-mini-month .cmm-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
-  .cal-mini-month .cmm-count { font-size: 11px; color: var(--clay); font-weight: 600; }
+  .cal-mini-month { background: #fff; border-radius: 8px; padding: 12px; cursor: pointer; color: var(--ink); box-shadow: 0 2px 6px rgba(0,0,0,0.06); border: 1px solid var(--line); }
   .cal-search-box { display: flex; gap: 8px; margin-bottom: 16px; }
   .cal-search-box input { flex: 1; }
-  .toast-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
+  .toast-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.7); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
   .toast-overlay.show { display: flex; }
-  .toast-box { background: var(--paper); color: var(--ink); border-radius: 8px; padding: 26px 24px; max-width: 360px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
+  .toast-box { background: var(--paper); color: var(--ink); border-radius: 16px; padding: 26px 24px; max-width: 360px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 1px solid var(--line); }
   .toast-box .ttitle { font-family: 'Fraunces', serif; font-weight: 700; font-size: 17px; margin-bottom: 8px; }
 
-  /* İŞLER içindeki alt sekme (İşler / Takvim) */
   .isler-subtabs { display: flex; gap: 6px; margin-bottom: 18px; }
-  .isler-subtabs button { background: rgba(255,255,255,0.08); color: var(--paper); padding: 8px 18px; font-size: 13px; font-weight: 600; border-radius: 20px; }
-  .isler-subtabs button.active { background: var(--amber); color: var(--ink); }
+  .isler-subtabs button { background: rgba(255,255,255,0.15); color: #FFFFFF; padding: 8px 18px; font-size: 13px; font-weight: 600; border-radius: 20px; }
+  .isler-subtabs button.active { background: #FFFFFF; color: var(--primary-blue); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
 </style>
 </head>
 <body>
@@ -450,8 +433,8 @@
 
 <!-- ADIM ADIM KURULUM VE GÖRSEL MARKA AYAR SİHİRBAZI -->
 <!-- KVKK AYDINLATMA METNİ MODALI -->
-<div id="kvkkModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:2000; align-items:center; justify-content:center; padding:16px;">
-  <div style="background:var(--paper); color:var(--ink); max-width:520px; width:100%; max-height:85vh; overflow-y:auto; border-radius:8px; padding:24px;">
+<div id="kvkkModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.7); z-index:2000; align-items:center; justify-content:center; padding:16px; backdrop-filter:blur(4px);">
+  <div style="background:var(--paper); color:var(--ink); max-width:520px; width:100%; max-height:85vh; overflow-y:auto; border-radius:16px; padding:24px; border:1px solid var(--line);">
     <h2 style="font-family:'Fraunces',serif; font-size:18px; margin:0 0 14px;">KVKK Aydınlatma Metni</h2>
     <div style="font-size:13px; line-height:1.7; color:#333;">
       <p><b>Veri Sorumlusu:</b> Amasya Çevre, Şehircilik ve İklim Değişikliği İl Müdürlüğü.</p>
@@ -484,7 +467,7 @@
         <p style="font-size:13px; color:#555; text-align:center;">Duyuruların cebinize anında düşmesi için uygulamayı telefonunuza ekleyin.</p>
 
         <div id="pwaInstallContainer" style="display:none; text-align:center; margin:16px 0;">
-          <button class="btn-primary" id="btnPwaInstall" style="width:100%; padding:12px; font-size:15px; background:var(--sage);">
+          <button class="btn-primary" id="btnPwaInstall" style="width:100%; padding:12px; font-size:15px;">
             📥 Uygulamayı Telefona Yükle
           </button>
         </div>
@@ -533,7 +516,7 @@
       <label style="display:flex; align-items:flex-start; gap:8px; margin-top:16px; cursor:pointer; text-transform:none; letter-spacing:normal; font-weight:400; font-size:12.5px; color:#555;">
         <input type="checkbox" id="wizKvkkConsent" style="margin-top:2px; flex-shrink:0;">
         <span>
-          <a href="#" id="kvkkLinkOpen" style="color:var(--clay); font-weight:600; text-decoration:underline;">KVKK Aydınlatma Metni</a>'ni okudum, kişisel verilerimin (ad, telefon, e-posta, kan grubu) yalnızca kurum içi duyuru ve iletişim amacıyla işlenmesini kabul ediyorum. *
+          <a href="#" id="kvkkLinkOpen" style="color:var(--primary-blue); font-weight:600; text-decoration:underline;">KVKK Aydınlatma Metni</a>'ni okudum, kişisel verilerimin (ad, telefon, e-posta, kan grubu) yalnızca kurum içi duyuru ve iletişim amacıyla işlenmesini kabul ediyorum. *
         </span>
       </label>
 
@@ -575,12 +558,12 @@
         3. <i>Ayarlar > Bildirimler > Müdürlük Duyuru</i> altından Sesler'i açın.
       </div>
 
-      <button class="btn-primary" id="btnGrantPush" style="width:100%; padding:12px; font-size:15px; background:var(--amber);">
+      <button class="btn-primary" id="btnGrantPush" style="width:100%; padding:12px; font-size:15px;">
         🔔 Bildirimlere Şimdi İzin Ver
       </button>
 
-      <div id="permFailedNotice" style="display:none; margin-top:14px; background:#FBEFE0; border:1.5px solid var(--amber); border-radius:6px; padding:12px 14px;">
-        <div style="font-size:13px; font-weight:700; margin-bottom:4px;">⚠️ Otomatik izin penceresi açılmadı</div>
+      <div id="permFailedNotice" style="display:none; margin-top:14px; background:#EFF6FF; border:1.5px solid var(--primary-blue); border-radius:8px; padding:12px 14px;">
+        <div style="font-size:13px; font-weight:700; margin-bottom:4px; color:var(--primary-blue);">⚠️ Otomatik izin penceresi açılmadı</div>
         <div style="font-size:12.5px; color:#555; margin-bottom:10px;">Bazı telefonlarda bu normal. Sizi ayar ekranına yönlendirmeyi deniyoruz — açılmazsa Ayarlar &gt; Uygulamalar &gt; Amasya CSB Acil Duyuru &gt; Bildirimler'e girip elle açın.</div>
         <button type="button" class="btn-primary" onclick="tryOpenAndroidNotifSettings()" style="width:100%; font-size:12.5px; padding:8px; margin-bottom:8px;">⚙️ Ayarları Açmayı Tekrar Dene</button>
         <button type="button" class="btn-success" id="permRetryBtn" style="width:100%; font-size:12.5px; padding:8px;">✓ Ayardan Açtım, Devam Et</button>
@@ -596,12 +579,12 @@
       <button class="btn-success" id="wizTestSound" style="width:100%; margin-bottom:10px; padding:10px;">
         🔊 Sesi Test Et (3 Defa Çalar)
       </button>
-      
+
       <button class="btn-warning" id="wizTestLock" style="width:100%; margin-bottom:16px; padding:10px;">
         🧪 3 Sn Sonra Test Bildirimi At (Ekranı Kilitle)
       </button>
 
-      <button class="btn-primary" id="btnFinishWizard" style="width:100%; background:var(--ink);">
+      <button class="btn-primary" id="btnFinishWizard" style="width:100%;">
         ✅ Kurulumu Tamamla ve Giriş Yap
       </button>
     </div>
@@ -615,11 +598,11 @@
       <h1>Duyurular</h1>
     </div>
     <div style="display:flex; align-items:center; gap:10px;">
-      <select id="themeSelect" style="background:transparent; color:var(--muted); border:1px solid var(--line); border-radius:20px; font-size:11px; padding:4px 8px;">
-        <option value="klasik">🎨 Varsayılan</option>
-        <option value="lacivert">🔵 Lacivert</option>
-        <option value="zeytin">🟢 Zeytin</option>
-        <option value="bordo">🔴 Bordo</option>
+      <select id="themeSelect" style="background:rgba(255,255,255,0.2); color:#FFFFFF; border:1px solid rgba(255,255,255,0.3); border-radius:20px; font-size:11px; padding:4px 8px; font-weight:600;">
+        <option value="klasik" style="color:#000;">🎨 Varsayılan</option>
+        <option value="lacivert" style="color:#000;">🔵 Lacivert</option>
+        <option value="zeytin" style="color:#000;">🟢 Zeytin</option>
+        <option value="bordo" style="color:#000;">🔴 Bordo</option>
       </select>
       <span class="pin-count" id="subCount">— abone</span>
     </div>
@@ -640,8 +623,8 @@
   </div>
 
   <div class="tab-panel active" id="panel-duyurular">
-    <div id="upcomingBox" style="display:none; background:rgba(255,255,255,0.06); border-radius:8px; padding:14px 16px; margin-bottom:16px;">
-      <div style="font-family:'Fraunces',serif; font-weight:700; font-size:14px; color:var(--paper); margin-bottom:8px;">📅 Yaklaşanlar</div>
+    <div id="upcomingBox" style="display:none; background:#FFFFFF; border-radius:12px; padding:14px 16px; margin-bottom:16px; border:1px solid var(--line); box-shadow:0 4px 16px var(--paper-shadow);">
+      <div style="font-family:'Fraunces',serif; font-weight:700; font-size:14px; color:var(--ink); margin-bottom:8px;">📅 Yaklaşanlar</div>
       <div id="upcomingList"></div>
     </div>
     <div class="manset-wrap" id="duyuruManset" style="display:none;"></div>
@@ -765,7 +748,7 @@
 
     <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
       <img id="profileAvatarPreview" src="" alt="" style="width:64px; height:64px; border-radius:50%; object-fit:cover; background:#eee; display:none; border:2px solid var(--line);">
-      <div id="profileAvatarPlaceholder" style="width:64px; height:64px; border-radius:50%; background:#eee; display:flex; align-items:center; justify-content:center; font-size:26px; color:#aaa;">👤</div>
+      <div id="profileAvatarPlaceholder" style="width:64px; height:64px; border-radius:50%; background:#e2e8f0; display:flex; align-items:center; justify-content:center; font-size:26px; color:#94a3b8;">👤</div>
       <div>
         <input type="file" id="profileAvatarInput" accept="image/png,image/jpeg,image/webp" style="display:none;">
         <button type="button" class="btn-primary" id="profileAvatarBtn" style="font-size:12px; padding:7px 12px;">Fotoğraf Yükle</button>
@@ -817,7 +800,7 @@
     <div class="card-header"><h2>🗨️ Sohbet</h2><button class="card-close" data-close="chatModal" aria-label="Kapat">✕</button></div>
 
     <div id="chatLockedNotice" style="display:none;">
-      <div class="sub" style="color:#b23b3b;">Sohbete katılmak için önce adınızı ve telefon numaranızı kaydetmeniz gerekiyor.</div>
+      <div class="sub" style="color:var(--clay);">Sohbete katılmak için önce adınızı ve telefon numaranızı kaydetmeniz gerekiyor.</div>
       <button class="btn-primary" id="chatGoProfileBtn" style="width:100%;">👤 Profilime Git</button>
     </div>
 
@@ -838,7 +821,7 @@
       <div id="chatPanelDirect" class="chat-panel" style="display:none;">
         <div id="chatContactList" class="list-empty">Yükleniyor...</div>
         <div id="chatDirectConversation" style="display:none;" class="chat-panel">
-          <button type="button" id="chatBackToContacts" style="background:none;border:none;color:var(--clay);font-size:12px;cursor:pointer;padding:0 0 8px;">← Kişi Listesine Dön</button>
+          <button type="button" id="chatBackToContacts" style="background:none;border:none;color:var(--primary-blue);font-size:12px;cursor:pointer;padding:0 0 8px;">← Kişi Listesine Dön</button>
           <div id="chatDirectTitle" style="font-weight:700;font-size:14px;margin-bottom:8px;"></div>
           <div id="chatDirectMessages" class="chat-box"></div>
           <div class="chat-input-row">
@@ -871,7 +854,7 @@
       <div class="send-row"><button class="btn-primary" id="mealsRegisterBtn" style="width:100%;">Kayıt Ol ve Kod Gönder</button></div>
       <div class="feedback-msg" id="mealsRegFeedback"></div>
       <div style="text-align:center; margin-top:14px; font-size:12.5px; color:#777;">
-        Zaten hesabın var mı? <a href="#" id="mealsGoLoginLink" style="color:var(--clay); font-weight:600;">Giriş yap</a>
+        Zaten hesabın var mı? <a href="#" id="mealsGoLoginLink" style="color:var(--primary-blue); font-weight:600;">Giriş yap</a>
       </div>
     </div>
 
@@ -895,7 +878,7 @@
       <div class="send-row"><button class="btn-primary" id="mealsLoginBtn" style="width:100%;">Giriş Yap</button></div>
       <div class="feedback-msg" id="mealsLoginFeedback"></div>
       <div style="text-align:center; margin-top:14px; font-size:12.5px; color:#777;">
-        Hesabın yok mu? <a href="#" id="mealsGoRegisterLink" style="color:var(--clay); font-weight:600;">Kayıt ol</a>
+        Hesabın yok mu? <a href="#" id="mealsGoRegisterLink" style="color:var(--primary-blue); font-weight:600;">Kayıt ol</a>
       </div>
     </div>
 
@@ -905,8 +888,8 @@
         <div class="sub" style="margin:0;" id="mealsRecordsWho"></div>
         <button type="button" id="mealsLogoutBtn" style="background:none; border:1px solid #ccc; color:#888; font-size:11px; padding:5px 10px; border-radius:20px;">Çıkış</button>
       </div>
-      <div id="mealsDebtBox" style="background:var(--ink); color:var(--paper); border-radius:10px; padding:16px; text-align:center; margin-bottom:14px;">
-        <div style="font-size:11px; opacity:0.7; text-transform:uppercase; letter-spacing:0.05em;">Toplam Borç</div>
+      <div id="mealsDebtBox" style="background:var(--primary-blue); color:var(--paper); border-radius:12px; padding:16px; text-align:center; margin-bottom:14px;">
+        <div style="font-size:11px; opacity:0.8; text-transform:uppercase; letter-spacing:0.05em;">Toplam Borç</div>
         <div style="font-family:'Fraunces',serif; font-size:1.8rem; font-weight:700;" id="mealsDebtAmount">—</div>
       </div>
       <div id="mealsRecordsList" class="list-empty">Yükleniyor...</div>
@@ -1343,16 +1326,16 @@ function getHolidayName(dateKey) {
 
 // --- TAKVİM KATEGORİLERİ ---
 const CAL_CATEGORIES = {
-  genel: { label: 'Genel', color: '#7A2331' },
-  toplanti: { label: 'Toplantı', color: '#6B8F71' },
-  hatirlatma: { label: 'Hatırlatma', color: '#E0972C' },
-  etkinlik: { label: 'Etkinlik', color: '#C9A24B' },
+  genel: { label: 'Genel', color: '#0077C8' },
+  toplanti: { label: 'Toplantı', color: '#10B981' },
+  hatirlatma: { label: 'Hatırlatma', color: '#F36F21' },
+  etkinlik: { label: 'Etkinlik', color: '#F59E0B' },
 };
 
 function renderAttachment(att) {
   if (!att) return '';
-  if (att.type === 'image') return `<a href="${att.url}" target="_blank"><img src="${att.url}" style="max-width:100%;border-radius:4px;margin-top:8px;display:block;"></a>`;
-  return `<a href="${att.url}" target="_blank" style="display:inline-block;margin-top:8px;font-size:12px;color:var(--clay);font-weight:600;">📄 ${esc(att.name || 'Dosyayı Aç')}</a>`;
+  if (att.type === 'image') return `<a href="${att.url}" target="_blank"><img src="${att.url}" style="max-width:100%;border-radius:8px;margin-top:8px;display:block;"></a>`;
+  return `<a href="${att.url}" target="_blank" style="display:inline-block;margin-top:8px;font-size:12px;color:var(--primary-blue);font-weight:600;">📄 ${esc(att.name || 'Dosyayı Aç')}</a>`;
 }
 
 let activeAdminPassword = '';
@@ -1441,11 +1424,11 @@ let mansetTimer = null;
 
 function mansetColors(cat) {
   const map = {
-    acil: ['#E0972C', '#B5674A'],
-    yemek: ['#6B8F71', '#3E5C43'],
-    vefat: ['#4A4A52', '#1F2430'],
-    dogum: ['#C9A24B', '#8A6D2F'],
-    genel: ['#7A2331', '#5A1622'],
+    acil: ['#FF7A29', '#F36F21'],
+    yemek: ['#10B981', '#059669'],
+    vefat: ['#64748B', '#334155'],
+    dogum: ['#F59E0B', '#D97706'],
+    genel: ['#0077C8', '#005AA7'],
   };
   return map[cat] || map.genel;
 }
@@ -1619,7 +1602,7 @@ function renderMenuWeek() {
       (holidayName ? '<div style="font-size:11.5px; color:var(--clay); margin-bottom:6px;">🎉 ' + esc(holidayName) + ' — yemekhane kapalı olabilir</div>' : '') +
       (item
         ? '<div style="display:grid; grid-template-columns:1fr 1fr; gap:6px 14px;">' +
-            item.dishes.map((dish, idx) => dish ? '<div style="font-size:12.5px; color:#444;">' + DISH_ICONS[idx] + ' ' + esc(dish) + '</div>' : '').join('') +
+            item.dishes.map((dish, idx) => dish ? '<div style="font-size:12.5px; color:#475569;">' + DISH_ICONS[idx] + ' ' + esc(dish) + '</div>' : '').join('') +
           '</div>'
         : '<div style="font-size:12px; color:#999;">Menü henüz girilmedi.</div>') +
     '</div>';
@@ -1686,7 +1669,7 @@ async function loadUpcomingBox() {
       const d = new Date(u.date + 'T00:00:00');
       const cat = CAL_CATEGORIES[u.category] || CAL_CATEGORIES.genel;
       const holidayName = getHolidayName(u.date);
-      return '<div style="display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.08); font-size:12.5px; color:var(--paper);">' +
+      return '<div style="display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--line); font-size:12.5px; color:var(--ink);">' +
         '<span style="font-weight:700; min-width:60px;">' + d.getDate() + ' ' + TR_MONTHS[d.getMonth()].slice(0,3) + '</span>' +
         '<span class="cal-cat-badge" style="background:' + cat.color + ';">' + cat.label + '</span>' +
         '<span style="opacity:0.9;">' + esc(u.text) + '</span>' +
@@ -1741,7 +1724,7 @@ function renderCalYear() {
   let html = '';
   for (let m = 0; m < 12; m++) {
     const count = calAllItems.filter(i => i.date.startsWith(y + '-' + calPad2(m + 1))).length;
-    html += '<div class="cal-mini-month" data-mini-month="' + m + '"><div class="cmm-title">' + TR_MONTHS[m] + '</div><div class="cmm-count">' + (count > 0 ? count + ' not' : 'Not yok') + '</div></div>';
+    html += '<div class="cal-mini-month" data-mini-month="' + m + '"><div class="cmm-title">' + TR_MONTHS[m] + '</div><div class="cmm-count" style="color:var(--primary-blue);">' + (count > 0 ? count + ' not' : 'Not yok') + '</div></div>';
   }
   grid.innerHTML = html;
   grid.querySelectorAll('[data-mini-month]').forEach(el => el.addEventListener('click', () => {
@@ -1777,7 +1760,7 @@ function openCalDay(dateKey) {
   const notes = calNotesForDate(dateKey);
   const el = document.getElementById('calDayNotesList');
   el.innerHTML = notes.length === 0
-    ? '<div class="list-empty">Bu güne ait not yok.</div>'
+    ? '<div class="list-empty" style="color:var(--muted);">Bu güne ait not yok.</div>'
     : notes.map(n => {
         const cat = CAL_CATEGORIES[n.category] || CAL_CATEGORIES.genel;
         return '<div class="list-item" style="margin-bottom:8px;"><div class="li-main">' +
@@ -1794,7 +1777,7 @@ document.getElementById('calSearchBtn').addEventListener('click', () => {
   const resEl = document.getElementById('calSearchResults');
   if (!q) { resEl.style.display = 'none'; return; }
   const matches = calAllItems.filter(i => i.text.toLocaleLowerCase('tr').includes(q));
-  resEl.innerHTML = matches.length === 0 ? '<div class="list-empty">Sonuç bulunamadı.</div>' : matches.map(m => {
+  resEl.innerHTML = matches.length === 0 ? '<div class="list-empty" style="color:var(--muted);">Sonuç bulunamadı.</div>' : matches.map(m => {
     const d = new Date(m.date + 'T00:00:00');
     const cat = CAL_CATEGORIES[m.category] || CAL_CATEGORIES.genel;
     return '<div class="list-item" data-goto-date="' + m.date + '" style="cursor:pointer;"><div class="li-main"><div class="li-top"><span class="li-tag">' + d.getDate() + ' ' + TR_MONTHS[d.getMonth()] + ' ' + d.getFullYear() + '</span><span class="cal-cat-badge" style="background:' + cat.color + ';">' + cat.label + '</span></div><div class="li-body">' + esc(m.text) + '</div></div></div>';
