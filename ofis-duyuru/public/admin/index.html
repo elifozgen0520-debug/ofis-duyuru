@@ -145,8 +145,11 @@
   .cal-day:hover { background: #f5f3ee; }
   .cal-day.empty { border: none; cursor: default; }
   .cal-day.today { border-color: var(--amber); border-width: 2px; }
+  .cal-day.holiday { background: #FDECEA; border-color: #E8A3A0; }
   .cal-day .cd-num { font-weight: 700; }
-  .cal-day .cd-dot { position: absolute; bottom: 4px; right: 4px; width: 7px; height: 7px; border-radius: 50%; background: var(--clay); }
+  .cal-day .cd-dot { position: absolute; bottom: 4px; right: 4px; width: 7px; height: 7px; border-radius: 50%; }
+  .cal-day .cd-holiday-dot { position: absolute; top: 4px; right: 4px; width: 6px; height: 6px; border-radius: 50%; background: #D93838; }
+  .cal-cat-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: #fff; margin-right: 6px; }
   .cal-year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
   .cal-mini-month { background: #f7f5f0; border-radius: 6px; padding: 10px; cursor: pointer; }
   .cal-mini-month:hover { background: #efece0; }
@@ -187,7 +190,7 @@
   <div class="view active" id="view-dashboard">
     <div class="card-grid">
       <div class="dash-card" data-view="duyuru"><div class="icon">📢</div><div class="label">Duyuru Gönder</div><div class="count" id="countDuyuru"></div></div>
-      <div class="dash-card" data-view="notlar"><div class="icon">🗒️</div><div class="label">Notlar</div><div class="count" id="countNotlar"></div></div>
+      <div class="dash-card" data-view="notlar"><div class="icon">🍽️</div><div class="label">Yemekhane</div><div class="count" id="countNotlar"></div></div>
       <div class="dash-card" data-view="telefonlar"><div class="icon">☎️</div><div class="label">Telefonlar</div><div class="count" id="countTelefonlar"></div></div>
       <div class="dash-card" data-view="isler"><div class="icon">✅</div><div class="label">İşler</div><div class="count" id="countIsler"></div></div>
       <div class="dash-card" data-view="cihazlar"><div class="icon">📱</div><div class="label">Cihazlar</div><div class="count" id="countCihazlar"></div></div>
@@ -237,15 +240,16 @@
   <div class="view" id="view-notlar">
     <a class="back-link" data-back>← Panele Dön</a>
     <div class="card">
-      <h2>Not Ekle</h2>
-      <label>Not</label>
-      <textarea id="noteText" placeholder="Notunuzu yazın..."></textarea>
+      <h2>Yemekhane Menüsü Ekle</h2>
+      <div class="sub">Hafta içi (Pazartesi–Cuma) her gün için öğle yemeği menüsünü buradan ekle. Örn: "Pazartesi: Mercimek Çorbası, Pilav, Ayran".</div>
+      <label>Menü</label>
+      <textarea id="noteText" placeholder="Örn: Pazartesi - Mercimek Çorbası, Tavuk Sote, Pilav, Ayran"></textarea>
       <label>Görsel / PDF Ekle (opsiyonel)</label>
       <input type="file" id="noteAttachment" accept="image/jpeg,image/png,application/pdf">
       <div class="send-row"><button class="btn-primary" id="noteSendBtn">Ekle</button></div>
       <div class="feedback-msg" id="noteFeedback"></div>
     </div>
-    <div class="list-section"><h3>Notlar</h3><div id="notesList" class="list-empty">Yükleniyor...</div></div>
+    <div class="list-section"><h3>Yemekhane Menüleri</h3><div id="notesList" class="list-empty">Yükleniyor...</div></div>
   </div>
 
   <div class="view" id="view-telefonlar">
@@ -412,7 +416,15 @@
 <div class="toast-overlay" id="calDayOverlay">
   <div class="toast-box" style="max-width:420px; text-align:left;">
     <div class="ttitle" id="calDayTitle" style="text-align:center;"></div>
+    <div id="calDayHolidayBanner" style="display:none; background:#FDECEA; color:#B03030; font-size:12.5px; font-weight:700; padding:8px 12px; border-radius:6px; margin-bottom:10px; text-align:center;"></div>
     <div id="calDayNotesList" style="margin:14px 0; max-height:240px; overflow-y:auto;"></div>
+    <label>Kategori</label>
+    <select id="calNewNoteCategory" style="margin-bottom:10px;">
+      <option value="genel">Genel</option>
+      <option value="toplanti">Toplantı</option>
+      <option value="hatirlatma">Hatırlatma</option>
+      <option value="etkinlik">Etkinlik</option>
+    </select>
     <label>Yeni Not</label>
     <textarea id="calNewNoteText" style="min-height:70px;" placeholder="Bu güne not ekle..."></textarea>
     <button class="btn-primary" id="calAddNoteBtn" style="width:100%; margin-top:10px;">Ekle</button>
@@ -1253,6 +1265,43 @@ async function deleteManualPersonnel(deviceId) {
 
 // ---------- TAKVİM ----------
 const TR_MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+
+// --- RESMİ TATİLLER (2026-2027, doğrulanmış kaynaklardan) ---
+const TR_HOLIDAYS_FIXED = [
+  { m: 1, d: 1, name: 'Yılbaşı' },
+  { m: 4, d: 23, name: 'Ulusal Egemenlik ve Çocuk Bayramı' },
+  { m: 5, d: 1, name: 'Emek ve Dayanışma Günü' },
+  { m: 5, d: 19, name: "Atatürk'ü Anma, Gençlik ve Spor Bayramı" },
+  { m: 7, d: 15, name: 'Demokrasi ve Millî Birlik Günü' },
+  { m: 8, d: 30, name: 'Zafer Bayramı' },
+  { m: 10, d: 29, name: 'Cumhuriyet Bayramı' },
+];
+const TR_HOLIDAYS_RELIGIOUS = {
+  '2026-03-19': 'Ramazan Bayramı Arifesi', '2026-03-20': 'Ramazan Bayramı (1. Gün)',
+  '2026-03-21': 'Ramazan Bayramı (2. Gün)', '2026-03-22': 'Ramazan Bayramı (3. Gün)',
+  '2026-05-26': 'Kurban Bayramı Arifesi', '2026-05-27': 'Kurban Bayramı (1. Gün)',
+  '2026-05-28': 'Kurban Bayramı (2. Gün)', '2026-05-29': 'Kurban Bayramı (3. Gün)',
+  '2026-05-30': 'Kurban Bayramı (4. Gün)', '2026-10-28': 'Cumhuriyet Bayramı Arifesi',
+  '2027-03-08': 'Ramazan Bayramı Arifesi', '2027-03-09': 'Ramazan Bayramı (1. Gün)',
+  '2027-03-10': 'Ramazan Bayramı (2. Gün)', '2027-03-11': 'Ramazan Bayramı (3. Gün)',
+  '2027-05-15': 'Kurban Bayramı Arifesi', '2027-05-16': 'Kurban Bayramı (1. Gün)',
+  '2027-05-17': 'Kurban Bayramı (2. Gün)', '2027-05-18': 'Kurban Bayramı (3. Gün)',
+  '2027-05-19': 'Kurban Bayramı (4. Gün)', '2027-10-28': 'Cumhuriyet Bayramı Arifesi',
+};
+function getHolidayName(dateKey) {
+  if (TR_HOLIDAYS_RELIGIOUS[dateKey]) return TR_HOLIDAYS_RELIGIOUS[dateKey];
+  const parts = dateKey.split('-').map(Number);
+  const fixed = TR_HOLIDAYS_FIXED.find(h => h.m === parts[1] && h.d === parts[2]);
+  return fixed ? fixed.name : null;
+}
+
+// --- TAKVİM KATEGORİLERİ ---
+const CAL_CATEGORIES = {
+  genel: { label: 'Genel', color: '#7A2331' },
+  toplanti: { label: 'Toplantı', color: '#6B8F71' },
+  hatirlatma: { label: 'Hatırlatma', color: '#E0972C' },
+  etkinlik: { label: 'Etkinlik', color: '#C9A24B' },
+};
 const TR_DOWS = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
 
 let calAllItems = [];
@@ -1301,9 +1350,12 @@ function renderCalMonth() {
     const key = calDateKey(y, m, d);
     const notes = calNotesForDate(key);
     const isToday = key === todayKey;
-    html += '<div class="cal-day' + (isToday ? ' today' : '') + '" data-day-key="' + key + '">' +
+    const holidayName = getHolidayName(key);
+    const dotColor = notes.length ? (CAL_CATEGORIES[notes[0].category]?.color || CAL_CATEGORIES.genel.color) : null;
+    html += '<div class="cal-day' + (isToday ? ' today' : '') + (holidayName ? ' holiday' : '') + '" data-day-key="' + key + '" title="' + (holidayName ? esc(holidayName) : '') + '">' +
       '<div class="cd-num">' + d + '</div>' +
-      (notes.length ? '<div class="cd-dot"></div>' : '') +
+      (holidayName ? '<div class="cd-holiday-dot"></div>' : '') +
+      (dotColor ? '<div class="cd-dot" style="background:' + dotColor + ';"></div>' : '') +
     '</div>';
   }
   grid.innerHTML = html;
@@ -1365,8 +1417,13 @@ function openCalDay(dateKey) {
   calSelectedDay = dateKey;
   const d = new Date(dateKey + 'T00:00:00');
   document.getElementById('calDayTitle').textContent = d.getDate() + ' ' + TR_MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+  const holidayName = getHolidayName(dateKey);
+  const banner = document.getElementById('calDayHolidayBanner');
+  if (holidayName) { banner.textContent = '🎉 ' + holidayName; banner.style.display = 'block'; }
+  else { banner.style.display = 'none'; }
   renderCalDayNotes();
   document.getElementById('calNewNoteText').value = '';
+  document.getElementById('calNewNoteCategory').value = 'genel';
   document.getElementById('calDayFeedback').textContent = '';
   document.getElementById('calDayOverlay').classList.add('show');
 }
@@ -1375,22 +1432,25 @@ function renderCalDayNotes() {
   const notes = calNotesForDate(calSelectedDay);
   const el = document.getElementById('calDayNotesList');
   if (notes.length === 0) { el.innerHTML = '<div class="list-empty">Bu güne ait not yok.</div>'; return; }
-  el.innerHTML = notes.map(n =>
-    '<div class="list-item" style="margin-bottom:8px;"><div class="li-main">' +
-      '<div class="li-body">' + esc(n.text) + (n.editedAt ? ' <i style="font-size:10px;color:#999;">(düzenlendi)</i>' : '') + '</div>' +
-    '</div><button class="btn-danger" data-del-cal-note="' + n.id + '" style="font-size:11px;">Sil</button></div>'
-  ).join('');
+  el.innerHTML = notes.map(n => {
+    const cat = CAL_CATEGORIES[n.category] || CAL_CATEGORIES.genel;
+    return '<div class="list-item" style="margin-bottom:8px;"><div class="li-main">' +
+      '<span class="cal-cat-badge" style="background:' + cat.color + ';">' + cat.label + '</span>' +
+      '<div class="li-body" style="margin-top:6px;">' + esc(n.text) + (n.editedAt ? ' <i style="font-size:10px;color:#999;">(düzenlendi)</i>' : '') + '</div>' +
+    '</div><button class="btn-danger" data-del-cal-note="' + n.id + '" style="font-size:11px;">Sil</button></div>';
+  }).join('');
   el.querySelectorAll('[data-del-cal-note]').forEach(b => b.addEventListener('click', () => deleteCalNote(b.dataset.delCalNote)));
 }
 
 document.getElementById('calAddNoteBtn').addEventListener('click', async () => {
   const text = document.getElementById('calNewNoteText').value.trim();
+  const category = document.getElementById('calNewNoteCategory').value;
   const fb = document.getElementById('calDayFeedback');
   if (!text) { fb.textContent = 'Not boş olamaz.'; fb.className = 'feedback-msg err'; return; }
   try {
     const res = await fetch('/api/calendar', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: getAdminPassword(), date: calSelectedDay, text })
+      body: JSON.stringify({ password: getAdminPassword(), date: calSelectedDay, text, category })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Eklenemedi');
