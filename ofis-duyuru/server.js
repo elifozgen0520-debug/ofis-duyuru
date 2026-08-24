@@ -872,12 +872,49 @@ app.get('/api/chat/general/all', async (req, res) => {
   res.json({ messages: (await loadJson(CHAT_GENERAL_KEY)).slice(-300).reverse() });
 });
 
-app.delete('/api/chat/general/:id', async (req, res) => {
-  const { password } = req.body;
-  const result = checkPassword(password, req);
-  if (passwordCheckResponse(res, result)) return;
-  const messages = (await loadJson(CHAT_GENERAL_KEY)).filter(m => m.id !== req.params.id);
+// --- KENDİ MESAJINI DÜZENLEME (Genel Oda) ---
+app.put('/api/chat/general/:id', async (req, res) => {
+  const { deviceId, text } = req.body;
+  const clean = (text || '').trim().slice(0, 1000);
+  if (!clean) return res.status(400).json({ ok: false, error: 'Mesaj boş olamaz.' });
+  const messages = await loadJson(CHAT_GENERAL_KEY);
+  const msg = messages.find(m => m.id === req.params.id);
+  if (!msg) return res.status(404).json({ ok: false, error: 'Mesaj bulunamadı.' });
+  if (!deviceId || msg.deviceId !== deviceId) return res.status(403).json({ ok: false, error: 'Sadece kendi mesajınızı düzenleyebilirsiniz.' });
+  msg.text = clean;
+  msg.editedAt = new Date().toISOString();
   await saveJson(CHAT_GENERAL_KEY, messages);
+  res.json({ ok: true, message: msg });
+});
+
+// --- OKUNDU İŞARETLEME (Genel Oda, toplu) ---
+app.post('/api/chat/general/read-bulk', async (req, res) => {
+  const { deviceId, ids } = req.body;
+  if (!deviceId || !Array.isArray(ids) || ids.length === 0) return res.status(400).json({ ok: false });
+  const messages = await loadJson(CHAT_GENERAL_KEY);
+  let changed = false;
+  messages.forEach(m => {
+    if (ids.includes(m.id) && m.deviceId !== deviceId) {
+      if (!m.reads) m.reads = [];
+      if (!m.reads.includes(deviceId)) { m.reads.push(deviceId); changed = true; }
+    }
+  });
+  if (changed) await saveJson(CHAT_GENERAL_KEY, messages);
+  res.json({ ok: true });
+});
+
+app.delete('/api/chat/general/:id', async (req, res) => {
+  const { password, deviceId } = req.body;
+  const messages = await loadJson(CHAT_GENERAL_KEY);
+  const msg = messages.find(m => m.id === req.params.id);
+  if (!msg) return res.status(404).json({ ok: false, error: 'Mesaj bulunamadı.' });
+  const isOwner = deviceId && msg.deviceId === deviceId;
+  if (!isOwner) {
+    const result = checkPassword(password, req);
+    if (passwordCheckResponse(res, result)) return;
+  }
+  const filtered = messages.filter(m => m.id !== req.params.id);
+  await saveJson(CHAT_GENERAL_KEY, filtered);
   res.json({ ok: true });
 });
 
@@ -893,12 +930,50 @@ app.get('/api/chat/direct/all', async (req, res) => {
   res.json({ messages: all });
 });
 
+// --- KENDİ MESAJINI DÜZENLEME (Özel Sohbet) ---
+app.put('/api/chat/direct/:id', async (req, res) => {
+  const { deviceId, text } = req.body;
+  const clean = (text || '').trim().slice(0, 1000);
+  if (!clean) return res.status(400).json({ ok: false, error: 'Mesaj boş olamaz.' });
+  const all = await loadJson(CHAT_DIRECT_KEY);
+  const msg = all.find(m => m.id === req.params.id);
+  if (!msg) return res.status(404).json({ ok: false, error: 'Mesaj bulunamadı.' });
+  if (!deviceId || msg.fromDeviceId !== deviceId) return res.status(403).json({ ok: false, error: 'Sadece kendi mesajınızı düzenleyebilirsiniz.' });
+  msg.text = clean;
+  msg.editedAt = new Date().toISOString();
+  await saveJson(CHAT_DIRECT_KEY, all);
+  res.json({ ok: true, message: msg });
+});
+
+// --- OKUNDU İŞARETLEME (Özel Sohbet, toplu) ---
+app.post('/api/chat/direct/read-bulk', async (req, res) => {
+  const { deviceId, ids } = req.body;
+  if (!deviceId || !Array.isArray(ids) || ids.length === 0) return res.status(400).json({ ok: false });
+  const all = await loadJson(CHAT_DIRECT_KEY);
+  let changed = false;
+  all.forEach(m => {
+    if (ids.includes(m.id) && m.toDeviceId === deviceId && !m.read) {
+      m.read = true;
+      m.readAt = new Date().toISOString();
+      changed = true;
+    }
+  });
+  if (changed) await saveJson(CHAT_DIRECT_KEY, all);
+  res.json({ ok: true });
+});
+
 app.delete('/api/chat/direct/:id', async (req, res) => {
-  const { password } = req.body;
-  const result = checkPassword(password, req);
-  if (passwordCheckResponse(res, result)) return;
-  const messages = (await loadJson(CHAT_DIRECT_KEY)).filter(m => m.id !== req.params.id);
-  await saveJson(CHAT_DIRECT_KEY, messages);
+  const { password, deviceId } = req.body;
+  const all = await loadJson(CHAT_DIRECT_KEY);
+  const msg = all.find(m => m.id === req.params.id);
+  if (!msg) return res.status(404).json({ ok: false, error: 'Mesaj bulunamadı.' });
+  const isOwner = deviceId && msg.fromDeviceId === deviceId;
+  if (!isOwner) {
+    const result = checkPassword(password, req);
+    if (passwordCheckResponse(res, result)) return;
+  }
+  const filtered = all.filter(m => m.id !== req.params.id);
+  await saveJson(CHAT_DIRECT_KEY, filtered);
   res.json({ ok: true });
 });
 
@@ -1053,6 +1128,107 @@ function makeListApi(name, key) {
 makeListApi('notes', 'notes');
 makeListApi('phones', 'phones');
 makeListApi('tasks', 'tasks');
+
+// --- YEMEKHANE MENÜSÜ (günlük, 4 çeşit yemek) ---
+const MENU_KEY = 'cafeteria-menu';
+
+app.get('/api/menu', async (req, res) => {
+  res.json({ items: await loadJson(MENU_KEY) });
+});
+
+app.post('/api/menu', async (req, res) => {
+  const { password, date, dishes } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ ok: false, error: 'Geçersiz tarih.' });
+  if (!Array.isArray(dishes)) return res.status(400).json({ ok: false, error: 'Menü listesi geçersiz.' });
+  const cleanDishes = dishes.slice(0, 4).map(d => (d || '').trim());
+  if (cleanDishes.every(d => !d)) return res.status(400).json({ ok: false, error: 'En az bir yemek girilmeli.' });
+
+  const items = await loadJson(MENU_KEY);
+  let item = items.find(i => i.date === date);
+  if (item) {
+    item.dishes = cleanDishes;
+    item.editedAt = new Date().toISOString();
+  } else {
+    item = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      date, dishes: cleanDishes,
+      createdAt: new Date().toISOString(),
+    };
+    items.push(item);
+  }
+  await saveJson(MENU_KEY, items);
+  res.json({ ok: true, item });
+});
+
+app.delete('/api/menu/:id', async (req, res) => {
+  const { password } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const items = (await loadJson(MENU_KEY)).filter(i => i.id !== req.params.id);
+  await saveJson(MENU_KEY, items);
+  res.json({ ok: true });
+});
+
+// --- TAKVİM (aylık/yıllık not/etkinlik takvimi) ---
+const CALENDAR_KEY = 'calendar';
+
+app.get('/api/calendar', async (req, res) => {
+  res.json({ items: await loadJson(CALENDAR_KEY) });
+});
+
+app.post('/api/calendar', async (req, res) => {
+  const { password, date, text, category } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ ok: false, error: 'Geçersiz tarih.' });
+  if (!text || !text.trim()) return res.status(400).json({ ok: false, error: 'Not boş olamaz.' });
+  const items = await loadJson(CALENDAR_KEY);
+  const item = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    date, text: text.trim(),
+    category: category || 'genel',
+    createdAt: new Date().toISOString(),
+  };
+  items.push(item);
+  await saveJson(CALENDAR_KEY, items.slice(-3000));
+  res.json({ ok: true, item });
+});
+
+app.put('/api/calendar/:id', async (req, res) => {
+  const { password, text, date, category } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const items = await loadJson(CALENDAR_KEY);
+  const item = items.find(i => i.id === req.params.id);
+  if (!item) return res.status(404).json({ ok: false, error: 'Bulunamadı.' });
+  if (text !== undefined) {
+    if (!text.trim()) return res.status(400).json({ ok: false, error: 'Not boş olamaz.' });
+    item.text = text.trim();
+  }
+  if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) item.date = date;
+  if (category) item.category = category;
+  item.editedAt = new Date().toISOString();
+  await saveJson(CALENDAR_KEY, items);
+  res.json({ ok: true, item });
+});
+
+app.delete('/api/calendar/:id', async (req, res) => {
+  const { password } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const items = (await loadJson(CALENDAR_KEY)).filter(i => i.id !== req.params.id);
+  await saveJson(CALENDAR_KEY, items);
+  res.json({ ok: true });
+});
+
+// --- Eşleşmeyen /api/* istekleri: HTML 404 sayfası yerine anlamlı JSON dön ---
+// (Böylece frontend'de "Unexpected token '<' ... is not valid JSON" gibi kriptik
+// hatalar yerine, hangi endpoint'in eksik/yanlış olduğu net görünür.)
+app.use('/api', (req, res) => {
+  res.status(404).json({ ok: false, error: 'Endpoint bulunamadı: ' + req.method + ' ' + req.originalUrl });
+});
 
 // Multer/genel hataları çirkin bir stack trace sayfası yerine düzgün JSON olarak dön.
 app.use((err, req, res, next) => {
