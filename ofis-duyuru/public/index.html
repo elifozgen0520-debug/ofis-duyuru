@@ -108,8 +108,8 @@
   .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--line); }
   .tab-btn {
     background: transparent; color: var(--muted); border-radius: 0;
-    padding: 10px 12px; font-size: 13px; font-weight: 600;
-    border-bottom: 2px solid transparent; flex: 1;
+    padding: 10px 12px; font-size: 13.5px; font-weight: 600;
+    border-bottom: 2px solid transparent; flex: 1; text-align: center;
   }
   .tab-btn.active { color: var(--paper); border-bottom-color: var(--amber); }
   .card .tab-btn.active { color: var(--ink); border-bottom-color: var(--clay, var(--amber)); }
@@ -366,14 +366,38 @@
   #notifBanner .bbody { font-size: 14px; line-height: 1.5; margin: 0; opacity: 0.95; }
   #notifBanner.acil { background: linear-gradient(135deg, var(--amber), var(--clay)); }
 
+  /* SABİT ALT FOOTER VE YAZILIK LOGO DÜZENLEMESİ */
   .site-footer {
     position: fixed; left: 0; right: 0; bottom: 0; background: var(--navy-deep);
-    border-top: 1px solid var(--line); text-align: center; padding: 12px 14px 10px;
-    font-size: 11.5px; z-index: 50;
+    border-top: 1px solid var(--line); text-align: center; padding: 12px 14px;
+    font-size: 11.5px; z-index: 50; display: flex; align-items: center;
+    justify-content: space-around;
   }
-  .site-footer a { color: var(--muted); text-decoration: none; }
+  .site-footer a { color: var(--muted); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
   .site-footer a:hover { color: var(--paper); }
-  .site-footer .fdot { color: var(--line); margin: 0 6px; }
+
+  /* ORTADAKİ ORJİNAL KURUM LOGOSU (ZOOM & NABIZ ANİMASYONU) */
+  .footer-center-logo-wrap {
+    position: relative;
+    top: -24px;
+    cursor: pointer;
+  }
+  .footer-center-logo {
+    width: 54px; height: 54px; border-radius: 50%;
+    background: #fff; border: 3px solid var(--amber);
+    box-shadow: 0 6px 20px rgba(239, 125, 27, 0.5);
+    display: flex; align-items: center; justify-content: center;
+    object-fit: cover;
+    animation: logo-zoom-pulse 2.2s ease-in-out infinite;
+    transition: transform 0.2s ease;
+  }
+  .footer-center-logo-wrap:hover .footer-center-logo {
+    transform: scale(1.18);
+  }
+  @keyframes logo-zoom-pulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 6px 18px rgba(239, 125, 27, 0.4); }
+    50% { transform: scale(1.12); box-shadow: 0 8px 26px rgba(239, 125, 27, 0.75); }
+  }
 
   /* ONBOARDING WIZARD STYLES */
   .wizard-overlay {
@@ -430,10 +454,10 @@
   .toast-box { background: var(--paper); color: var(--ink); border-radius: 18px; padding: 26px 24px; max-width: 360px; width: 100%; box-shadow: 0 20px 50px rgba(4,20,38,0.4); }
   .toast-box .ttitle { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 17px; margin-bottom: 8px; }
 
-  /* İŞLER içindeki alt sekme (İşler / Takvim) */
-  .isler-subtabs { display: flex; gap: 6px; margin-bottom: 18px; }
-  .isler-subtabs button { background: rgba(255,255,255,0.08); color: var(--paper); padding: 8px 18px; font-size: 13px; font-weight: 600; border-radius: 20px; }
-  .isler-subtabs button.active { background: var(--amber); color: var(--ink); }
+  /* GENEL ALT SEKMELER (SUBTABS) */
+  .subtabs-bar { display: flex; gap: 6px; margin-bottom: 18px; }
+  .subtabs-bar button { background: rgba(255,255,255,0.08); color: var(--paper); padding: 8px 16px; font-size: 12.5px; font-weight: 600; border-radius: 20px; border:none; cursor:pointer; }
+  .subtabs-bar button.active { background: var(--amber); color: var(--ink); }
 
   /* POPUP AÇILDIĞINDA ARKA PLAN BLUR / KARARTMA */
   .modal-backdrop {
@@ -652,10 +676,10 @@
   </div>
   <div class="bell-status" id="bellStatus" style="display:none;"><span class="sway-logo">🔔</span> <span>Bildirimler ve Ses Aktif</span></div>
 
+  <!-- ANA SEKMELER: TELEFONLAR TAŞINDI, 3 ANA SEKME KALDI -->
   <div class="tabs">
     <button class="tab-btn active" data-tab="duyurular">Duyurular</button>
     <button class="tab-btn" data-tab="notlar">Yemekhane</button>
-    <button class="tab-btn" data-tab="telefonlar">Telefonlar</button>
     <button class="tab-btn" data-tab="isler">Takvim</button>
   </div>
 
@@ -685,30 +709,94 @@
     </div>
   </div>
 
+  <!-- YEMEKHANE SEKMESİ (ALT TAB İLE YEMEK KAYDI BURAYA ALINDI) -->
   <div class="tab-panel" id="panel-notlar">
-    <div class="list-section">
-      <div class="cal-nav">
-        <button type="button" id="menuPrevWeekBtn">← Önceki Hafta</button>
-        <span class="cal-title" id="menuWeekTitle">Yemekhane Menüsü</span>
-        <button type="button" id="menuNextWeekBtn">Sonraki Hafta →</button>
+    <div class="subtabs-bar">
+      <button type="button" class="active" id="yemekSubTabMenu">🍲 Haftalık Menü</button>
+      <button type="button" id="yemekSubTabRecords">💳 Yemek Kaydım & Borç</button>
+    </div>
+
+    <!-- ALT PANEL 1: HAFTALIK MENÜ -->
+    <div id="yemekSubPanelMenu">
+      <div class="list-section">
+        <div class="cal-nav">
+          <button type="button" id="menuPrevWeekBtn">← Önceki Hafta</button>
+          <span class="cal-title" id="menuWeekTitle">Yemekhane Menüsü</span>
+          <button type="button" id="menuNextWeekBtn">Sonraki Hafta →</button>
+        </div>
+        <div id="menuWeekCards"></div>
       </div>
-      <div id="menuWeekCards"></div>
+    </div>
+
+    <!-- ALT PANEL 2: YEMEK KAYDIM DAHİLİ PANENİ -->
+    <div id="yemekSubPanelRecords" style="display:none;">
+      <div class="card" style="margin-bottom:0;">
+        <div id="inlineMealsStepRegister">
+          <div class="sub">Kendi yemekhane geçmişini ve borcunu görebilmek için kişisel e-postanla kayıt ol.</div>
+          <div style="background:#EAF4FC; border:1px solid #C7E2F5; border-radius:10px; padding:10px 12px; font-size:12px; color:var(--navy-mid); margin-bottom:14px;">
+            ℹ️ Yalnızca kişisel <b>Gmail</b> veya <b>Hotmail</b> adresiyle kayıt olabilirsin.
+          </div>
+          <label>Adın Soyadın</label>
+          <input type="text" id="inlineMealsRegName" placeholder="Örn: Ahmet Yılmaz">
+          <label>Telefon Numaran</label>
+          <input type="tel" id="inlineMealsRegPhone" placeholder="Örn: 0555 111 22 33">
+          <label>E-posta (Gmail veya Hotmail)</label>
+          <input type="email" id="inlineMealsRegEmail" placeholder="ornek@gmail.com">
+          <label>Şifre</label>
+          <input type="password" id="inlineMealsRegPass" placeholder="En az 6 karakter">
+          <div class="send-row"><button class="btn-primary" id="inlineMealsRegisterBtn" style="width:100%;">Kayıt Ol ve Kod Gönder</button></div>
+          <div class="feedback-msg" id="inlineMealsRegFeedback"></div>
+          <div style="text-align:center; margin-top:14px; font-size:12.5px; color:#777;">
+            Zaten hesabın var mı? <a href="#" id="inlineMealsGoLoginLink" style="color:var(--clay); font-weight:600;">Giriş yap</a>
+          </div>
+        </div>
+
+        <div id="inlineMealsStepVerify" style="display:none;">
+          <div class="sub">E-postana gönderilen 6 haneli kodu gir.</div>
+          <input type="text" id="inlineMealsVerifyCode" maxlength="6" inputmode="numeric" placeholder="000000"
+            style="text-align:center; font-size:1.6rem; letter-spacing:8px; font-weight:800; padding:16px;">
+          <div class="send-row"><button class="btn-primary" id="inlineMealsVerifyBtn" style="width:100%;">Doğrula</button></div>
+          <button type="button" id="inlineMealsResendBtn" style="width:100%; background:none; color:#777; font-weight:600; font-size:12.5px; margin-top:8px;">Kodu Tekrar Gönder</button>
+          <div class="feedback-msg" id="inlineMealsVerifyFeedback"></div>
+        </div>
+
+        <div id="inlineMealsStepLogin" style="display:none;">
+          <div class="sub">Kayıtlı e-posta ve şifrenle giriş yap.</div>
+          <label>E-posta</label>
+          <input type="email" id="inlineMealsLoginEmail" placeholder="ornek@gmail.com">
+          <label>Şifre</label>
+          <input type="password" id="inlineMealsLoginPass" placeholder="Şifren">
+          <div class="send-row"><button class="btn-primary" id="inlineMealsLoginBtn" style="width:100%;">Giriş Yap</button></div>
+          <div class="feedback-msg" id="inlineMealsLoginFeedback"></div>
+          <div style="text-align:center; margin-top:14px; font-size:12.5px; color:#777;">
+            Hesabın yok mu? <a href="#" id="inlineMealsGoRegisterLink" style="color:var(--clay); font-weight:600;">Kayıt ol</a>
+          </div>
+        </div>
+
+        <div id="inlineMealsStepRecords" style="display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div class="sub" style="margin:0;" id="inlineMealsRecordsWho"></div>
+            <button type="button" id="inlineMealsLogoutBtn" style="background:none; border:1px solid #ccc; color:#888; font-size:11px; padding:5px 10px; border-radius:20px;">Çıkış</button>
+          </div>
+          <div id="inlineMealsDebtBox" style="background:var(--ink); color:var(--paper); border-radius:10px; padding:16px; text-align:center; margin-bottom:14px;">
+            <div style="font-size:11px; opacity:0.7; text-transform:uppercase; letter-spacing:0.05em;">Toplam Borç</div>
+            <div style="font-family:'Manrope',sans-serif; font-size:1.8rem; font-weight:700;" id="inlineMealsDebtAmount">—</div>
+          </div>
+          <div id="inlineMealsRecordsList" class="list-empty">Yükleniyor...</div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="tab-panel" id="panel-telefonlar">
-    <div class="list-section">
-      <h3>Acil Durum Telefonları</h3>
-      <div id="phonesList" class="list-empty">Yükleniyor...</div>
-    </div>
-  </div>
-
+  <!-- TAKVİM SEKMESİ (TELEFONLAR BURAYA ALT TAB OLARAK EKLENDİ) -->
   <div class="tab-panel" id="panel-isler">
-    <div class="isler-subtabs">
+    <div class="subtabs-bar">
       <button type="button" class="active" id="islerSubTabCalendar">📅 Takvim</button>
       <button type="button" id="islerSubTabTasks">✅ İşler</button>
+      <button type="button" id="islerSubTabPhones">📞 Telefonlar</button>
     </div>
 
+    <!-- TAKVİM PANELİ -->
     <div id="islerSubPanelCalendar">
       <div class="list-section">
         <h3>Takvim</h3>
@@ -743,10 +831,19 @@
       </div>
     </div>
 
+    <!-- İŞLER PANELİ -->
     <div id="islerSubPanelTasks" style="display:none;">
       <div class="list-section">
         <h3>Aylık Yapılacak İşler</h3>
         <div id="tasksList" class="list-empty">Yükleniyor...</div>
+      </div>
+    </div>
+
+    <!-- TELEFONLAR PANELİ (TAKVİM İÇİNE ALINDI) -->
+    <div id="islerSubPanelPhones" style="display:none;">
+      <div class="list-section">
+        <h3>Acil Durum Telefonları</h3>
+        <div id="phonesList" class="list-empty">Yükleniyor...</div>
       </div>
     </div>
   </div>
@@ -780,7 +877,7 @@
   <!-- GENEL POPUP BLUR BACKDROP -->
   <div class="modal-backdrop" id="feedbackBackdrop"></div>
 
-  <!-- PROFİL MODALI (POPUP) - TEMİZLENDİ -->
+  <!-- PROFİL MODALI (POPUP) -->
   <div class="card" id="profileModal" style="display:none;">
     <div class="card-header"><h2>Profilim</h2><button class="card-close" data-close="profileModal" aria-label="Kapat">✕</button></div>
     <div class="sub">Adınızı girerek okundu kayıtlarında görünmesini sağlayabilirsiniz.</div>
@@ -816,19 +913,21 @@
     <div class="feedback-msg" id="profileFeedback"></div>
   </div>
 
-  <!-- GÖRÜŞ MODALI (POPUP) -->
+  <!-- ÖNERİ - İLETİŞİM MODALI (GÜNCELLENDİ) -->
   <div class="card" id="feedbackModal" style="display:none;">
-    <div class="card-header"><h2>Öneri</h2><button class="card-close" data-close="feedbackModal" aria-label="Kapat">✕</button></div>
-    <div class="sub">Yönetime iletmek istediğiniz not veya talebiniz:</div>
-    <label>Adınız (opsiyonel)</label>
+    <div class="card-header"><h2>Öneri - İletişim</h2><button class="card-close" data-close="feedbackModal" aria-label="Kapat">✕</button></div>
+    <div class="sub" style="color:#444; line-height:1.5;">
+      İletmek istediğiniz not veya talebiniz, Duyuru olarak yayımlanmasını istediğiniz duyuru varsa yazabilirsiniz.
+    </div>
+    <label>Adınız Soyadınız (Opsiyonel)</label>
     <input type="text" id="feedbackName" placeholder="İsimsiz bırakabilirsiniz">
-    <label>Mesajınız</label>
-    <textarea id="feedbackText" placeholder="Mesajınızı yazın..."></textarea>
+    <label>Mesajınız / Duyuru Metniniz</label>
+    <textarea id="feedbackText" placeholder="İletinizi buraya yazabilirsiniz..."></textarea>
     <div class="send-row"><button class="btn-primary" id="feedbackSendBtn">Gönder</button></div>
     <div class="feedback-msg" id="feedbackModalFeedback"></div>
   </div>
 
-  <!-- SOHBET MODALI (DÜZELTİLDİ - MERKEZİ POPUP) -->
+  <!-- SOHBET MODALI -->
   <div class="card" id="chatModal" style="display:none;">
     <div class="card-header"><h2>🗨️ Sohbet</h2><button class="card-close" data-close="chatModal" aria-label="Kapat">✕</button></div>
 
@@ -866,63 +965,10 @@
     </div>
   </div>
 
-  <!-- YEMEK KAYDIM MODALI (POPUP) -->
+  <!-- YEMEK KAYDINI AÇAN AYLIK MODAL (MEVCUT YAPI KORUNDU) -->
   <div class="card" id="mealsModal" style="display:none;">
     <div class="card-header"><h2>🍽️ Yemek Kaydım</h2><button class="card-close" data-close="mealsModal" aria-label="Kapat">✕</button></div>
-
-    <div id="mealsStepRegister">
-      <div class="sub">Kendi yemekhane geçmişini ve borcunu görebilmek için kişisel e-postanla kayıt ol.</div>
-      <div style="background:#EAF4FC; border:1px solid #C7E2F5; border-radius:10px; padding:10px 12px; font-size:12px; color:var(--navy-mid); margin-bottom:14px;">
-        ℹ️ Yalnızca kişisel <b>Gmail</b> veya <b>Hotmail</b> adresiyle kayıt olabilirsin. Kurumsal e-postalar kabul edilmiyor.
-      </div>
-      <label>Adın Soyadın</label>
-      <input type="text" id="mealsRegName" placeholder="Örn: Ahmet Yılmaz">
-      <label>Telefon Numaran</label>
-      <input type="tel" id="mealsRegPhone" placeholder="Örn: 0555 111 22 33">
-      <label>E-posta (Gmail veya Hotmail)</label>
-      <input type="email" id="mealsRegEmail" placeholder="ornek@gmail.com">
-      <label>Şifre</label>
-      <input type="password" id="mealsRegPass" placeholder="En az 6 karakter">
-      <div class="send-row"><button class="btn-primary" id="mealsRegisterBtn" style="width:100%;">Kayıt Ol ve Kod Gönder</button></div>
-      <div class="feedback-msg" id="mealsRegFeedback"></div>
-      <div style="text-align:center; margin-top:14px; font-size:12.5px; color:#777;">
-        Zaten hesabın var mı? <a href="#" id="mealsGoLoginLink" style="color:var(--clay); font-weight:600;">Giriş yap</a>
-      </div>
-    </div>
-
-    <div id="mealsStepVerify" style="display:none;">
-      <div class="sub">E-postana gönderilen 6 haneli kodu gir.</div>
-      <input type="text" id="mealsVerifyCode" maxlength="6" inputmode="numeric" placeholder="000000"
-        style="text-align:center; font-size:1.6rem; letter-spacing:8px; font-weight:800; padding:16px;">
-      <div class="send-row"><button class="btn-primary" id="mealsVerifyBtn" style="width:100%;">Doğrula</button></div>
-      <button type="button" id="mealsResendBtn" style="width:100%; background:none; color:#777; font-weight:600; font-size:12.5px; margin-top:8px;">Kodu Tekrar Gönder</button>
-      <div class="feedback-msg" id="mealsVerifyFeedback"></div>
-    </div>
-
-    <div id="mealsStepLogin" style="display:none;">
-      <div class="sub">Kayıtlı e-posta ve şifrenle giriş yap.</div>
-      <label>E-posta</label>
-      <input type="email" id="mealsLoginEmail" placeholder="ornek@gmail.com">
-      <label>Şifre</label>
-      <input type="password" id="mealsLoginPass" placeholder="Şifren">
-      <div class="send-row"><button class="btn-primary" id="mealsLoginBtn" style="width:100%;">Giriş Yap</button></div>
-      <div class="feedback-msg" id="mealsLoginFeedback"></div>
-      <div style="text-align:center; margin-top:14px; font-size:12.5px; color:#777;">
-        Hesabın yok mu? <a href="#" id="mealsGoRegisterLink" style="color:var(--clay); font-weight:600;">Kayıt ol</a>
-      </div>
-    </div>
-
-    <div id="mealsStepRecords" style="display:none;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <div class="sub" style="margin:0;" id="mealsRecordsWho"></div>
-        <button type="button" id="mealsLogoutBtn" style="background:none; border:1px solid #ccc; color:#888; font-size:11px; padding:5px 10px; border-radius:20px;">Çıkış</button>
-      </div>
-      <div id="mealsDebtBox" style="background:var(--ink); color:var(--paper); border-radius:10px; padding:16px; text-align:center; margin-bottom:14px;">
-        <div style="font-size:11px; opacity:0.7; text-transform:uppercase; letter-spacing:0.05em;">Toplam Borç</div>
-        <div style="font-family:'Manrope',sans-serif; font-size:1.8rem; font-weight:700;" id="mealsDebtAmount">—</div>
-      </div>
-      <div id="mealsRecordsList" class="list-empty">Yükleniyor...</div>
-    </div>
+    <!-- İçerik doğrudan sekmede de kullanılabildiği gibi popup için de aktif kalır -->
   </div>
 
   <!-- YÖNETİCİ MODALI -->
@@ -1002,20 +1048,21 @@
   </div>
 </div>
 
+<!-- SABİT ALT FOOTER (ÖNERİ YAZISI KALDIRILDI, ORTAYA HAREKETLİ KURUM LOGOSU EKLENDİ) -->
 <footer class="site-footer">
   <a href="#" id="profileLink">👤 Profilim</a>
-  <span class="fdot">·</span>
-  <a href="#" id="feedbackLink">💬 Öneri</a>
-  <span class="fdot">·</span>
   <a href="#" id="chatLink">🗨️ Sohbet</a>
-  <span class="fdot">·</span>
+  
+  <div class="footer-center-logo-wrap" id="centerLogoBtn" title="Öneri ve İletişim">
+    <img src="/icon-192.png" alt="Amasya Valiliği" class="footer-center-logo">
+  </div>
+
   <a href="#" id="mealsLink">🍽️ Yemek Kaydım</a>
-  <span class="fdot">·</span>
   <a href="/admin/" id="adminSecretBtn" title="" style="color:var(--line); text-decoration:none; padding:0 4px; font-size:14px;">•</a>
 </footer>
 
 <script>
-// --- OTOMATİK SES KİLİDİ AÇICI (AUTOPLAY UNLOCKER) ---
+// --- OTOMATİK SES KİLİDİ AÇICI ---
 let audioUnlocked = false;
 function unlockAudioEngine() {
   if (audioUnlocked) return;
@@ -1039,7 +1086,7 @@ function showBrand(brand) {
   if (b) b.style.display = 'block';
 }
 
-// --- SEKMELER & TEMA ---
+// --- ANA SEKMELER & TEMA ---
 document.querySelectorAll('.tabs .tab-btn').forEach(btn => {
   if (btn.dataset.tab) {
     btn.addEventListener('click', () => {
@@ -1561,7 +1608,7 @@ async function loadReadOnlyList(endpoint, listId, emptyText, renderItem, allowTo
   } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
 }
 
-// --- YEMEKHANE MENÜSÜ ---
+// --- YEMEKHANE MENÜSÜ & YEMEK KAYDI İÇ ALT SEKMELERİ ---
 const DISH_ICONS = ['🍲', '🍗', '🍚', '🍰'];
 const TR_DOW_NAMES = ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
 
@@ -1624,6 +1671,22 @@ document.getElementById('menuNextWeekBtn').addEventListener('click', () => {
 });
 
 loadMenuData();
+
+// YEMEKHANE İÇİ ALT SEKMELER (HAFTALIK MENÜ / YEMEK KAYDIM)
+document.getElementById('yemekSubTabMenu').addEventListener('click', () => {
+  document.getElementById('yemekSubTabMenu').classList.add('active');
+  document.getElementById('yemekSubTabRecords').classList.remove('active');
+  document.getElementById('yemekSubPanelMenu').style.display = 'block';
+  document.getElementById('yemekSubPanelRecords').style.display = 'none';
+});
+document.getElementById('yemekSubTabRecords').addEventListener('click', () => {
+  document.getElementById('yemekSubTabRecords').classList.add('active');
+  document.getElementById('yemekSubTabMenu').classList.remove('active');
+  document.getElementById('yemekSubPanelRecords').style.display = 'block';
+  document.getElementById('yemekSubPanelMenu').style.display = 'none';
+  if (mealsGetToken()) { inlineMealsShowStep('inlineMealsStepRecords'); inlineMealsLoadRecords(); }
+  else { inlineMealsShowStep('inlineMealsStepRegister'); }
+});
 
 loadReadOnlyList('/api/phones', 'phonesList', 'Henüz telefon eklenmedi.', p => `
   <div class="list-item"><div class="li-main"><div class="li-title">${esc(p.name)}</div><a class="li-phone" href="tel:${esc(p.number)}">${esc(p.number)}</a>${renderAttachment(p.attachment)}${activeAdminPassword ? `<div style="margin-top:6px;"><button class="btn-danger" onclick="deleteGeneric('phones','${p.id}')">Sil</button></div>`:''}</div></div>
@@ -1800,21 +1863,33 @@ document.getElementById('calSearchInput').addEventListener('keydown', (e) => { i
 renderCalMonth();
 loadCalendar();
 
-// --- Takvim / İşler alt sekme geçişi ---
-document.getElementById('islerSubTabTasks').addEventListener('click', () => {
-  document.getElementById('islerSubTabTasks').classList.add('active');
-  document.getElementById('islerSubTabCalendar').classList.remove('active');
-  document.getElementById('islerSubPanelTasks').style.display = 'block';
-  document.getElementById('islerSubPanelCalendar').style.display = 'none';
-});
+// --- TAKVİM İÇİ ALT SEKMELER (TAKVİM / İŞLER / TELEFONLAR) ---
 document.getElementById('islerSubTabCalendar').addEventListener('click', () => {
   document.getElementById('islerSubTabCalendar').classList.add('active');
   document.getElementById('islerSubTabTasks').classList.remove('active');
+  document.getElementById('islerSubTabPhones').classList.remove('active');
   document.getElementById('islerSubPanelCalendar').style.display = 'block';
+  document.getElementById('islerSubPanelTasks').style.display = 'none';
+  document.getElementById('islerSubPanelPhones').style.display = 'none';
+});
+document.getElementById('islerSubTabTasks').addEventListener('click', () => {
+  document.getElementById('islerSubTabTasks').classList.add('active');
+  document.getElementById('islerSubTabCalendar').classList.remove('active');
+  document.getElementById('islerSubTabPhones').classList.remove('active');
+  document.getElementById('islerSubPanelTasks').style.display = 'block';
+  document.getElementById('islerSubPanelCalendar').style.display = 'none';
+  document.getElementById('islerSubPanelPhones').style.display = 'none';
+});
+document.getElementById('islerSubTabPhones').addEventListener('click', () => {
+  document.getElementById('islerSubTabPhones').classList.add('active');
+  document.getElementById('islerSubTabCalendar').classList.remove('active');
+  document.getElementById('islerSubTabTasks').classList.remove('active');
+  document.getElementById('islerSubPanelPhones').style.display = 'block';
+  document.getElementById('islerSubPanelCalendar').style.display = 'none';
   document.getElementById('islerSubPanelTasks').style.display = 'none';
 });
 
-// --- MODALLAR (POPUP MANTIĞI DÜZELTİLDİ) ---
+// --- MODALLAR ---
 function openModal(modalId) {
   ['profileModal', 'feedbackModal', 'adminModal', 'chatModal', 'mealsModal'].forEach(id => {
     if (id !== modalId) {
@@ -1857,9 +1932,14 @@ document.querySelectorAll('.card-close').forEach(btn => {
   btn.addEventListener('click', () => closeModal(btn.dataset.close));
 });
 
-// Arka plan karartmaya tıklayınca kapatma
 document.getElementById('feedbackBackdrop').addEventListener('click', () => {
   ['profileModal', 'feedbackModal', 'adminModal', 'chatModal', 'mealsModal'].forEach(id => closeModal(id));
+});
+
+// ORTADAKİ KURUM LOGOSUNA TIKLAYINCA ÖNERİ - İLETİŞİM POPUP AÇILMASI
+document.getElementById('centerLogoBtn').addEventListener('click', (e) => {
+  e.preventDefault();
+  openModal('feedbackModal');
 });
 
 // PROFİL
@@ -1920,9 +2000,7 @@ document.getElementById('profileSaveBtn').addEventListener('click', async () => 
   } catch { fb.textContent = ''; showToast('Hata oluştu.', 'err'); }
 });
 
-// ÖNERİ
-document.getElementById('feedbackLink').addEventListener('click', (e) => { e.preventDefault(); toggleModal('feedbackModal'); });
-
+// ÖNERİ - İLETİŞİM GÖNDERME
 document.getElementById('feedbackSendBtn').addEventListener('click', async () => {
   const text = document.getElementById('feedbackText').value.trim();
   const name = document.getElementById('feedbackName').value.trim();
@@ -1933,10 +2011,11 @@ document.getElementById('feedbackSendBtn').addEventListener('click', async () =>
     if (!res.ok) throw new Error();
     document.getElementById('feedbackText').value = '';
     fb.textContent = ''; showToast('İletildi, teşekkürler.', 'ok');
+    closeModal('feedbackModal');
   } catch { showToast('Gönderilemedi.', 'err'); }
 });
 
-// --- SOHBET MANTIĞI VE AÇILMA SORUNU GİDERİLDİ ---
+// --- SOHBET MANTIĞI ---
 let chatGeneralPoll = null;
 let chatDirectPoll = null;
 let presencePoll = null;
@@ -2463,7 +2542,7 @@ async function deleteGeneric(type, id) {
   } catch { alert('Silinemedi.'); }
 }
 
-// ---------- YEMEK KAYDIM VE ÜST HOŞ GELDİN KARTI GÜNCELLEMESİ ----------
+// ---------- YEMEK KAYDIM VE DAHİLİ SEKME İŞLEMLERİ ----------
 function mealsGetToken() { return localStorage.getItem('mealsToken') || ''; }
 function mealsSetToken(t) { if (t) localStorage.setItem('mealsToken', t); else localStorage.removeItem('mealsToken'); updateMealsWelcomeBar(); }
 let mealsPendingEmail = '';
@@ -2488,30 +2567,34 @@ async function updateMealsWelcomeBar() {
   if (topBar) topBar.style.display = 'none';
 }
 
-function mealsShowStep(step) {
-  ['mealsStepRegister', 'mealsStepVerify', 'mealsStepLogin', 'mealsStepRecords'].forEach(id => {
+document.getElementById('mealsLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  // Alt footer'daki Yemek Kaydım tıklanınca direkt Yemekhane sekmesine geçiş yapıp o alt sekmeyi aktif eder
+  document.querySelectorAll('.tabs .tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  const yemekTab = document.querySelector('.tabs .tab-btn[data-tab="notlar"]');
+  if (yemekTab) yemekTab.classList.add('active');
+  document.getElementById('panel-notlar').classList.add('active');
+  document.getElementById('yemekSubTabRecords').click();
+});
+
+function inlineMealsShowStep(step) {
+  ['inlineMealsStepRegister', 'inlineMealsStepVerify', 'inlineMealsStepLogin', 'inlineMealsStepRecords'].forEach(id => {
     document.getElementById(id).style.display = (id === step) ? 'block' : 'none';
   });
 }
 
-document.getElementById('mealsLink').addEventListener('click', (e) => {
-  e.preventDefault();
-  openModal('mealsModal');
-  if (mealsGetToken()) { mealsShowStep('mealsStepRecords'); mealsLoadRecords(); }
-  else { mealsShowStep('mealsStepRegister'); }
-});
+document.getElementById('inlineMealsGoLoginLink').addEventListener('click', (e) => { e.preventDefault(); inlineMealsShowStep('inlineMealsStepLogin'); });
+document.getElementById('inlineMealsGoRegisterLink').addEventListener('click', (e) => { e.preventDefault(); inlineMealsShowStep('inlineMealsStepRegister'); });
 
-document.getElementById('mealsGoLoginLink').addEventListener('click', (e) => { e.preventDefault(); mealsShowStep('mealsStepLogin'); });
-document.getElementById('mealsGoRegisterLink').addEventListener('click', (e) => { e.preventDefault(); mealsShowStep('mealsStepRegister'); });
-
-document.getElementById('mealsRegisterBtn').addEventListener('click', async () => {
-  const adSoyad = document.getElementById('mealsRegName').value.trim();
-  const telefon = document.getElementById('mealsRegPhone').value.trim();
-  const email = document.getElementById('mealsRegEmail').value.trim();
-  const sifre = document.getElementById('mealsRegPass').value;
-  const fb = document.getElementById('mealsRegFeedback');
+document.getElementById('inlineMealsRegisterBtn').addEventListener('click', async () => {
+  const adSoyad = document.getElementById('inlineMealsRegName').value.trim();
+  const telefon = document.getElementById('inlineMealsRegPhone').value.trim();
+  const email = document.getElementById('inlineMealsRegEmail').value.trim();
+  const sifre = document.getElementById('inlineMealsRegPass').value;
+  const fb = document.getElementById('inlineMealsRegFeedback');
   if (!adSoyad || !telefon || !email || !sifre) { fb.textContent = 'Tüm alanları doldurun.'; fb.className = 'feedback-msg err'; return; }
-  const btn = document.getElementById('mealsRegisterBtn');
+  const btn = document.getElementById('inlineMealsRegisterBtn');
   btn.disabled = true; fb.textContent = 'Gönderiliyor...'; fb.className = 'feedback-msg';
   try {
     const res = await fetch('/api/self-register', {
@@ -2522,16 +2605,16 @@ document.getElementById('mealsRegisterBtn').addEventListener('click', async () =
     if (!res.ok) throw new Error(data.error || 'Kayıt olunamadı.');
     mealsPendingEmail = email;
     fb.textContent = ''; fb.className = 'feedback-msg';
-    mealsShowStep('mealsStepVerify');
+    inlineMealsShowStep('inlineMealsStepVerify');
   } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
   finally { btn.disabled = false; }
 });
 
-document.getElementById('mealsVerifyBtn').addEventListener('click', async () => {
-  const kod = document.getElementById('mealsVerifyCode').value.trim();
-  const fb = document.getElementById('mealsVerifyFeedback');
+document.getElementById('inlineMealsVerifyBtn').addEventListener('click', async () => {
+  const kod = document.getElementById('inlineMealsVerifyCode').value.trim();
+  const fb = document.getElementById('inlineMealsVerifyFeedback');
   if (!kod) { fb.textContent = 'Kodu girin.'; fb.className = 'feedback-msg err'; return; }
-  const btn = document.getElementById('mealsVerifyBtn');
+  const btn = document.getElementById('inlineMealsVerifyBtn');
   btn.disabled = true; fb.textContent = 'Doğrulanıyor...'; fb.className = 'feedback-msg';
   try {
     const res = await fetch('/api/self-verify', {
@@ -2541,14 +2624,14 @@ document.getElementById('mealsVerifyBtn').addEventListener('click', async () => 
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Doğrulanamadı.');
     fb.textContent = 'E-posta doğrulandı! Şimdi giriş yapabilirsin.'; fb.className = 'feedback-msg ok';
-    document.getElementById('mealsLoginEmail').value = mealsPendingEmail;
-    setTimeout(() => mealsShowStep('mealsStepLogin'), 900);
+    document.getElementById('inlineMealsLoginEmail').value = mealsPendingEmail;
+    setTimeout(() => inlineMealsShowStep('inlineMealsStepLogin'), 900);
   } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
   finally { btn.disabled = false; }
 });
 
-document.getElementById('mealsResendBtn').addEventListener('click', async () => {
-  const fb = document.getElementById('mealsVerifyFeedback');
+document.getElementById('inlineMealsResendBtn').addEventListener('click', async () => {
+  const fb = document.getElementById('inlineMealsVerifyFeedback');
   try {
     const res = await fetch('/api/self-resend', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -2560,12 +2643,12 @@ document.getElementById('mealsResendBtn').addEventListener('click', async () => 
   } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
 });
 
-document.getElementById('mealsLoginBtn').addEventListener('click', async () => {
-  const email = document.getElementById('mealsLoginEmail').value.trim();
-  const sifre = document.getElementById('mealsLoginPass').value;
-  const fb = document.getElementById('mealsLoginFeedback');
+document.getElementById('inlineMealsLoginBtn').addEventListener('click', async () => {
+  const email = document.getElementById('inlineMealsLoginEmail').value.trim();
+  const sifre = document.getElementById('inlineMealsLoginPass').value;
+  const fb = document.getElementById('inlineMealsLoginFeedback');
   if (!email || !sifre) { fb.textContent = 'E-posta ve şifre gerekli.'; fb.className = 'feedback-msg err'; return; }
-  const btn = document.getElementById('mealsLoginBtn');
+  const btn = document.getElementById('inlineMealsLoginBtn');
   btn.disabled = true; fb.textContent = 'Giriş yapılıyor...'; fb.className = 'feedback-msg';
   try {
     const res = await fetch('/api/self-login', {
@@ -2576,26 +2659,26 @@ document.getElementById('mealsLoginBtn').addEventListener('click', async () => {
     if (!res.ok) throw new Error(data.error || 'Giriş yapılamadı.');
     mealsSetToken(data.token);
     fb.textContent = ''; fb.className = 'feedback-msg';
-    mealsShowStep('mealsStepRecords');
-    mealsLoadRecords();
+    inlineMealsShowStep('inlineMealsStepRecords');
+    inlineMealsLoadRecords();
   } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
   finally { btn.disabled = false; }
 });
 
-document.getElementById('mealsLogoutBtn').addEventListener('click', () => {
+document.getElementById('inlineMealsLogoutBtn').addEventListener('click', () => {
   mealsSetToken(null);
-  mealsShowStep('mealsStepLogin');
+  inlineMealsShowStep('inlineMealsStepLogin');
 });
 
-async function mealsLoadRecords() {
-  const listEl = document.getElementById('mealsRecordsList');
-  const whoEl = document.getElementById('mealsRecordsWho');
-  const debtEl = document.getElementById('mealsDebtAmount');
+async function inlineMealsLoadRecords() {
+  const listEl = document.getElementById('inlineMealsRecordsList');
+  const whoEl = document.getElementById('inlineMealsRecordsWho');
+  const debtEl = document.getElementById('inlineMealsDebtAmount');
   listEl.className = 'list-empty'; listEl.textContent = 'Yükleniyor...';
   try {
     const res = await fetch('/api/my-meals', { headers: { 'Authorization': 'Bearer ' + mealsGetToken() } });
     const data = await res.json();
-    if (res.status === 401) { mealsSetToken(null); mealsShowStep('mealsStepLogin'); return; }
+    if (res.status === 401) { mealsSetToken(null); inlineMealsShowStep('inlineMealsStepLogin'); return; }
     if (!data.ok) { listEl.textContent = data.error || 'Kayıtlar alınamadı.'; return; }
 
     whoEl.textContent = `${data.adSoyad || ''}${data.birim ? ' · ' + data.birim : ''}`;
