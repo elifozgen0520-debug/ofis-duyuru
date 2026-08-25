@@ -87,11 +87,14 @@
     border-radius: 50%; background: var(--clay);
   }
 
-  .bell-status {
-    display: inline-flex; align-items: center; gap: 6px; background: var(--paper);
-    color: var(--sage); font-size: 12px; font-weight: 600; padding: 6px 12px;
-    border-radius: 20px; margin-bottom: 20px;
+  /* YENİ KOMPAKT HEADER BİLDİRİM İKONU (RESİM 1 KONUMU) */
+  .bell-status-compact {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.22); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.35); transition: transform 0.15s ease;
   }
+  .bell-status-compact:hover { transform: scale(1.1); background: rgba(255,255,255,0.35); }
 
   button {
     font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px;
@@ -156,8 +159,20 @@
   }
   .chat-box {
     flex: 1; min-height: 120px; overflow-y: auto; background: #EEF3F8; border-radius: 8px;
-    padding: 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;
+    padding: 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 6px;
   }
+  
+  /* SOHBET EMOJİ ÇUBUĞU */
+  .chat-emoji-row {
+    display: flex; gap: 6px; overflow-x: auto; padding: 4px 2px 8px; flex-shrink: 0;
+  }
+  .chat-emoji-btn {
+    background: #E4ECF4; border: 1px solid #CBD8E6; border-radius: 16px; font-size: 14px;
+    padding: 3px 8px; cursor: pointer; transition: background 0.15s ease, transform 0.1s ease;
+    flex-shrink: 0; line-height: 1;
+  }
+  .chat-emoji-btn:hover { background: #D5E2F0; transform: scale(1.1); }
+
   .chat-bubble {
     max-width: 78%; padding: 8px 12px; border-radius: 14px; font-size: 13px; line-height: 1.4;
     word-wrap: break-word; position: relative;
@@ -215,7 +230,7 @@
   textarea { resize: vertical; min-height: 70px; }
 
   .cat-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-  .cat-btn { background: #fff; border: 1.5px solid #ddd; color: #555; font-size: 12px; padding: 6px 12px; border-radius: 20px; }
+  .cat-btn { background: #fff; border: 1.5px solid #ddd; color: #555; font-size: 12px; padding: 6px 12px; border-radius: 20px; cursor: pointer; }
   .cat-btn.active[data-cat="genel"] { background: var(--ink); color: #fff; }
   .cat-btn.active[data-cat="acil"] { background: var(--amber); color: #fff; }
   .cat-btn.active[data-cat="yemek"] { background: var(--sage); color: #fff; }
@@ -333,8 +348,8 @@
   .manset-dot.active { background: var(--paper); transform: scale(1.35); }
   .li-detay-link { font-size: 11.5px; color: var(--clay); font-weight: 600; cursor: pointer; margin-top: 6px; display: inline-block; }
 
-  /* DUYURU DETAY POPUP */
-  #duyuruDetayOverlay .toast-box { max-width: 440px; text-align: left; position: relative; }
+  /* DUYURU DETAY POPUP & YORUM ALANI */
+  #duyuruDetayOverlay .toast-box { max-width: 440px; text-align: left; position: relative; max-height: 85vh; overflow-y: auto; }
   .dd-close { position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 18px; color: #999; cursor: pointer; line-height: 1; }
   .dd-close:hover { color: var(--ink); }
   .dd-tag { display: inline-block; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #fff; padding: 3px 10px; border-radius: 20px; margin-bottom: 10px; }
@@ -346,6 +361,14 @@
   .dd-actions button { flex: 1; }
   .btn-share { background: var(--sage); color: #fff; }
   .btn-share:hover { opacity: 0.85; }
+
+  /* YORUM ALANI STİLLERİ */
+  .comment-item {
+    background: #F4F7FA; border-radius: 10px; padding: 8px 12px; margin-bottom: 6px; font-size: 12px;
+  }
+  .comment-user { font-weight: 700; color: var(--ink); margin-bottom: 2px; font-size: 11px; }
+  .comment-text { color: #333; line-height: 1.35; }
+  .comment-date { font-size: 9.5px; color: #999; text-align: right; margin-top: 2px; }
 
   #splash {
     position: fixed; inset: 0; background: var(--ink); display: flex;
@@ -651,8 +674,12 @@
     <div style="display:flex; align-items:center; gap:10px;">
       <img src="/icon-192.png" alt="" class="sway-logo" style="width:34px; height:34px; border-radius:50%;">
       <div>
-        <h1>Duyurular</h1>
-        <!-- HOŞ GELDİN MESAJI ÜSTTE BURAYA GELECEK -->
+        <div style="display:flex; align-items:center; gap:8px;">
+          <h1>Duyurular</h1>
+          <!-- RESİM 1 YERİNE TAŞINAN BİLDİRİM İKONU -->
+          <div class="bell-status-compact" id="bellStatus" style="display:none;" title="Bildirimler ve Ses Aktif">🔔</div>
+        </div>
+        <!-- HOŞ GELDİN MESAJI -->
         <div id="topWelcomeBar" style="display:none;" class="top-welcome-badge">
           👋 <span id="topWelcomeText"></span>
         </div>
@@ -674,9 +701,8 @@
     <p>Duyuruları telefonunuza anında anlık bildirim olarak almak için izin verin.</p>
     <button class="btn-primary" id="subscribeBtn">Bildirim Kurulumunu Başlat</button>
   </div>
-  <div class="bell-status" id="bellStatus" style="display:none;"><span class="sway-logo">🔔</span> <span>Bildirimler ve Ses Aktif</span></div>
 
-  <!-- ANA SEKMELER: TELEFONLAR TAŞINDI, 3 ANA SEKME KALDI -->
+  <!-- ANA SEKMELER -->
   <div class="tabs">
     <button class="tab-btn active" data-tab="duyurular">Duyurular</button>
     <button class="tab-btn" data-tab="notlar">Yemekhane</button>
@@ -709,7 +735,7 @@
     </div>
   </div>
 
-  <!-- YEMEKHANE SEKMESİ (ALT TAB İLE YEMEK KAYDI BURAYA ALINDI) -->
+  <!-- YEMEKHANE SEKMESİ -->
   <div class="tab-panel" id="panel-notlar">
     <div class="subtabs-bar">
       <button type="button" class="active" id="yemekSubTabMenu">🍲 Haftalık Menü</button>
@@ -728,7 +754,7 @@
       </div>
     </div>
 
-    <!-- ALT PANEL 2: YEMEK KAYDIM DAHİLİ PANENİ -->
+    <!-- ALT PANEL 2: YEMEK KAYDIM DAHİLİ PANELİ -->
     <div id="yemekSubPanelRecords" style="display:none;">
       <div class="card" style="margin-bottom:0;">
         <div id="inlineMealsStepRegister">
@@ -788,7 +814,7 @@
     </div>
   </div>
 
-  <!-- TAKVİM SEKMESİ (TELEFONLAR BURAYA ALT TAB OLARAK EKLENDİ) -->
+  <!-- TAKVİM SEKMESİ -->
   <div class="tab-panel" id="panel-isler">
     <div class="subtabs-bar">
       <button type="button" class="active" id="islerSubTabCalendar">📅 Takvim</button>
@@ -796,7 +822,6 @@
       <button type="button" id="islerSubTabPhones">📞 Telefonlar</button>
     </div>
 
-    <!-- TAKVİM PANELİ -->
     <div id="islerSubPanelCalendar">
       <div class="list-section">
         <h3>Takvim</h3>
@@ -831,7 +856,6 @@
       </div>
     </div>
 
-    <!-- İŞLER PANELİ -->
     <div id="islerSubPanelTasks" style="display:none;">
       <div class="list-section">
         <h3>Aylık Yapılacak İşler</h3>
@@ -839,7 +863,6 @@
       </div>
     </div>
 
-    <!-- TELEFONLAR PANELİ (TAKVİM İÇİNE ALINDI) -->
     <div id="islerSubPanelPhones" style="display:none;">
       <div class="list-section">
         <h3>Acil Durum Telefonları</h3>
@@ -857,7 +880,7 @@
     </div>
   </div>
 
-  <!-- DUYURU DETAY POPUP -->
+  <!-- DUYURU DETAY & YORUM YAZMA POPUP -->
   <div class="toast-overlay" id="duyuruDetayOverlay">
     <div class="toast-box">
       <button type="button" class="dd-close" id="duyuruDetayCloseBtn" aria-label="Kapat">✕</button>
@@ -871,13 +894,39 @@
         <button type="button" class="btn-primary" id="duyuruDetayReadBtn"></button>
         <button type="button" class="btn-share" id="duyuruDetayShareBtn">🔗 Paylaş</button>
       </div>
+
+      <!-- DUYURULARA YORUM & REAKSİYON BÖLÜMÜ -->
+      <div id="duyuruCommentsSection" style="margin-top:18px; border-top:1px solid #E2E8F0; padding-top:14px;">
+        <div style="font-family:'Manrope',sans-serif; font-weight:700; font-size:13.5px; margin-bottom:8px; color:var(--ink);">💬 Yorumlar ve Reaksiyonlar</div>
+        <div id="duyuruCommentsList" style="max-height:160px; overflow-y:auto; margin-bottom:10px;"></div>
+
+        <!-- ÜYE OLANLAR İÇİN YORUM FORMU -->
+        <div id="commentLoggedInBox" style="display:none;">
+          <div style="display:flex; gap:6px; margin-bottom:8px;">
+            <button type="button" class="cat-btn" onclick="addEmojiToComment('👍')">👍</button>
+            <button type="button" class="cat-btn" onclick="addEmojiToComment('❤️')">❤️</button>
+            <button type="button" class="cat-btn" onclick="addEmojiToComment('👏')">👏</button>
+            <button type="button" class="cat-btn" onclick="addEmojiToComment('🔥')">🔥</button>
+            <button type="button" class="cat-btn" onclick="addEmojiToComment('😊')">😊</button>
+          </div>
+          <textarea id="commentTextInput" maxlength="180" placeholder="Yorumunuzu yazın (Maks 180 karakter)..." style="min-height:55px; font-size:12.5px;"></textarea>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+            <span id="commentCharCount" style="font-size:11px; color:#888;">0 / 180</span>
+            <button type="button" class="btn-primary" id="sendCommentBtn" style="padding:6px 14px; font-size:12px;">Gönder</button>
+          </div>
+        </div>
+
+        <!-- ÜYE OLMAYANLAR İÇİN UYARI -->
+        <div id="commentLoggedOutBox" style="display:none; font-size:11.5px; color:#666; background:#F0F4F8; padding:10px 12px; border-radius:10px; text-align:center;">
+          🔒 Yorum yapabilmek ve emoji reaksiyonu verebilmek için <b>Yemekhane hesabınızla (e-posta)</b> giriş yapmalısınız.
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- GENEL POPUP BLUR BACKDROP -->
   <div class="modal-backdrop" id="feedbackBackdrop"></div>
 
-  <!-- PROFİL MODALI (POPUP) -->
+  <!-- PROFİL MODALI -->
   <div class="card" id="profileModal" style="display:none;">
     <div class="card-header"><h2>Profilim</h2><button class="card-close" data-close="profileModal" aria-label="Kapat">✕</button></div>
     <div class="sub">Adınızı girerek okundu kayıtlarında görünmesini sağlayabilirsiniz.</div>
@@ -913,11 +962,11 @@
     <div class="feedback-msg" id="profileFeedback"></div>
   </div>
 
-  <!-- ÖNERİ - İLETİŞİM MODALI (GÜNCELLENDİ) -->
+  <!-- ÖNERİ - İLETİŞİM MODALI (CÜMLE YÖNETİME EKLENEREK GÜNCELLENDİ) -->
   <div class="card" id="feedbackModal" style="display:none;">
     <div class="card-header"><h2>Öneri - İletişim</h2><button class="card-close" data-close="feedbackModal" aria-label="Kapat">✕</button></div>
     <div class="sub" style="color:#444; line-height:1.5;">
-      İletmek istediğiniz not veya talebiniz, Duyuru olarak yayımlanmasını istediğiniz duyuru varsa yazabilirsiniz.
+      İletmek istediğiniz not veya talebiniz, Duyuru olarak yayımlanmasını istediğiniz duyuru varsa Yönetime yazabilirsiniz.
     </div>
     <label>Adınız Soyadınız (Opsiyonel)</label>
     <input type="text" id="feedbackName" placeholder="İsimsiz bırakabilirsiniz">
@@ -927,7 +976,7 @@
     <div class="feedback-msg" id="feedbackModalFeedback"></div>
   </div>
 
-  <!-- SOHBET MODALI -->
+  <!-- SOHBET MODALI (GENİŞLİK BOZMAYAN EMOJİ ÇUBUKLARI EKLENDİ) -->
   <div class="card" id="chatModal" style="display:none;">
     <div class="card-header"><h2>🗨️ Sohbet</h2><button class="card-close" data-close="chatModal" aria-label="Kapat">✕</button></div>
 
@@ -944,6 +993,19 @@
 
       <div id="chatPanelGeneral" class="chat-panel">
         <div id="chatGeneralMessages" class="chat-box"></div>
+        <!-- HIZLI EMOJİ EKLEME ÇUBUĞU (GENEL) -->
+        <div class="chat-emoji-row">
+          <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('genel','👍')">👍</button>
+          <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('genel','❤️')">❤️</button>
+          <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('genel','😊')">😊</button>
+          <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('genel','👏')">👏</button>
+          <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('genel','🔥')">🔥</button>
+          <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('genel','🎉')">🎉</button>
+          <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('genel','🙋‍♂️')">🙋‍♂️</button>
+          <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('genel','🙏')">🙏</button>
+          <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('genel','💪')">💪</button>
+          <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('genel','👌')">👌</button>
+        </div>
         <div class="chat-input-row">
           <input type="text" id="chatGeneralInput" placeholder="Mesajınızı yazın..." maxlength="1000">
           <button class="btn-primary" id="chatGeneralSendBtn">Gönder</button>
@@ -956,6 +1018,19 @@
           <button type="button" id="chatBackToContacts" style="background:none;border:none;color:var(--clay);font-size:12px;cursor:pointer;padding:0 0 8px;">← Kişi Listesine Dön</button>
           <div id="chatDirectTitle" style="font-weight:700;font-size:14px;margin-bottom:8px;"></div>
           <div id="chatDirectMessages" class="chat-box"></div>
+          <!-- HIZLI EMOJİ EKLEME ÇUBUĞU (ÖZEL) -->
+          <div class="chat-emoji-row">
+            <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('direct','👍')">👍</button>
+            <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('direct','❤️')">❤️</button>
+            <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('direct','😊')">😊</button>
+            <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('direct','👏')">👏</button>
+            <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('direct','🔥')">🔥</button>
+            <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('direct','🎉')">🎉</button>
+            <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('direct','🙋‍♂️')">🙋‍♂️</button>
+            <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('direct','🙏')">🙏</button>
+            <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('direct','💪')">💪</button>
+            <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('direct','👌')">👌</button>
+          </div>
           <div class="chat-input-row">
             <input type="text" id="chatDirectInput" placeholder="Mesajınızı yazın..." maxlength="1000">
             <button class="btn-primary" id="chatDirectSendBtn">Gönder</button>
@@ -965,10 +1040,8 @@
     </div>
   </div>
 
-  <!-- YEMEK KAYDINI AÇAN AYLIK MODAL (MEVCUT YAPI KORUNDU) -->
   <div class="card" id="mealsModal" style="display:none;">
     <div class="card-header"><h2>🍽️ Yemek Kaydım</h2><button class="card-close" data-close="mealsModal" aria-label="Kapat">✕</button></div>
-    <!-- İçerik doğrudan sekmede de kullanılabildiği gibi popup için de aktif kalır -->
   </div>
 
   <!-- YÖNETİCİ MODALI -->
@@ -1048,7 +1121,7 @@
   </div>
 </div>
 
-<!-- SABİT ALT FOOTER (ÖNERİ YAZISI KALDIRILDI, ORTAYA HAREKETLİ KURUM LOGOSU EKLENDİ) -->
+<!-- SABİT ALT FOOTER -->
 <footer class="site-footer">
   <a href="#" id="profileLink">👤 Profilim</a>
   <a href="#" id="chatLink">🗨️ Sohbet</a>
@@ -1435,7 +1508,7 @@ async function loadHistory() {
             <div class="li-title" style="cursor:pointer;" data-detay-id="${m.id}">${esc(m.title)}</div>
             <div class="li-body">${esc(m.body)}</div>
             <div class="attach-wrap" id="attach-${m.id}">${renderAttachment(m.attachment)}</div>
-            <span class="li-detay-link" data-detay-id="${m.id}">🔎 Detay / Paylaş</span>
+            <span class="li-detay-link" data-detay-id="${m.id}">🔎 Detay / Yorum Yap / Paylaş</span>
             ${activeAdminPassword ? `<div style="margin-top:8px;"><span class="reads-badge" onclick="showReads('${m.id}')">👁 Okundu Bilgisi</span> <button class="btn-danger" onclick="deleteMessage('${m.id}')">Sil</button></div>` : ''}
           </div>
         </div>
@@ -1536,8 +1609,40 @@ function renderManset() {
 
 loadManset();
 
-// ---------- DUYURU DETAY POPUP ----------
+// ---------- DUYURU DETAY & YORUM İŞLEMLERİ ----------
 let duyuruDetayCurrent = null;
+
+function addEmojiToComment(emoji) {
+  const input = document.getElementById('commentTextInput');
+  if (input) {
+    if (input.value.length + emoji.length <= 180) {
+      input.value += emoji;
+      document.getElementById('commentCharCount').textContent = input.value.length + ' / 180';
+    }
+  }
+}
+
+async function loadComments(msgId) {
+  const container = document.getElementById('duyuruCommentsList');
+  try {
+    const res = await fetch(`/api/messages/${msgId}/comments`);
+    const data = await res.json();
+    const list = data.comments || [];
+    if (list.length === 0) {
+      container.innerHTML = '<div style="font-size:11.5px; color:#999; text-align:center; padding:10px 0;">Henüz yorum yapılmadı. İlk yorumu sen yaz!</div>';
+      return;
+    }
+    container.innerHTML = list.map(c => `
+      <div class="comment-item">
+        <div class="comment-user">${esc(c.userName || 'Kullanıcı')}</div>
+        <div class="comment-text">${esc(c.text)}</div>
+        <div class="comment-date">${formatTime(c.time)}</div>
+      </div>
+    `).join('');
+  } catch {
+    container.innerHTML = '<div style="font-size:11.5px; color:#999; text-align:center;">Yorumlar yüklenemedi.</div>';
+  }
+}
 
 async function openDuyuruDetay(id) {
   const m = historyItemsCache.find(x => x.id === id);
@@ -1566,8 +1671,47 @@ async function openDuyuruDetay(id) {
     if (listBtn) { listBtn.classList.add('done'); listBtn.innerHTML = '✓ Okundu'; }
   };
 
+  // E-Posta İle Giriş Yapıp Yapmadığını Kontrol Et (Yorum ve Emoji İzni İçin)
+  const token = mealsGetToken();
+  if (token) {
+    document.getElementById('commentLoggedInBox').style.display = 'block';
+    document.getElementById('commentLoggedOutBox').style.display = 'none';
+  } else {
+    document.getElementById('commentLoggedInBox').style.display = 'none';
+    document.getElementById('commentLoggedOutBox').style.display = 'block';
+  }
+
+  loadComments(m.id);
   document.getElementById('duyuruDetayOverlay').classList.add('show');
 }
+
+const commentInputEl = document.getElementById('commentTextInput');
+if (commentInputEl) {
+  commentInputEl.addEventListener('input', (e) => {
+    document.getElementById('commentCharCount').textContent = e.target.value.length + ' / 180';
+  });
+}
+
+document.getElementById('sendCommentBtn').addEventListener('click', async () => {
+  if (!duyuruDetayCurrent) return;
+  const text = commentInputEl.value.trim();
+  if (!text) { showToast('Lütfen yorumunuzu yazın.', 'err'); return; }
+  try {
+    const res = await fetch(`/api/messages/${duyuruDetayCurrent.id}/comments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + mealsGetToken() },
+      body: JSON.stringify({ text })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Yorum gönderilemedi.');
+    commentInputEl.value = '';
+    document.getElementById('commentCharCount').textContent = '0 / 180';
+    showToast('Yorumunuz eklendi.', 'ok');
+    loadComments(duyuruDetayCurrent.id);
+  } catch (err) {
+    showToast(err.message || 'Yorum gönderilemedi.', 'err');
+  }
+});
 
 document.getElementById('duyuruDetayCloseBtn').addEventListener('click', () => {
   document.getElementById('duyuruDetayOverlay').classList.remove('show');
@@ -1608,7 +1752,7 @@ async function loadReadOnlyList(endpoint, listId, emptyText, renderItem, allowTo
   } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
 }
 
-// --- YEMEKHANE MENÜSÜ & YEMEK KAYDI İÇ ALT SEKMELERİ ---
+// --- YEMEKHANE MENÜSÜ ---
 const DISH_ICONS = ['🍲', '🍗', '🍚', '🍰'];
 const TR_DOW_NAMES = ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
 
@@ -1672,7 +1816,6 @@ document.getElementById('menuNextWeekBtn').addEventListener('click', () => {
 
 loadMenuData();
 
-// YEMEKHANE İÇİ ALT SEKMELER (HAFTALIK MENÜ / YEMEK KAYDIM)
 document.getElementById('yemekSubTabMenu').addEventListener('click', () => {
   document.getElementById('yemekSubTabMenu').classList.add('active');
   document.getElementById('yemekSubTabRecords').classList.remove('active');
@@ -1863,7 +2006,6 @@ document.getElementById('calSearchInput').addEventListener('keydown', (e) => { i
 renderCalMonth();
 loadCalendar();
 
-// --- TAKVİM İÇİ ALT SEKMELER (TAKVİM / İŞLER / TELEFONLAR) ---
 document.getElementById('islerSubTabCalendar').addEventListener('click', () => {
   document.getElementById('islerSubTabCalendar').classList.add('active');
   document.getElementById('islerSubTabTasks').classList.remove('active');
@@ -1936,7 +2078,6 @@ document.getElementById('feedbackBackdrop').addEventListener('click', () => {
   ['profileModal', 'feedbackModal', 'adminModal', 'chatModal', 'mealsModal'].forEach(id => closeModal(id));
 });
 
-// ORTADAKİ KURUM LOGOSUNA TIKLAYINCA ÖNERİ - İLETİŞİM POPUP AÇILMASI
 document.getElementById('centerLogoBtn').addEventListener('click', (e) => {
   e.preventDefault();
   openModal('feedbackModal');
@@ -2015,7 +2156,16 @@ document.getElementById('feedbackSendBtn').addEventListener('click', async () =>
   } catch { showToast('Gönderilemedi.', 'err'); }
 });
 
-// --- SOHBET MANTIĞI ---
+// --- SOHBET MANTIĞI VE HIZLI EMOJİ EKLEME ---
+function insertEmojiToChat(target, emoji) {
+  const inputId = target === 'genel' ? 'chatGeneralInput' : 'chatDirectInput';
+  const el = document.getElementById(inputId);
+  if (el) {
+    el.value += emoji;
+    el.focus();
+  }
+}
+
 let chatGeneralPoll = null;
 let chatDirectPoll = null;
 let presencePoll = null;
@@ -2569,7 +2719,6 @@ async function updateMealsWelcomeBar() {
 
 document.getElementById('mealsLink').addEventListener('click', (e) => {
   e.preventDefault();
-  // Alt footer'daki Yemek Kaydım tıklanınca direkt Yemekhane sekmesine geçiş yapıp o alt sekmeyi aktif eder
   document.querySelectorAll('.tabs .tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   const yemekTab = document.querySelector('.tabs .tab-btn[data-tab="notlar"]');
