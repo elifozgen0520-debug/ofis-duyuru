@@ -10,7 +10,7 @@
   @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
   :root {
-    /* Kurumsal lacivert + turuncu palet (referans bankacılık arayüzünden) */
+    /* Kurumsal lacivert + turuncu palet */
     --ink: #0B2A4C;
     --paper: #FFFFFF;
     --paper-shadow: rgba(4,20,38,0.32);
@@ -55,6 +55,16 @@
   }
   h1 { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: clamp(20px, 6vw, 26px); margin: 0; letter-spacing: -0.01em; }
   .pin-count { font-size: 12px; color: rgba(255,255,255,0.82); }
+
+  /* ÜST HOŞGELDİN MESAJI BARI */
+  .top-welcome-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #fff; font-size: 12.5px; font-weight: 600;
+    padding: 4px 12px; border-radius: 20px; margin-top: 4px;
+  }
 
   /* SALLANAN LOGO VE ZİL ANİMASYONU */
   .sway-logo {
@@ -131,48 +141,21 @@
     to { opacity: 0; transform: translateY(8px) scale(0.97); }
   }
 
-  /* SOHBET — telefon ekranına göre otomatik boy, input her zaman altta sabit */
-  /* Artık sayfa akışında değil, sağ altta sabit yüzen (floating) bir pencere */
+  /* SOHBET MODALI (MERKEZİ POPUP) */
   #chatModal {
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    right: 18px;
-    bottom: 18px;
-    left: auto;
-    top: auto;
-    width: 380px;
-    max-width: calc(100vw - 24px);
-    max-height: 78vh;
-    border-radius: 22px;
-    box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 4px 14px rgba(0,0,0,0.25);
-    border: 1px solid rgba(0,0,0,0.06);
-    z-index: 1600;
-    margin-bottom: 0;
-  }
-  @media (max-width: 560px) {
-    #chatModal {
-      right: 8px; left: 8px; bottom: 8px; width: auto; max-width: none;
-      border-radius: 22px 22px 18px 18px;
-      max-height: 82vh;
-    }
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: min(500px, calc(100vw - 32px)); height: 80vh; max-height: 650px;
+    overflow: hidden; z-index: 1700; margin-bottom: 0;
+    display: flex; flex-direction: column;
   }
   #chatModal #chatUnlocked {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
+    display: flex; flex-direction: column; flex: 1; min-height: 0;
   }
   .chat-panel {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
+    display: flex; flex-direction: column; flex: 1; min-height: 0;
   }
   .chat-box {
-    flex: 1;
-    min-height: 120px;
-    overflow-y: auto; background: #EEF3F8; border-radius: 8px;
+    flex: 1; min-height: 120px; overflow-y: auto; background: #EEF3F8; border-radius: 8px;
     padding: 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;
   }
   .chat-bubble {
@@ -452,28 +435,6 @@
   .isler-subtabs button { background: rgba(255,255,255,0.08); color: var(--paper); padding: 8px 18px; font-size: 13px; font-weight: 600; border-radius: 20px; }
   .isler-subtabs button.active { background: var(--amber); color: var(--ink); }
 
-  /* KURUM LOGOSU — footer ve profil içinde ortak marka/öneri butonu */
-  .kurum-brand {
-    display: flex; align-items: center; gap: 10px; width: 100%; max-width: 480px;
-    margin: 0 auto 10px; background: rgba(255,255,255,0.07); border: 1px solid var(--line);
-    border-radius: 14px; padding: 8px 12px; cursor: pointer; text-align: left;
-    font-family: 'Inter', sans-serif;
-    transition: background 0.15s ease, transform 0.1s ease;
-  }
-  .kurum-brand:hover { background: rgba(255,255,255,0.13); }
-  .kurum-brand:active { transform: scale(0.98); }
-  .kurum-brand-logo {
-    width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0;
-    object-fit: cover; background: #fff; box-shadow: 0 2px 6px rgba(4,20,38,0.3);
-  }
-  .kurum-brand-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-  .kurum-brand-text strong { font-size: 12.5px; font-weight: 700; color: var(--paper); line-height: 1.25; }
-  .kurum-brand-text small { font-size: 10.5px; color: var(--muted); line-height: 1.3; }
-  .kurum-brand--inline { background: #EEF4FA; border: 1px solid #D7E6F2; margin: 0 0 16px; }
-  .kurum-brand--inline:hover { background: #E3EEF9; }
-  .kurum-brand--inline .kurum-brand-text strong { color: var(--ink); }
-  .kurum-brand--inline .kurum-brand-text small { color: #5B7086; }
-
   /* POPUP AÇILDIĞINDA ARKA PLAN BLUR / KARARTMA */
   .modal-backdrop {
     display: none; position: fixed; inset: 0; background: rgba(4,18,34,0.65);
@@ -482,7 +443,7 @@
   }
   .modal-backdrop.show { display: block; opacity: 1; }
 
-  /* PROFİL, ÖNERİ VE YEMEK KAYDIM POPUP SAYFASI STİLLERİ */
+  /* POPUP SAYFALARI ORTAK STİLİ */
   #feedbackModal, #profileModal, #mealsModal {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
     width: min(480px, calc(100vw - 32px)); max-height: 85vh; overflow-y: auto;
@@ -496,8 +457,8 @@
     from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
     to { opacity: 0; transform: translate(-50%, -50%) scale(0.94); }
   }
-  #feedbackModal.anim-open, #profileModal.anim-open, #mealsModal.anim-open { animation: popup-in 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
-  #feedbackModal.anim-close, #profileModal.anim-close, #mealsModal.anim-close { animation: popup-out 0.2s ease forwards; }
+  #feedbackModal.anim-open, #profileModal.anim-open, #mealsModal.anim-open, #chatModal.anim-open { animation: popup-in 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
+  #feedbackModal.anim-close, #profileModal.anim-close, #mealsModal.anim-close, #chatModal.anim-close { animation: popup-out 0.2s ease forwards; }
 </style>
 </head>
 <body>
@@ -506,7 +467,6 @@
 <div id="splash"><img src="/icon-192.png" alt="Amasya İl Müdürlüğü" class="sway-logo"></div>
 <div id="notifBanner"></div>
 
-<!-- ADIM ADIM KURULUM VE GÖRSEL MARKA AYAR SİHİRBAZI -->
 <!-- KVKK AYDINLATMA METNİ MODALI -->
 <div id="kvkkModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:2000; align-items:center; justify-content:center; padding:16px;">
   <div style="background:var(--paper); color:var(--ink); max-width:520px; width:100%; max-height:85vh; overflow-y:auto; border-radius:18px; padding:24px;">
@@ -532,10 +492,8 @@
       <div class="dot" id="dot4"></div>
     </div>
 
-    <!-- ADIM 1: UYGULAMA İNDİR (tarayıcı) / KURULUM ÖZETİ (APK) -->
+    <!-- ADIM 1: UYGULAMA İNDİR -->
     <div class="wizard-step active" id="step1">
-
-      <!-- Tarayıcıdan (PWA) açılıyorsa: indirme rehberi -->
       <div id="step1-download">
         <div style="font-size:36px; text-align:center; margin-bottom:8px;">📱</div>
         <h2 style="text-align:center; margin:0 0 8px;">Adım 1: Uygulamayı İndir</h2>
@@ -555,7 +513,6 @@
         </div>
       </div>
 
-      <!-- Kurulu APK içinden açılıyorsa: kurulum sırasında görülen uyarıların özeti -->
       <div id="step1-installed" style="display:none;">
         <div style="font-size:36px; text-align:center; margin-bottom:8px;">✅</div>
         <h2 style="text-align:center; margin:0 0 8px;">Kurulumu Başarıyla Tamamladınız</h2>
@@ -563,15 +520,15 @@
 
         <div class="guide-box" style="margin-bottom:10px;">
           <b>🛡️ "Bilinmeyen uygulama engellendi"</b><br>
-          Play Store dışından gelen tüm dosyalar için Android'in standart uyarısıdır — WhatsApp'tan gelen her belgede de aynısını görürsünüz.
+          Play Store dışından gelen tüm dosyalar için Android'in standart uyarısıdır.
         </div>
         <div class="guide-box" style="margin-bottom:10px;">
           <b>🛡️ "Google Play Protect" uyarısı</b><br>
-          Google, henüz Play Store'da yayınlanmamış her uygulama için bu uyarıyı gösterir. Zararlı olduğu anlamına gelmez, sadece "tanımıyorum" demektir.
+          Google, henüz Play Store'da yayınlanmamış her uygulama için bu uyarıyı gösterir.
         </div>
         <div class="guide-box">
           <b>🔒 Verileriniz güvende</b><br>
-          Uygulama yalnızca duyuru bildirimlerini almak için çalışır. <b>Uzman Salih ÖZGEN</b> imzasıyla onaylanmıştır.
+          Uygulama yalnızca duyuru bildirimlerini almak için çalışır.
         </div>
       </div>
 
@@ -591,7 +548,7 @@
       <label style="display:flex; align-items:flex-start; gap:8px; margin-top:16px; cursor:pointer; text-transform:none; letter-spacing:normal; font-weight:400; font-size:12.5px; color:#555;">
         <input type="checkbox" id="wizKvkkConsent" style="margin-top:2px; flex-shrink:0;">
         <span>
-          <a href="#" id="kvkkLinkOpen" style="color:var(--clay); font-weight:600; text-decoration:underline;">KVKK Aydınlatma Metni</a>'ni okudum, kişisel verilerimin (ad, telefon, e-posta, kan grubu) yalnızca kurum içi duyuru ve iletişim amacıyla işlenmesini kabul ediyorum. *
+          <a href="#" id="kvkkLinkOpen" style="color:var(--clay); font-weight:600; text-decoration:underline;">KVKK Aydınlatma Metni</a>'ni okudum, kişisel verilerimin yalnızca kurum içi duyuru ve iletişim amacıyla işlenmesini kabul ediyorum. *
         </span>
       </label>
 
@@ -639,8 +596,7 @@
 
       <div id="permFailedNotice" style="display:none; margin-top:14px; background:#FCEEDF; border:1.5px solid var(--amber); border-radius:10px; padding:12px 14px;">
         <div style="font-size:13px; font-weight:700; margin-bottom:4px;">⚠️ Otomatik izin penceresi açılmadı</div>
-        <div style="font-size:12.5px; color:#555; margin-bottom:10px;">Bazı telefonlarda bu normal. Sizi ayar ekranına yönlendirmeyi deniyoruz — açılmazsa Ayarlar &gt; Uygulamalar &gt; Amasya CSB Acil Duyuru &gt; Bildirimler'e girip elle açın.</div>
-        <button type="button" class="btn-primary" onclick="tryOpenAndroidNotifSettings()" style="width:100%; font-size:12.5px; padding:8px; margin-bottom:8px;">⚙️ Ayarları Açmayı Tekrar Dene</button>
+        <div style="font-size:12.5px; color:#555; margin-bottom:10px;">Sizi ayar ekranına yönlendirmeyi deniyoruz — açılmazsa Ayarlar &gt; Uygulamalar &gt; Amasya CSB Acil Duyuru &gt; Bildirimler'den açın.</div>
         <button type="button" class="btn-success" id="permRetryBtn" style="width:100%; font-size:12.5px; padding:8px;">✓ Ayardan Açtım, Devam Et</button>
       </div>
     </div>
@@ -670,7 +626,13 @@
   <header>
     <div style="display:flex; align-items:center; gap:10px;">
       <img src="/icon-192.png" alt="" class="sway-logo" style="width:34px; height:34px; border-radius:50%;">
-      <h1>Duyurular</h1>
+      <div>
+        <h1>Duyurular</h1>
+        <!-- HOŞ GELDİN MESAJI ÜSTTE BURAYA GELECEK -->
+        <div id="topWelcomeBar" style="display:none;" class="top-welcome-badge">
+          👋 <span id="topWelcomeText"></span>
+        </div>
+      </div>
     </div>
     <div style="display:flex; align-items:center; gap:10px;">
       <select id="themeSelect" style="background:rgba(255,255,255,0.12); color:#fff; border:1px solid rgba(255,255,255,0.35); border-radius:20px; font-size:11px; padding:4px 8px;">
@@ -798,7 +760,7 @@
     </div>
   </div>
 
-  <!-- DUYURU DETAY POPUP (manşet / listeden ajax ile açılır) -->
+  <!-- DUYURU DETAY POPUP -->
   <div class="toast-overlay" id="duyuruDetayOverlay">
     <div class="toast-box">
       <button type="button" class="dd-close" id="duyuruDetayCloseBtn" aria-label="Kapat">✕</button>
@@ -818,17 +780,9 @@
   <!-- GENEL POPUP BLUR BACKDROP -->
   <div class="modal-backdrop" id="feedbackBackdrop"></div>
 
-  <!-- PROFİL MODALI (POPUP) -->
+  <!-- PROFİL MODALI (POPUP) - TEMİZLENDİ -->
   <div class="card" id="profileModal" style="display:none;">
     <div class="card-header"><h2>Profilim</h2><button class="card-close" data-close="profileModal" aria-label="Kapat">✕</button></div>
-    <!-- KURUM LOGOSU: footer'daki ile aynı davranış, profil ekranında da tekrarlanır -->
-    <button type="button" class="kurum-brand kurum-brand--inline" id="profileKurumLogoBtn" aria-haspopup="dialog" aria-label="Kurum bilgisi ve görüş/öneri gönder">
-      <img src="/icon-192.png" alt="Amasya İl Müdürlüğü logosu" class="kurum-brand-logo">
-      <span class="kurum-brand-text">
-        <strong>T.C. Amasya Valiliği</strong>
-        <small>Çevre, Şehircilik ve İklim Değişikliği İl Müdürlüğü · Görüş bildir</small>
-      </span>
-    </button>
     <div class="sub">Adınızı girerek okundu kayıtlarında görünmesini sağlayabilirsiniz.</div>
 
     <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
@@ -858,17 +812,11 @@
       <option value="0 Rh+">0 Rh+</option>
       <option value="0 Rh-">0 Rh-</option>
     </select>
-    <div class="send-row"><button class="btn-primary" id="profileSaveBtn">Kaydet</button></div>
+    <div class="send-row"><button class="btn-primary" id="profileSaveBtn" style="width:100%;">Kaydet</button></div>
     <div class="feedback-msg" id="profileFeedback"></div>
-
-    <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--line);">
-      <label style="margin-top:0;">🔔 Bildirim & Ses Testi</label>
-      <button class="btn-success" id="testSoundBtn" style="width:100%; margin-bottom:8px; margin-top:6px;">🔊 Sesi Çal (3 Defa)</button>
-      <button class="btn-warning" id="testLockBtn" style="width:100%;">🧪 Kilit Ekranı Bildirim Testi (3 Sn)</button>
-    </div>
   </div>
 
-  <!-- GÖRÜŞ MODALI (popup) -->
+  <!-- GÖRÜŞ MODALI (POPUP) -->
   <div class="card" id="feedbackModal" style="display:none;">
     <div class="card-header"><h2>Öneri</h2><button class="card-close" data-close="feedbackModal" aria-label="Kapat">✕</button></div>
     <div class="sub">Yönetime iletmek istediğiniz not veya talebiniz:</div>
@@ -880,18 +828,18 @@
     <div class="feedback-msg" id="feedbackModalFeedback"></div>
   </div>
 
-  <!-- SOHBET MODALI -->
+  <!-- SOHBET MODALI (DÜZELTİLDİ - MERKEZİ POPUP) -->
   <div class="card" id="chatModal" style="display:none;">
     <div class="card-header"><h2>🗨️ Sohbet</h2><button class="card-close" data-close="chatModal" aria-label="Kapat">✕</button></div>
 
     <div id="chatLockedNotice" style="display:none;">
-      <div class="sub" style="color:#b23b3b;">Sohbete katılmak için önce adınızı ve telefon numaranızı kaydetmeniz gerekiyor.</div>
-      <button class="btn-primary" id="chatGoProfileBtn" style="width:100%;">👤 Profilime Git</button>
+      <div class="sub" style="color:#b23b3b; margin-top:10px;">Sohbete katılmak için önce adınızı ve telefon numaranızı kaydetmeniz gerekiyor.</div>
+      <button class="btn-primary" id="chatGoProfileBtn" style="width:100%; margin-top:10px;">👤 Profilime Git</button>
     </div>
 
     <div id="chatUnlocked" style="display:none;">
       <div class="tabs" style="margin-bottom:12px;">
-        <button class="tab-btn active" id="chatTabGeneral">Sohbet</button>
+        <button class="tab-btn active" id="chatTabGeneral">Genel Sohbet</button>
         <button class="tab-btn" id="chatTabDirect">Online Üyeler</button>
       </div>
 
@@ -918,11 +866,10 @@
     </div>
   </div>
 
-  <!-- YEMEK KAYDIM MODALI (POPUP) (self-servis kayıt/giriş + kişisel yemekhane geçmişi) -->
+  <!-- YEMEK KAYDIM MODALI (POPUP) -->
   <div class="card" id="mealsModal" style="display:none;">
     <div class="card-header"><h2>🍽️ Yemek Kaydım</h2><button class="card-close" data-close="mealsModal" aria-label="Kapat">✕</button></div>
 
-    <!-- Adım: Kayıt formu -->
     <div id="mealsStepRegister">
       <div class="sub">Kendi yemekhane geçmişini ve borcunu görebilmek için kişisel e-postanla kayıt ol.</div>
       <div style="background:#EAF4FC; border:1px solid #C7E2F5; border-radius:10px; padding:10px 12px; font-size:12px; color:var(--navy-mid); margin-bottom:14px;">
@@ -943,7 +890,6 @@
       </div>
     </div>
 
-    <!-- Adım: OTP doğrulama -->
     <div id="mealsStepVerify" style="display:none;">
       <div class="sub">E-postana gönderilen 6 haneli kodu gir.</div>
       <input type="text" id="mealsVerifyCode" maxlength="6" inputmode="numeric" placeholder="000000"
@@ -953,7 +899,6 @@
       <div class="feedback-msg" id="mealsVerifyFeedback"></div>
     </div>
 
-    <!-- Adım: Giriş formu -->
     <div id="mealsStepLogin" style="display:none;">
       <div class="sub">Kayıtlı e-posta ve şifrenle giriş yap.</div>
       <label>E-posta</label>
@@ -967,7 +912,6 @@
       </div>
     </div>
 
-    <!-- Adım: Kendi kayıtlarım -->
     <div id="mealsStepRecords" style="display:none;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <div class="sub" style="margin:0;" id="mealsRecordsWho"></div>
@@ -1081,8 +1025,7 @@ function unlockAudioEngine() {
     dummy.play().then(() => {
       dummy.pause();
       audioUnlocked = true;
-      console.log('Ses motoru başarısıyla açıldı.');
-    }).catch(e => console.log('Ses motoru açılamadı:', e));
+    }).catch(e => {});
   } catch(e) {}
 }
 
@@ -1113,7 +1056,7 @@ window.addEventListener('load', () => {
     const s = document.getElementById('splash');
     if (s) { s.classList.add('hide'); setTimeout(() => s.remove(), 600); }
   }, 1200);
-  updateMealsLinkText();
+  updateMealsWelcomeBar();
 });
 
 const themeSelect = document.getElementById('themeSelect');
@@ -1136,7 +1079,7 @@ function getDeviceId() {
   return id;
 }
 
-// --- ŞIK TOAST BİLDİRİMİ ---
+// --- TOAST BİLDİRİMİ ---
 function showToast(message, type) {
   const container = document.getElementById('toastContainer');
   const t = document.createElement('div');
@@ -1167,7 +1110,7 @@ async function markAsRead(id, btn) {
   } catch {}
 }
 
-// --- PWA İNDİR / İZİN SİHİRBAZI MANTIĞI ---
+// --- PWA İNDİR / İZİN SİHİRBAZI ---
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
@@ -1268,7 +1211,6 @@ document.getElementById('btnGrantPush').addEventListener('click', async () => {
     showWizardStep(localStorage.getItem('selfName') ? 4 : 2);
   } else {
     document.getElementById('permFailedNotice').style.display = 'block';
-    if (isInstalledApp) tryOpenAndroidNotifSettings();
   }
 });
 
@@ -1286,7 +1228,7 @@ document.getElementById('btnFinishWizard').addEventListener('click', () => {
   document.getElementById('wizardModal').style.display = 'none';
 });
 
-// --- PUSH VE DÜĞMELER ---
+// --- PUSH VE ABONELİK ---
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -1326,7 +1268,7 @@ if ('Notification' in window && Notification.permission === 'granted') doSubscri
 setTimeout(checkFirstRunWizard, 1600);
 refreshCount();
 
-// --- SES DÖNGÜSÜ (TAM 3 DEFA ÇALAR) ---
+// --- SES ÇALMA (3 DEFA) ---
 function playNotifSound() {
   try {
     let count = 0;
@@ -1336,9 +1278,7 @@ function playNotifSound() {
     const playOnce = () => {
       count++;
       audio.currentTime = 0;
-      audio.play().then(() => {
-        console.log('Ses çalıyor:', count);
-      }).catch(e => console.log('Ses çalma engellendi:', e));
+      audio.play().catch(e => {});
     };
 
     audio.addEventListener('ended', () => {
@@ -1346,7 +1286,7 @@ function playNotifSound() {
     });
 
     playOnce();
-  } catch (e) { console.log('Ses hatası:', e); }
+  } catch (e) {}
 }
 
 function showNotifBanner(category, title, body) {
@@ -1374,7 +1314,6 @@ function esc(s) { return (s || '').replace(/</g, '&lt;'); }
 
 const TR_MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 
-// --- RESMİ TATİLLER (2026-2027, doğrulanmış kaynaklardan) ---
 const TR_HOLIDAYS_FIXED = [
   { m: 1, d: 1, name: 'Yılbaşı' },
   { m: 4, d: 23, name: 'Ulusal Egemenlik ve Çocuk Bayramı' },
@@ -1389,12 +1328,7 @@ const TR_HOLIDAYS_RELIGIOUS = {
   '2026-03-21': 'Ramazan Bayramı (2. Gün)', '2026-03-22': 'Ramazan Bayramı (3. Gün)',
   '2026-05-26': 'Kurban Bayramı Arifesi', '2026-05-27': 'Kurban Bayramı (1. Gün)',
   '2026-05-28': 'Kurban Bayramı (2. Gün)', '2026-05-29': 'Kurban Bayramı (3. Gün)',
-  '2026-05-30': 'Kurban Bayramı (4. Gün)', '2026-10-28': 'Cumhuriyet Bayramı Arifesi',
-  '2027-03-08': 'Ramazan Bayramı Arifesi', '2027-03-09': 'Ramazan Bayramı (1. Gün)',
-  '2027-03-10': 'Ramazan Bayramı (2. Gün)', '2027-03-11': 'Ramazan Bayramı (3. Gün)',
-  '2027-05-15': 'Kurban Bayramı Arifesi', '2027-05-16': 'Kurban Bayramı (1. Gün)',
-  '2027-05-17': 'Kurban Bayramı (2. Gün)', '2027-05-18': 'Kurban Bayramı (3. Gün)',
-  '2027-05-19': 'Kurban Bayramı (4. Gün)', '2027-10-28': 'Cumhuriyet Bayramı Arifesi',
+  '2026-05-30': 'Kurban Bayramı (4. Gün)', '2026-10-28': 'Cumhuriyet Bayramı Arifesi'
 };
 function getHolidayName(dateKey) {
   if (TR_HOLIDAYS_RELIGIOUS[dateKey]) return TR_HOLIDAYS_RELIGIOUS[dateKey];
@@ -1403,7 +1337,6 @@ function getHolidayName(dateKey) {
   return fixed ? fixed.name : null;
 }
 
-// --- TAKVİM KATEGORİLERİ ---
 const CAL_CATEGORIES = {
   genel: { label: 'Genel', color: 'var(--navy-mid)' },
   toplanti: { label: 'Toplantı', color: 'var(--sage)' },
@@ -1418,10 +1351,8 @@ function renderAttachment(att) {
 }
 
 let activeAdminPassword = '';
-
 let historyPage = 1;
 let historyPageSize = parseInt(localStorage.getItem('historyPageSize') || '10', 10);
-
 let historyItemsCache = [];
 
 async function loadHistory() {
@@ -1496,7 +1427,7 @@ document.getElementById('historyPrevBtn').addEventListener('click', () => { if (
 document.getElementById('historyNextBtn').addEventListener('click', () => { historyPage++; loadHistory(); });
 loadHistory();
 
-// ---------- MANŞET (öne çıkan duyuru carousel'i) ----------
+// ---------- MANŞET ----------
 let mansetItems = [];
 let mansetIdx = 0;
 let mansetTimer = null;
@@ -1558,7 +1489,7 @@ function renderManset() {
 
 loadManset();
 
-// ---------- DUYURU DETAY POPUP (ajax) ----------
+// ---------- DUYURU DETAY POPUP ----------
 let duyuruDetayCurrent = null;
 
 async function openDuyuruDetay(id) {
@@ -1586,11 +1517,6 @@ async function openDuyuruDetay(id) {
     readBtn.disabled = true;
     const listBtn = document.querySelector(`[data-read-id="${m.id}"]`);
     if (listBtn) { listBtn.classList.add('done'); listBtn.innerHTML = '✓ Okundu'; }
-    const cur = historyItemsCache.find(x => x.id === m.id);
-    if (cur) {
-      cur.reads = cur.reads || [];
-      document.getElementById('duyuruDetayReadInfo').textContent = `👁 ${cur.reads.length} kişi okudu`;
-    }
   };
 
   document.getElementById('duyuruDetayOverlay').classList.add('show');
@@ -1614,7 +1540,7 @@ document.getElementById('duyuruDetayShareBtn').addEventListener('click', async (
       await navigator.clipboard.writeText(shareText);
       showToast('Duyuru metni panoya kopyalandı.', 'ok');
     } catch {
-      showToast('Paylaşım desteklenmiyor, metni elle kopyalayın.', 'err');
+      showToast('Paylaşım desteklenmiyor.', 'err');
     }
   }
 });
@@ -1635,15 +1561,14 @@ async function loadReadOnlyList(endpoint, listId, emptyText, renderItem, allowTo
   } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
 }
 
-// --- YEMEKHANE MENÜSÜ (haftalık, salt okunur — ekleme admin panelinden yapılır) ---
-const DISH_LABELS = ['Çorba', 'Ana Yemek', 'Yardımcı Yemek', 'Tatlı / Ekstra'];
+// --- YEMEKHANE MENÜSÜ ---
 const DISH_ICONS = ['🍲', '🍗', '🍚', '🍰'];
 const TR_DOW_NAMES = ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
 
 let menuAllItems = [];
 let menuWeekStart = (() => {
   const d = new Date();
-  const dow = (d.getDay() + 6) % 7; // Pzt=0
+  const dow = (d.getDay() + 6) % 7;
   d.setDate(d.getDate() - dow);
   d.setHours(0,0,0,0);
   return d;
@@ -1700,7 +1625,6 @@ document.getElementById('menuNextWeekBtn').addEventListener('click', () => {
 
 loadMenuData();
 
-
 loadReadOnlyList('/api/phones', 'phonesList', 'Henüz telefon eklenmedi.', p => `
   <div class="list-item"><div class="li-main"><div class="li-title">${esc(p.name)}</div><a class="li-phone" href="tel:${esc(p.number)}">${esc(p.number)}</a>${renderAttachment(p.attachment)}${activeAdminPassword ? `<div style="margin-top:6px;"><button class="btn-danger" onclick="deleteGeneric('phones','${p.id}')">Sil</button></div>`:''}</div></div>
 `);
@@ -1709,7 +1633,7 @@ loadReadOnlyList('/api/tasks', 'tasksList', 'Henüz görev eklenmedi.', t => `
   <div class="list-item ${t.done ? 'done' : ''}"><input type="checkbox" class="checkbox" data-toggle-id="${t.id}" ${t.done ? 'checked' : ''}><div class="li-main"><div class="li-title">${esc(t.text)}</div>${renderAttachment(t.attachment)}${activeAdminPassword ? `<div style="margin-top:6px;"><button class="btn-danger" onclick="deleteGeneric('tasks','${t.id}')">Sil</button></div>`:''}</div></div>
 `, true);
 
-// --- TAKVİM (salt okunur — ekleme/silme admin panelinden yapılır) ---
+// --- TAKVİM ---
 const TR_DOWS = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
 let calAllItems = [];
 let calCurrentDate = new Date();
@@ -1777,7 +1701,7 @@ function renderCalMonth() {
     const notes = calNotesForDate(key);
     const isToday = key === todayKey;
     const holidayName = getHolidayName(key);
-    const dow = new Date(y, m, d).getDay(); // 0=Paz,6=Cmt
+    const dow = new Date(y, m, d).getDay();
     const isWeekend = dow === 0 || dow === 6;
     const hasNotesAndHoliday = notes.length > 0 && holidayName;
     const dotColor = notes.length ? ((CAL_CATEGORIES[notes[0].category] || CAL_CATEGORIES.genel).color) : null;
@@ -1890,24 +1814,28 @@ document.getElementById('islerSubTabCalendar').addEventListener('click', () => {
   document.getElementById('islerSubPanelTasks').style.display = 'none';
 });
 
-// --- MODALLAR VE TEST ---
+// --- MODALLAR (POPUP MANTIĞI DÜZELTİLDİ) ---
 function openModal(modalId) {
   ['profileModal', 'feedbackModal', 'adminModal', 'chatModal', 'mealsModal'].forEach(id => {
     if (id !== modalId) {
       const el = document.getElementById(id);
-      el.classList.remove('anim-open');
-      el.style.display = 'none';
+      if (el) {
+        el.classList.remove('anim-open');
+        el.style.display = 'none';
+      }
     }
   });
   const m = document.getElementById(modalId);
+  if (!m) return;
   m.style.display = (modalId === 'chatModal') ? 'flex' : 'block';
   m.classList.remove('anim-close');
   m.classList.add('anim-open');
   document.getElementById('feedbackBackdrop').classList.add('show');
 }
+
 function closeModal(modalId) {
   const m = document.getElementById(modalId);
-  if (m.style.display === 'none') return;
+  if (!m || m.style.display === 'none') return;
   m.classList.remove('anim-open');
   m.classList.add('anim-close');
   document.getElementById('feedbackBackdrop').classList.remove('show');
@@ -1916,35 +1844,25 @@ function closeModal(modalId) {
     m.classList.remove('anim-close');
   }, 200);
 }
+
 function toggleModal(modalId) {
   const m = document.getElementById(modalId);
+  if (!m) return;
   const showing = m.style.display !== 'none';
   if (showing) closeModal(modalId);
   else openModal(modalId);
 }
+
 document.querySelectorAll('.card-close').forEach(btn => {
   btn.addEventListener('click', () => closeModal(btn.dataset.close));
 });
 
-document.getElementById('testSoundBtn').addEventListener('click', () => { unlockAudioEngine(); playNotifSound(); });
+// Arka plan karartmaya tıklayınca kapatma
+document.getElementById('feedbackBackdrop').addEventListener('click', () => {
+  ['profileModal', 'feedbackModal', 'adminModal', 'chatModal', 'mealsModal'].forEach(id => closeModal(id));
+});
 
-async function triggerLockTest() {
-  unlockAudioEngine();
-  if (!('serviceWorker' in navigator)) return;
-  const reg = await navigator.serviceWorker.ready;
-  alert('3 saniye içinde test bildirimi gönderilecek. Lütfen hemen ekranınızı kilitleyin!');
-  setTimeout(() => {
-    reg.showNotification('🚨 TEST BİLDİRİMİ', {
-      body: 'Bu kilit ekranı ve ses test mesajıdır.',
-      icon: '/icon-192.png',
-      vibrate: [800, 100, 800, 100, 800, 100, 800],
-      requireInteraction: true,
-      silent: false
-    });
-  }, 3000);
-}
-document.getElementById('testLockBtn').addEventListener('click', triggerLockTest);
-
+// PROFİL
 document.getElementById('profileLink').addEventListener('click', async (e) => {
   e.preventDefault();
   toggleModal('profileModal');
@@ -2002,14 +1920,8 @@ document.getElementById('profileSaveBtn').addEventListener('click', async () => 
   } catch { fb.textContent = ''; showToast('Hata oluştu.', 'err'); }
 });
 
+// ÖNERİ
 document.getElementById('feedbackLink').addEventListener('click', (e) => { e.preventDefault(); toggleModal('feedbackModal'); });
-
-// KURUM LOGOSU — profildeki logoya tıklayınca Öneri popup'ını açar
-document.getElementById('profileKurumLogoBtn').addEventListener('click', () => openModal('feedbackModal'));
-// Karartılmış arka plana (backdrop) tıklayınca açık olan popup'ı kapat
-document.getElementById('feedbackBackdrop').addEventListener('click', () => {
-  ['profileModal', 'feedbackModal', 'adminModal', 'chatModal', 'mealsModal'].forEach(id => closeModal(id));
-});
 
 document.getElementById('feedbackSendBtn').addEventListener('click', async () => {
   const text = document.getElementById('feedbackText').value.trim();
@@ -2024,11 +1936,11 @@ document.getElementById('feedbackSendBtn').addEventListener('click', async () =>
   } catch { showToast('Gönderilemedi.', 'err'); }
 });
 
-// --- SOHBET ---
+// --- SOHBET MANTIĞI VE AÇILMA SORUNU GİDERİLDİ ---
 let chatGeneralPoll = null;
 let chatDirectPoll = null;
 let presencePoll = null;
-let currentChatContact = null; // { deviceId, name }
+let currentChatContact = null;
 
 function hasCompleteProfile() {
   return !!(localStorage.getItem('selfName') && localStorage.getItem('selfPhone'));
@@ -2119,6 +2031,7 @@ async function deleteOwnChatMsg(scope, id) {
     const res = await fetch(url, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId() }) });
     if (!res.ok) { const d = await res.json(); alert(d.error || 'Silinemedi'); return; }
   } catch { alert('Silinemedi.'); }
+  if (scope === 'general') chatGeneralEditingId = null; else chatDirectEditingId = null;
   if (scope === 'general') loadGeneralChat(); else loadDirectChat();
 }
 
@@ -2296,7 +2209,7 @@ document.getElementById('chatLink').addEventListener('click', (e) => {
   openModal('chatModal');
   if (hasCompleteProfile()) {
     document.getElementById('chatLockedNotice').style.display = 'none';
-    document.getElementById('chatUnlocked').style.display = 'block';
+    document.getElementById('chatUnlocked').style.display = 'flex';
     sendPresenceHeartbeat();
     if (presencePoll) clearInterval(presencePoll);
     presencePoll = setInterval(sendPresenceHeartbeat, 45000);
@@ -2318,6 +2231,7 @@ document.querySelectorAll('.card-close').forEach(btn => {
   }
 });
 
+// YÖNETİCİ PANELSİZ KODLAR
 let selectedCategory = 'genel';
 document.getElementById('catRow').addEventListener('click', (e) => {
   const btn = e.target.closest('.cat-btn'); if (!btn) return;
@@ -2479,9 +2393,9 @@ async function loadAdminDevices() {
         </div>
         <button type="button" class="btn-warning" style="padding:5px 10px;font-size:12px;" onclick="togglePersonalMsg('${d.deviceId}')">📩 Kişiye Özel Mesaj Gönder</button>
         <div id="pm_${d.deviceId}" style="display:none;margin-top:8px;padding-top:8px;border-top:1px dashed #ddd;">
-          <input type="text" id="pmTitle_${d.deviceId}" placeholder="Başlık (örn: Yemekhane Borcu)" style="font-size:12px;padding:6px;margin-bottom:6px;">
+          <input type="text" id="pmTitle_${d.deviceId}" placeholder="Başlık" style="font-size:12px;padding:6px;margin-bottom:6px;">
           <textarea id="pmBody_${d.deviceId}" placeholder="Mesaj..." style="font-size:12px;padding:6px;min-height:50px;margin-bottom:6px;"></textarea>
-          <button class="btn-primary" style="padding:5px 10px;font-size:12px;" onclick="sendPersonalMsg('${d.deviceId}')">Sadece Bu Kişiye Gönder</button>
+          <button class="btn-primary" style="padding:5px 10px;font-size:12px;" onclick="sendPersonalMsg('${d.deviceId}')">Gönder</button>
           <div class="feedback-msg" id="pmFeedback_${d.deviceId}"></div>
         </div>
       </div>
@@ -2549,26 +2463,29 @@ async function deleteGeneric(type, id) {
   } catch { alert('Silinemedi.'); }
 }
 
-// ---------- YEMEK KAYDIM (self-servis kayıt / giriş / OTP / kişisel yemekhane geçmişi) ----------
+// ---------- YEMEK KAYDIM VE ÜST HOŞ GELDİN KARTI GÜNCELLEMESİ ----------
 function mealsGetToken() { return localStorage.getItem('mealsToken') || ''; }
-function mealsSetToken(t) { if (t) localStorage.setItem('mealsToken', t); else localStorage.removeItem('mealsToken'); updateMealsLinkText(); }
+function mealsSetToken(t) { if (t) localStorage.setItem('mealsToken', t); else localStorage.removeItem('mealsToken'); updateMealsWelcomeBar(); }
 let mealsPendingEmail = '';
 
-async function updateMealsLinkText() {
-  const link = document.getElementById('mealsLink');
-  if (!link) return;
+async function updateMealsWelcomeBar() {
+  const topBar = document.getElementById('topWelcomeBar');
+  const topText = document.getElementById('topWelcomeText');
   const token = mealsGetToken();
   if (token) {
     try {
       const res = await fetch('/api/my-meals', { headers: { 'Authorization': 'Bearer ' + token } });
       const data = await res.json();
       if (data.ok && data.adSoyad) {
-        link.innerHTML = '🍽️ Hoşgeldin, ' + esc(data.adSoyad);
+        if (topBar && topText) {
+          topText.textContent = 'Hoşgeldin, ' + data.adSoyad;
+          topBar.style.display = 'inline-flex';
+        }
         return;
       }
     } catch(e){}
   }
-  link.innerHTML = '🍽️ Yemek Kaydım';
+  if (topBar) topBar.style.display = 'none';
 }
 
 function mealsShowStep(step) {
@@ -2685,7 +2602,12 @@ async function mealsLoadRecords() {
     debtEl.textContent = (data.toplamBorc || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₺';
 
     if (data.adSoyad) {
-      document.getElementById('mealsLink').innerHTML = '🍽️ Hoşgeldin, ' + esc(data.adSoyad);
+      const topBar = document.getElementById('topWelcomeBar');
+      const topText = document.getElementById('topWelcomeText');
+      if (topBar && topText) {
+        topText.textContent = 'Hoşgeldin, ' + data.adSoyad;
+        topBar.style.display = 'inline-flex';
+      }
     }
 
     if (!data.kayitlar || data.kayitlar.length === 0) {
