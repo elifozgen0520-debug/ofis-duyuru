@@ -170,10 +170,12 @@ const SUBS_KEY = 'subscriptions';
 const MESSAGES_KEY = 'messages';
 const PROFILES_KEY = 'profiles';
 const FEEDBACK_KEY = 'feedback';
+const POLLS_KEY = 'polls';
 const DIRECT_KEY = 'direct-messages';
 const CHAT_GENERAL_KEY = 'chat-general';
 const CHAT_DIRECT_KEY = 'chat-direct';
 const PRESENCE_KEY = 'presence';
+const COMMENTS_KEY = 'message-comments';
 const ADMIN_PASSWORD = (process.env.ADMIN_PASSWORD || 'degistir-bu-sifreyi').trim();
 
 const loginAttempts = new Map();
@@ -469,9 +471,28 @@ app.post('/api/feedback', async (req, res) => {
   const name = (req.body.name || '').trim();
   if (!text) return res.status(400).json({ ok: false, error: 'Boş gönderilemez.' });
   const list = await loadJson(FEEDBACK_KEY);
-  list.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), text, name: name || null, time: new Date().toISOString() });
+  const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), text, name: name || null, time: new Date().toISOString() };
+  list.push(item);
   await saveJson(FEEDBACK_KEY, list.slice(-200));
   res.json({ ok: true });
+
+  // --- İletişim formu bildirimi: her mesaj anında salihozgen35@gmail.com'a e-postayla düşer ---
+  // (Doğum/vefat gibi acil konular buradan da gelebileceği için beklemeden, arka planda gönderiyoruz;
+  // e-posta gönderimi başarısız olsa bile kullanıcıya verilen cevabı etkilemez.)
+  if (resend) {
+    resend.emails.send({
+      from: RESEND_FROM,
+      to: 'salihozgen35@gmail.com',
+      subject: `📩 Yeni İletişim Formu Mesajı${name ? ' — ' + name : ''}`,
+      html: `<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;">
+        <h2 style="color:#7A2331;">Yeni bir mesaj geldi</h2>
+        <p><b>Gönderen:</b> ${name ? name.replace(/</g, '&lt;') : 'İsimsiz'}</p>
+        <p><b>Zaman:</b> ${new Date(item.time).toLocaleString('tr-TR')}</p>
+        <div style="background:#f7f5f0; border-radius:8px; padding:14px 16px; margin-top:10px; white-space:pre-wrap; color:#1F2430;">${text.replace(/</g, '&lt;')}</div>
+        <p style="color:#999; font-size:12px; margin-top:16px;">Bu mesaj Görüş &amp; İletişim formu üzerinden otomatik gönderilmiştir. Cevap yazmak için gönderene ait bir iletişim bilgisi paylaşılmadıysa yönetim panelinden bakabilirsiniz.</p>
+      </div>`,
+    }).catch(err => console.error('İletişim formu e-postası gönderilemedi:', err.message));
+  }
 });
 
 app.get('/api/feedback', async (req, res) => {
@@ -501,6 +522,107 @@ app.delete('/api/feedback/:id', async (req, res) => {
   if (passwordCheckResponse(res, result)) return;
   const list = (await loadJson(FEEDBACK_KEY)).filter(i => i.id !== req.params.id);
   await saveJson(FEEDBACK_KEY, list);
+  res.json({ ok: true });
+});
+
+// ============================================================================
+// ANKET (POLL) — yönetici anket açar, her cihaz (deviceId) yalnızca 1 kez oy
+// kullanabilir. Oylar sunucuda deviceId->seçenek eşlemesiyle tutulur, bu yüzden
+// aynı cihaz sayfayı yenileyip tekrar oy vermeye çalışsa bile engellenir.
+// ============================================================================
+app.post('/api/polls', async (req, res) => {
+  const { password, question, options } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const q = (question || '').trim();
+  const opts = Array.isArray(options) ? options.map(o => (o || '').trim()).filter(Boolean) : [];
+  if (!q) return res.status(400).json({ ok: false, error: 'Soru gerekli.' });
+  if (opts.length < 2) return res.status(400).json({ ok: false, error: 'En az 2 seçenek gerekli.' });
+
+  const polls = await loadJson(POLLS_KEY);
+  const poll = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    question: q,
+    options: opts.map(text => ({ text, votes: 0 })),
+    voters: {}, // { deviceId: optionIndex }
+    active: true,
+    createdAt: new Date().toISOString(),
+  };
+  polls.push(poll);
+  await saveJson(POLLS_KEY, polls);
+  res.json({ ok: true, poll });
+});
+
+// Yönetici: tüm anketleri (oy dağılımlarıyla) listeler.
+app.get('/api/polls', async (req, res) => {
+  const result = checkPassword(req.query.password, req);
+  if (passwordCheckResponse(res, result)) return;
+  res.json({ polls: (await loadJson(POLLS_KEY)).slice().reverse() });
+});
+
+// Herkese açık: sadece aktif anketleri, bu cihazın daha önce oy kullanıp kullanmadığı bilgisiyle döner.
+app.get('/api/polls/active', async (req, res) => {
+  const { deviceId } = req.query;
+  const polls = await loadJson(POLLS_KEY);
+  const active = polls.filter(p => p.active).slice().reverse();
+  const out = active.map(p => {
+    const total = p.options.reduce((s, o) => s + o.votes, 0);
+    const myVote = deviceId && p.voters && p.voters[deviceId] !== undefined ? p.voters[deviceId] : null;
+    return {
+      id: p.id,
+      question: p.question,
+      options: p.options.map(o => ({ text: o.text, votes: o.votes })),
+      createdAt: p.createdAt,
+      totalVotes: total,
+      myVote,
+    };
+  });
+  res.json({ polls: out });
+});
+
+app.post('/api/polls/:id/vote', async (req, res) => {
+  const { deviceId, optionIndex } = req.body;
+  if (!deviceId) return res.status(400).json({ ok: false, error: 'Cihaz kimliği gerekli.' });
+  const idx = parseInt(optionIndex, 10);
+
+  const polls = await loadJson(POLLS_KEY);
+  const poll = polls.find(p => p.id === req.params.id);
+  if (!poll) return res.status(404).json({ ok: false, error: 'Anket bulunamadı.' });
+  if (!poll.active) return res.status(400).json({ ok: false, error: 'Bu anket kapatılmış, artık oy kullanılamaz.' });
+  if (isNaN(idx) || idx < 0 || idx >= poll.options.length) return res.status(400).json({ ok: false, error: 'Geçersiz seçenek.' });
+  if (!poll.voters) poll.voters = {};
+  if (poll.voters[deviceId] !== undefined) return res.status(400).json({ ok: false, error: 'Bu cihazdan bu ankete zaten oy kullanılmış.' });
+
+  poll.voters[deviceId] = idx;
+  poll.options[idx].votes = (poll.options[idx].votes || 0) + 1;
+  await saveJson(POLLS_KEY, polls);
+
+  const total = poll.options.reduce((s, o) => s + o.votes, 0);
+  res.json({
+    ok: true,
+    poll: { id: poll.id, question: poll.question, options: poll.options.map(o => ({ text: o.text, votes: o.votes })), myVote: idx, totalVotes: total },
+  });
+});
+
+// Yönetici: anketi kapat/yeniden aç.
+app.put('/api/polls/:id', async (req, res) => {
+  const { password, active } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const polls = await loadJson(POLLS_KEY);
+  const poll = polls.find(p => p.id === req.params.id);
+  if (!poll) return res.status(404).json({ ok: false, error: 'Anket bulunamadı.' });
+  if (active !== undefined) poll.active = !!active;
+  await saveJson(POLLS_KEY, polls);
+  res.json({ ok: true });
+});
+
+app.delete('/api/polls/:id', async (req, res) => {
+  const { password } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const polls = (await loadJson(POLLS_KEY)).filter(p => p.id !== req.params.id);
+  await saveJson(POLLS_KEY, polls);
   res.json({ ok: true });
 });
 
@@ -782,6 +904,7 @@ app.get('/api/chat/contacts', async (req, res) => {
       name: p.name,
       avatar: p.avatar || null,
       online: presence[id] ? (now - presence[id] < 90 * 1000) : false,
+      lastSeen: presence[id] || null,
     }))
     .sort((a, b) => (b.online - a.online) || a.name.localeCompare(b.name, 'tr'));
   res.json({ contacts });
@@ -872,12 +995,49 @@ app.get('/api/chat/general/all', async (req, res) => {
   res.json({ messages: (await loadJson(CHAT_GENERAL_KEY)).slice(-300).reverse() });
 });
 
-app.delete('/api/chat/general/:id', async (req, res) => {
-  const { password } = req.body;
-  const result = checkPassword(password, req);
-  if (passwordCheckResponse(res, result)) return;
-  const messages = (await loadJson(CHAT_GENERAL_KEY)).filter(m => m.id !== req.params.id);
+// --- KENDİ MESAJINI DÜZENLEME (Genel Oda) ---
+app.put('/api/chat/general/:id', async (req, res) => {
+  const { deviceId, text } = req.body;
+  const clean = (text || '').trim().slice(0, 1000);
+  if (!clean) return res.status(400).json({ ok: false, error: 'Mesaj boş olamaz.' });
+  const messages = await loadJson(CHAT_GENERAL_KEY);
+  const msg = messages.find(m => m.id === req.params.id);
+  if (!msg) return res.status(404).json({ ok: false, error: 'Mesaj bulunamadı.' });
+  if (!deviceId || msg.deviceId !== deviceId) return res.status(403).json({ ok: false, error: 'Sadece kendi mesajınızı düzenleyebilirsiniz.' });
+  msg.text = clean;
+  msg.editedAt = new Date().toISOString();
   await saveJson(CHAT_GENERAL_KEY, messages);
+  res.json({ ok: true, message: msg });
+});
+
+// --- OKUNDU İŞARETLEME (Genel Oda, toplu) ---
+app.post('/api/chat/general/read-bulk', async (req, res) => {
+  const { deviceId, ids } = req.body;
+  if (!deviceId || !Array.isArray(ids) || ids.length === 0) return res.status(400).json({ ok: false });
+  const messages = await loadJson(CHAT_GENERAL_KEY);
+  let changed = false;
+  messages.forEach(m => {
+    if (ids.includes(m.id) && m.deviceId !== deviceId) {
+      if (!m.reads) m.reads = [];
+      if (!m.reads.includes(deviceId)) { m.reads.push(deviceId); changed = true; }
+    }
+  });
+  if (changed) await saveJson(CHAT_GENERAL_KEY, messages);
+  res.json({ ok: true });
+});
+
+app.delete('/api/chat/general/:id', async (req, res) => {
+  const { password, deviceId } = req.body;
+  const messages = await loadJson(CHAT_GENERAL_KEY);
+  const msg = messages.find(m => m.id === req.params.id);
+  if (!msg) return res.status(404).json({ ok: false, error: 'Mesaj bulunamadı.' });
+  const isOwner = deviceId && msg.deviceId === deviceId;
+  if (!isOwner) {
+    const result = checkPassword(password, req);
+    if (passwordCheckResponse(res, result)) return;
+  }
+  const filtered = messages.filter(m => m.id !== req.params.id);
+  await saveJson(CHAT_GENERAL_KEY, filtered);
   res.json({ ok: true });
 });
 
@@ -893,12 +1053,50 @@ app.get('/api/chat/direct/all', async (req, res) => {
   res.json({ messages: all });
 });
 
+// --- KENDİ MESAJINI DÜZENLEME (Özel Sohbet) ---
+app.put('/api/chat/direct/:id', async (req, res) => {
+  const { deviceId, text } = req.body;
+  const clean = (text || '').trim().slice(0, 1000);
+  if (!clean) return res.status(400).json({ ok: false, error: 'Mesaj boş olamaz.' });
+  const all = await loadJson(CHAT_DIRECT_KEY);
+  const msg = all.find(m => m.id === req.params.id);
+  if (!msg) return res.status(404).json({ ok: false, error: 'Mesaj bulunamadı.' });
+  if (!deviceId || msg.fromDeviceId !== deviceId) return res.status(403).json({ ok: false, error: 'Sadece kendi mesajınızı düzenleyebilirsiniz.' });
+  msg.text = clean;
+  msg.editedAt = new Date().toISOString();
+  await saveJson(CHAT_DIRECT_KEY, all);
+  res.json({ ok: true, message: msg });
+});
+
+// --- OKUNDU İŞARETLEME (Özel Sohbet, toplu) ---
+app.post('/api/chat/direct/read-bulk', async (req, res) => {
+  const { deviceId, ids } = req.body;
+  if (!deviceId || !Array.isArray(ids) || ids.length === 0) return res.status(400).json({ ok: false });
+  const all = await loadJson(CHAT_DIRECT_KEY);
+  let changed = false;
+  all.forEach(m => {
+    if (ids.includes(m.id) && m.toDeviceId === deviceId && !m.read) {
+      m.read = true;
+      m.readAt = new Date().toISOString();
+      changed = true;
+    }
+  });
+  if (changed) await saveJson(CHAT_DIRECT_KEY, all);
+  res.json({ ok: true });
+});
+
 app.delete('/api/chat/direct/:id', async (req, res) => {
-  const { password } = req.body;
-  const result = checkPassword(password, req);
-  if (passwordCheckResponse(res, result)) return;
-  const messages = (await loadJson(CHAT_DIRECT_KEY)).filter(m => m.id !== req.params.id);
-  await saveJson(CHAT_DIRECT_KEY, messages);
+  const { password, deviceId } = req.body;
+  const all = await loadJson(CHAT_DIRECT_KEY);
+  const msg = all.find(m => m.id === req.params.id);
+  if (!msg) return res.status(404).json({ ok: false, error: 'Mesaj bulunamadı.' });
+  const isOwner = deviceId && msg.fromDeviceId === deviceId;
+  if (!isOwner) {
+    const result = checkPassword(password, req);
+    if (passwordCheckResponse(res, result)) return;
+  }
+  const filtered = all.filter(m => m.id !== req.params.id);
+  await saveJson(CHAT_DIRECT_KEY, filtered);
   res.json({ ok: true });
 });
 
@@ -1054,6 +1252,48 @@ makeListApi('notes', 'notes');
 makeListApi('phones', 'phones');
 makeListApi('tasks', 'tasks');
 
+// --- YEMEKHANE MENÜSÜ (günlük, 4 çeşit yemek) ---
+const MENU_KEY = 'cafeteria-menu';
+
+app.get('/api/menu', async (req, res) => {
+  res.json({ items: await loadJson(MENU_KEY) });
+});
+
+app.post('/api/menu', async (req, res) => {
+  const { password, date, dishes } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ ok: false, error: 'Geçersiz tarih.' });
+  if (!Array.isArray(dishes)) return res.status(400).json({ ok: false, error: 'Menü listesi geçersiz.' });
+  const cleanDishes = dishes.slice(0, 4).map(d => (d || '').trim());
+  if (cleanDishes.every(d => !d)) return res.status(400).json({ ok: false, error: 'En az bir yemek girilmeli.' });
+
+  const items = await loadJson(MENU_KEY);
+  let item = items.find(i => i.date === date);
+  if (item) {
+    item.dishes = cleanDishes;
+    item.editedAt = new Date().toISOString();
+  } else {
+    item = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      date, dishes: cleanDishes,
+      createdAt: new Date().toISOString(),
+    };
+    items.push(item);
+  }
+  await saveJson(MENU_KEY, items);
+  res.json({ ok: true, item });
+});
+
+app.delete('/api/menu/:id', async (req, res) => {
+  const { password } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const items = (await loadJson(MENU_KEY)).filter(i => i.id !== req.params.id);
+  await saveJson(MENU_KEY, items);
+  res.json({ ok: true });
+});
+
 // --- TAKVİM (aylık/yıllık not/etkinlik takvimi) ---
 const CALENDAR_KEY = 'calendar';
 
@@ -1062,7 +1302,7 @@ app.get('/api/calendar', async (req, res) => {
 });
 
 app.post('/api/calendar', async (req, res) => {
-  const { password, date, text } = req.body;
+  const { password, date, text, category } = req.body;
   const result = checkPassword(password, req);
   if (passwordCheckResponse(res, result)) return;
   if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ ok: false, error: 'Geçersiz tarih.' });
@@ -1071,6 +1311,7 @@ app.post('/api/calendar', async (req, res) => {
   const item = {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
     date, text: text.trim(),
+    category: category || 'genel',
     createdAt: new Date().toISOString(),
   };
   items.push(item);
@@ -1079,7 +1320,7 @@ app.post('/api/calendar', async (req, res) => {
 });
 
 app.put('/api/calendar/:id', async (req, res) => {
-  const { password, text, date } = req.body;
+  const { password, text, date, category } = req.body;
   const result = checkPassword(password, req);
   if (passwordCheckResponse(res, result)) return;
   const items = await loadJson(CALENDAR_KEY);
@@ -1090,6 +1331,7 @@ app.put('/api/calendar/:id', async (req, res) => {
     item.text = text.trim();
   }
   if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) item.date = date;
+  if (category) item.category = category;
   item.editedAt = new Date().toISOString();
   await saveJson(CALENDAR_KEY, items);
   res.json({ ok: true, item });
@@ -1102,6 +1344,221 @@ app.delete('/api/calendar/:id', async (req, res) => {
   const items = (await loadJson(CALENDAR_KEY)).filter(i => i.id !== req.params.id);
   await saveJson(CALENDAR_KEY, items);
   res.json({ ok: true });
+});
+
+// ============================================================================
+// KİŞİSEL HESAP (SELF-SERVİS KAYIT) — personelin kendi yemekhane kayıtlarını
+// görebilmesi için. Ad-soyad + telefon + kişisel e-posta (yalnızca gmail.com/
+// hotmail.com — kurumsal adresler kabul edilmez) + şifre ile kayıt olunur,
+// e-postaya 6 haneli kod gönderilir. Doğrulanan hesap, telefon numarasıyla
+// salihozgen.com/yemekhane/anket sistemindeki (PHP+MySQL) personel kaydına
+// "köprü API" üzerinden eşleştirilip kendi yemek geçmişi gösterilir.
+// ============================================================================
+const crypto = require('crypto');
+
+const SELF_ACCOUNTS_KEY = 'self-accounts';
+const SELF_OTP_KEY = 'self-otp-codes';
+const SELF_TOKENS_KEY = 'self-tokens';
+const SELF_ALLOWED_EMAIL_DOMAINS = ['gmail.com', 'hotmail.com'];
+
+// ⚠️ BRIDGE_SECRET, PHP tarafındaki (api_kayitlarim.php) BRIDGE_SECRET ile
+// BİREBİR AYNI olmalı. İkisini de ortam değişkeninden (env) okumak daha güvenli
+// olur, ama bu kod tabanının geri kalanı gibi (ADMIN_PASSWORD vs.) burada da
+// çalışır bir varsayılan değer bırakıyoruz.
+const BRIDGE_SECRET = process.env.BRIDGE_SECRET || 'duyuru-koprusu-2026-cok-gizli-anahtar-degistir';
+const BRIDGE_URL = process.env.BRIDGE_URL || 'https://salihozgen.com/yemekhane/anket/api_kayitlarim.php';
+
+function hashPassword(sifre) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync(sifre, salt, 64).toString('hex');
+  return salt + ':' + hash;
+}
+function verifyPassword(sifre, stored) {
+  const [salt, hash] = (stored || '').split(':');
+  if (!salt || !hash) return false;
+  const testHash = crypto.scryptSync(sifre, salt, 64).toString('hex');
+  const a = Buffer.from(hash, 'hex'), b = Buffer.from(testHash, 'hex');
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+function emailDomainGecerliMi(email) {
+  const m = /^[^@\s]+@([^@\s]+)$/.exec((email || '').trim().toLowerCase());
+  return !!(m && SELF_ALLOWED_EMAIL_DOMAINS.includes(m[1]));
+}
+
+async function selfOtpGonder(email) {
+  const kod = String(Math.floor(100000 + Math.random() * 900000));
+  const codes = await loadJson(SELF_OTP_KEY);
+  codes.push({ email, kod, olusturulma: Date.now(), sonKullanma: Date.now() + 10 * 60 * 1000, kullanildi: false, denemeSayisi: 0 });
+  await saveJson(SELF_OTP_KEY, codes.slice(-500));
+
+  if (!resend) { console.warn('OTP kodu üretildi ama RESEND_API_KEY tanımlı değil, mail gönderilemedi:', email, kod); return false; }
+  try {
+    await resend.emails.send({
+      from: RESEND_FROM,
+      to: email,
+      subject: `Doğrulama Kodunuz: ${kod}`,
+      html: `<div style="font-family:Arial,sans-serif;max-width:400px;margin:0 auto;text-align:center;padding:24px;">
+        <h2 style="color:#4338ca;">Doğrulama Kodunuz</h2>
+        <div style="font-size:2rem;font-weight:800;letter-spacing:8px;color:#4338ca;margin:14px 0;">${kod}</div>
+        <p style="color:#888;font-size:12px;">Bu kod 10 dakika geçerlidir. Bu isteği siz yapmadıysanız bu e-postayı yok sayabilirsiniz.</p>
+      </div>`,
+    });
+    return true;
+  } catch (err) {
+    console.error('OTP mail gönderilemedi (' + email + '):', err.message);
+    return false;
+  }
+}
+
+app.post('/api/self-register', async (req, res) => {
+  const adSoyad = (req.body.adSoyad || '').trim();
+  const telefon = (req.body.telefon || '').trim();
+  const email = (req.body.email || '').trim().toLowerCase();
+  const sifre = req.body.sifre || '';
+
+  if (adSoyad.length < 3) return res.status(400).json({ ok: false, error: 'Adınızı ve soyadınızı eksiksiz girin.' });
+  if (telefon.replace(/\D/g, '').length < 10) return res.status(400).json({ ok: false, error: 'Geçerli bir telefon numarası girin.' });
+  if (!emailDomainGecerliMi(email)) return res.status(400).json({ ok: false, error: 'Yalnızca kişisel Gmail veya Hotmail adresiyle kayıt olabilirsiniz. Kurumsal e-postalar kabul edilmiyor.' });
+  if (sifre.length < 6) return res.status(400).json({ ok: false, error: 'Şifre en az 6 karakter olmalı.' });
+
+  const accounts = await loadJson(SELF_ACCOUNTS_KEY);
+  let acc = accounts.find(a => a.email === email);
+  if (acc && acc.emailDogrulandi) {
+    return res.status(400).json({ ok: false, error: 'Bu e-posta zaten kayıtlı. Giriş yapmayı deneyin.' });
+  }
+  const sifreHash = hashPassword(sifre);
+  if (acc) {
+    acc.adSoyad = adSoyad; acc.telefon = telefon; acc.sifreHash = sifreHash;
+  } else {
+    acc = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), adSoyad, telefon, email, sifreHash, emailDogrulandi: false, olusturulma: new Date().toISOString() };
+    accounts.push(acc);
+  }
+  await saveJson(SELF_ACCOUNTS_KEY, accounts);
+  await selfOtpGonder(email);
+  res.json({ ok: true });
+});
+
+app.post('/api/self-verify', async (req, res) => {
+  const email = (req.body.email || '').trim().toLowerCase();
+  const kod = (req.body.kod || '').trim();
+
+  const codes = await loadJson(SELF_OTP_KEY);
+  const kodKaydi = codes.slice().reverse().find(c => c.email === email && !c.kullanildi);
+  if (!kodKaydi) return res.status(400).json({ ok: false, error: 'Geçerli bir kod bulunamadı. Yeni kod isteyin.' });
+  if (kodKaydi.denemeSayisi >= 5) return res.status(400).json({ ok: false, error: 'Çok fazla yanlış deneme yapıldı. Yeni kod isteyin.' });
+  if (Date.now() > kodKaydi.sonKullanma) return res.status(400).json({ ok: false, error: 'Kodun süresi dolmuş. Yeni kod isteyin.' });
+  if (kod !== kodKaydi.kod) {
+    kodKaydi.denemeSayisi = (kodKaydi.denemeSayisi || 0) + 1;
+    await saveJson(SELF_OTP_KEY, codes);
+    return res.status(400).json({ ok: false, error: 'Kod hatalı, tekrar deneyin.' });
+  }
+  kodKaydi.kullanildi = true;
+  await saveJson(SELF_OTP_KEY, codes);
+
+  const accounts = await loadJson(SELF_ACCOUNTS_KEY);
+  const acc = accounts.find(a => a.email === email);
+  if (!acc) return res.status(404).json({ ok: false, error: 'Hesap bulunamadı.' });
+  acc.emailDogrulandi = true;
+  await saveJson(SELF_ACCOUNTS_KEY, accounts);
+  res.json({ ok: true });
+});
+
+app.post('/api/self-resend', async (req, res) => {
+  const email = (req.body.email || '').trim().toLowerCase();
+  const codes = await loadJson(SELF_OTP_KEY);
+  const son = codes.slice().reverse().find(c => c.email === email);
+  if (son && Date.now() - son.olusturulma < 45 * 1000) {
+    return res.status(429).json({ ok: false, error: 'Yeni kod istemeden önce birkaç saniye bekleyin.' });
+  }
+  const gonderildi = await selfOtpGonder(email);
+  res.json({ ok: true, mailSent: gonderildi });
+});
+
+app.post('/api/self-login', async (req, res) => {
+  const email = (req.body.email || '').trim().toLowerCase();
+  const sifre = req.body.sifre || '';
+  const accounts = await loadJson(SELF_ACCOUNTS_KEY);
+  const acc = accounts.find(a => a.email === email);
+  if (!acc || !acc.emailDogrulandi || !verifyPassword(sifre, acc.sifreHash)) {
+    return res.status(401).json({ ok: false, error: 'E-posta veya şifre hatalı ya da hesap henüz doğrulanmamış.' });
+  }
+  const token = crypto.randomBytes(24).toString('hex');
+  const tokens = await loadJson(SELF_TOKENS_KEY, {});
+  tokens[token] = { email, olusturulma: Date.now() };
+  await saveJson(SELF_TOKENS_KEY, tokens);
+  res.json({ ok: true, token, adSoyad: acc.adSoyad });
+});
+
+async function selfAuthMiddleware(req, res, next) {
+  const authHeader = req.headers['authorization'] || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : (req.query.token || '');
+  const tokens = await loadJson(SELF_TOKENS_KEY, {});
+  const entry = tokens[token];
+  if (!entry) return res.status(401).json({ ok: false, error: 'Giriş yapmalısınız.' });
+  req.selfEmail = entry.email;
+  next();
+}
+
+// --- KENDİ YEMEKHANE KAYITLARIM (PHP/MySQL sistemine köprü üzerinden ulaşır) ---
+app.get('/api/my-meals', selfAuthMiddleware, async (req, res) => {
+  const accounts = await loadJson(SELF_ACCOUNTS_KEY);
+  const acc = accounts.find(a => a.email === req.selfEmail);
+  if (!acc) return res.status(404).json({ ok: false, error: 'Hesap bulunamadı.' });
+
+  try {
+    const bridgeRes = await fetch(BRIDGE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Bridge-Key': BRIDGE_SECRET },
+      body: JSON.stringify({ telefon: acc.telefon }),
+    });
+    const data = await bridgeRes.json();
+    res.json(data);
+  } catch (err) {
+    console.error('Köprü API hatası:', err.message);
+    res.status(502).json({ ok: false, error: 'Yemekhane sistemine şu an ulaşılamıyor, lütfen daha sonra tekrar deneyin.' });
+  }
+});
+
+// --- DUYURU YORUMLARI ROTALARI ---
+app.get('/api/messages/:id/comments', async (req, res) => {
+  const commentsMap = await loadJson(COMMENTS_KEY, {});
+  const comments = commentsMap[req.params.id] || [];
+  res.json({ comments });
+});
+
+app.post('/api/messages/:id/comments', selfAuthMiddleware, async (req, res) => {
+  const { text } = req.body;
+  const cleanText = (text || '').trim().slice(0, 180);
+  if (!cleanText) return res.status(400).json({ ok: false, error: 'Yorum metni boş olamaz.' });
+
+  const accounts = await loadJson(SELF_ACCOUNTS_KEY);
+  const acc = accounts.find(a => a.email === req.selfEmail);
+  const userName = acc ? acc.adSoyad : 'Kullanıcı';
+
+  const commentsMap = await loadJson(COMMENTS_KEY, {});
+  if (!commentsMap[req.params.id]) commentsMap[req.params.id] = [];
+
+  const comment = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    userName,
+    text: cleanText,
+    time: new Date().toISOString()
+  };
+
+  commentsMap[req.params.id].push(comment);
+  if (commentsMap[req.params.id].length > 200) {
+    commentsMap[req.params.id] = commentsMap[req.params.id].slice(-200);
+  }
+  await saveJson(COMMENTS_KEY, commentsMap);
+
+  res.json({ ok: true, comment });
+});
+
+// --- Eşleşmeyen /api/* istekleri: HTML 404 sayfası yerine anlamlı JSON dön ---
+// (Böylece frontend'de "Unexpected token '<' ... is not valid JSON" gibi kriptik
+// hatalar yerine, hangi endpoint'in eksik/yanlış olduğu net görünür.)
+app.use('/api', (req, res) => {
+  res.status(404).json({ ok: false, error: 'Endpoint bulunamadı: ' + req.method + ' ' + req.originalUrl });
 });
 
 // Multer/genel hataları çirkin bir stack trace sayfası yerine düzgün JSON olarak dön.
