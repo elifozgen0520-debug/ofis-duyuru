@@ -66,7 +66,7 @@
     padding: 4px 12px; border-radius: 20px; margin-top: 4px;
   }
 
-  /* SALLANAN LOGO VE ZİL ANİMASYONU */
+  /* SALLANAN LOGO ANİMASYONU */
   .sway-logo {
     display: inline-block;
     animation: logo-sway 1.8s ease-in-out infinite alternate;
@@ -87,14 +87,27 @@
     border-radius: 50%; background: var(--clay);
   }
 
-  /* YENİ KOMPAKT HEADER BİLDİRİM İKONU (RESİM 1 KONUMU) */
+  /* HAREKETLİ & AKTİF/KAPALI DURUM BİLDİRİM İKONU */
   .bell-status-compact {
     display: inline-flex; align-items: center; justify-content: center;
-    background: rgba(255,255,255,0.22); color: #fff; font-size: 14px;
-    width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
-    border: 1px solid rgba(255,255,255,0.35); transition: transform 0.15s ease;
+    background: rgba(255,255,255,0.2); color: #fff; font-size: 14px;
+    width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.35); transition: all 0.25s ease;
   }
-  .bell-status-compact:hover { transform: scale(1.1); background: rgba(255,255,255,0.35); }
+  .bell-status-compact.active {
+    background: rgba(239, 125, 27, 0.35); border-color: var(--amber);
+    box-shadow: 0 0 12px rgba(239, 125, 27, 0.6);
+    animation: bell-ring 2.4s ease-in-out infinite;
+  }
+  .bell-status-compact.inactive {
+    opacity: 0.45; filter: grayscale(1); animation: none;
+  }
+  @keyframes bell-ring {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    10%, 30% { transform: rotate(-14deg) scale(1.12); }
+    20%, 40% { transform: rotate(14deg) scale(1.12); }
+    50% { transform: rotate(0deg) scale(1); }
+  }
 
   button {
     font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px;
@@ -304,7 +317,7 @@
   .list-item .li-phone { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 16px; color: var(--clay); text-decoration: none; }
   .list-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 18px; }
 
-  /* MANŞET (öne çıkan duyuru carousel'i) */
+  /* MANŞET (KATEGORİ KALDIRILDI, TARİH SAĞ ALTA İTALİK TAŞINDI) */
   .manset-wrap { margin-bottom: 18px; }
   .manset-nav { display: flex; align-items: center; gap: 10px; }
   .manset-nav-btn {
@@ -314,8 +327,8 @@
   }
   .manset-nav-btn:hover { background: rgba(255,255,255,0.16); }
   .manset-card {
-    flex: 1; position: relative; border-radius: 14px; overflow: hidden; padding: 26px 24px;
-    min-height: 150px; display: flex; flex-direction: column; justify-content: center;
+    flex: 1; position: relative; border-radius: 14px; overflow: hidden; padding: 24px 22px 34px;
+    min-height: 140px; display: flex; flex-direction: column; justify-content: center;
     color: #fff; cursor: pointer; box-shadow: 0 14px 32px rgba(0,0,0,0.35);
     background: linear-gradient(135deg, var(--manset-c1, var(--ink)), var(--manset-c2, #000));
     transition: transform 0.15s ease;
@@ -336,13 +349,8 @@
     to { background-position: -30% 0; }
   }
   .manset-card:hover { transform: translateY(-2px); }
-  .manset-tag {
-    display: inline-block; background: rgba(255,255,255,0.2); font-size: 10.5px; font-weight: 700;
-    letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 11px; border-radius: 20px;
-    margin-bottom: 12px; width: fit-content;
-  }
-  .manset-title { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 20px; margin: 0 0 8px; line-height: 1.25; }
-  .manset-date { font-size: 12px; opacity: 0.82; }
+  .manset-title { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 20px; margin: 0; line-height: 1.3; }
+  .manset-date { position: absolute; bottom: 10px; right: 16px; font-size: 11.5px; font-style: italic; opacity: 0.85; display: flex; align-items: center; gap: 4px; }
   .manset-dots { display: flex; gap: 6px; justify-content: center; margin-top: 12px; }
   .manset-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.28); cursor: pointer; border: none; padding: 0; transition: background 0.2s ease, transform 0.2s ease; }
   .manset-dot.active { background: var(--paper); transform: scale(1.35); }
@@ -389,7 +397,7 @@
   #notifBanner .bbody { font-size: 14px; line-height: 1.5; margin: 0; opacity: 0.95; }
   #notifBanner.acil { background: linear-gradient(135deg, var(--amber), var(--clay)); }
 
-  /* SABİT ALT FOOTER VE YAZILIK LOGO DÜZENLEMESİ */
+  /* SABİT ALT FOOTER */
   .site-footer {
     position: fixed; left: 0; right: 0; bottom: 0; background: var(--navy-deep);
     border-top: 1px solid var(--line); text-align: center; padding: 12px 14px;
@@ -399,7 +407,7 @@
   .site-footer a { color: var(--muted); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
   .site-footer a:hover { color: var(--paper); }
 
-  /* ORTADAKİ ORJİNAL KURUM LOGOSU (ZOOM & NABIZ ANİMASYONU) */
+  /* ORTADAKİ KURUM LOGOSU */
   .footer-center-logo-wrap {
     position: relative;
     top: -24px;
@@ -422,7 +430,7 @@
     50% { transform: scale(1.12); box-shadow: 0 8px 26px rgba(239, 125, 27, 0.75); }
   }
 
-  /* ONBOARDING WIZARD STYLES */
+  /* SİHİRBAZ WIZARD */
   .wizard-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 1000;
     display: flex; align-items: center; justify-content: center; padding: 16px;
@@ -477,12 +485,12 @@
   .toast-box { background: var(--paper); color: var(--ink); border-radius: 18px; padding: 26px 24px; max-width: 360px; width: 100%; box-shadow: 0 20px 50px rgba(4,20,38,0.4); }
   .toast-box .ttitle { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 17px; margin-bottom: 8px; }
 
-  /* GENEL ALT SEKMELER (SUBTABS) */
+  /* SUBTABS */
   .subtabs-bar { display: flex; gap: 6px; margin-bottom: 18px; }
   .subtabs-bar button { background: rgba(255,255,255,0.08); color: var(--paper); padding: 8px 16px; font-size: 12.5px; font-weight: 600; border-radius: 20px; border:none; cursor:pointer; }
   .subtabs-bar button.active { background: var(--amber); color: var(--ink); }
 
-  /* POPUP AÇILDIĞINDA ARKA PLAN BLUR / KARARTMA */
+  /* POPUP BACKDROP */
   .modal-backdrop {
     display: none; position: fixed; inset: 0; background: rgba(4,18,34,0.65);
     backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -490,7 +498,7 @@
   }
   .modal-backdrop.show { display: block; opacity: 1; }
 
-  /* POPUP SAYFALARI ORTAK STİLİ */
+  /* POPUP SAYFALARI */
   #feedbackModal, #profileModal, #mealsModal {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
     width: min(480px, calc(100vw - 32px)); max-height: 85vh; overflow-y: auto;
@@ -676,8 +684,8 @@
       <div>
         <div style="display:flex; align-items:center; gap:8px;">
           <h1>Duyurular</h1>
-          <!-- RESİM 1 YERİNE TAŞINAN BİLDİRİM İKONU -->
-          <div class="bell-status-compact" id="bellStatus" style="display:none;" title="Bildirimler ve Ses Aktif">🔔</div>
+          <!-- DİNAMİK BİLDİRİM ZİL İKONU (AKTİF/KAPALI DURUMU & ANİMASYONU) -->
+          <div class="bell-status-compact inactive" id="bellStatus" title="Bildirimler Kapalı (Açmak için tıklayın)">🔔</div>
         </div>
         <!-- HOŞ GELDİN MESAJI -->
         <div id="topWelcomeBar" style="display:none;" class="top-welcome-badge">
@@ -895,19 +903,19 @@
         <button type="button" class="btn-share" id="duyuruDetayShareBtn">🔗 Paylaş</button>
       </div>
 
-      <!-- DUYURULARA YORUM & REAKSİYON BÖLÜMÜ -->
+      <!-- DUYURULARA YORUM BÖLÜMÜ (GÜNCELLENDİ) -->
       <div id="duyuruCommentsSection" style="margin-top:18px; border-top:1px solid #E2E8F0; padding-top:14px;">
-        <div style="font-family:'Manrope',sans-serif; font-weight:700; font-size:13.5px; margin-bottom:8px; color:var(--ink);">💬 Yorumlar ve Reaksiyonlar</div>
+        <div style="font-family:'Manrope',sans-serif; font-weight:700; font-size:13.5px; margin-bottom:8px; color:var(--ink);">💬 Yorumlar</div>
         <div id="duyuruCommentsList" style="max-height:160px; overflow-y:auto; margin-bottom:10px;"></div>
 
-        <!-- ÜYE OLANLAR İÇİN YORUM FORMU -->
+        <!-- ÜYE OLANLAR İÇİN KİBAR & KURUMSAL EMOJİLİ YORUM FORMU -->
         <div id="commentLoggedInBox" style="display:none;">
           <div style="display:flex; gap:6px; margin-bottom:8px;">
             <button type="button" class="cat-btn" onclick="addEmojiToComment('👍')">👍</button>
             <button type="button" class="cat-btn" onclick="addEmojiToComment('❤️')">❤️</button>
             <button type="button" class="cat-btn" onclick="addEmojiToComment('👏')">👏</button>
-            <button type="button" class="cat-btn" onclick="addEmojiToComment('🔥')">🔥</button>
             <button type="button" class="cat-btn" onclick="addEmojiToComment('😊')">😊</button>
+            <button type="button" class="cat-btn" onclick="addEmojiToComment('✅')">✅</button>
           </div>
           <textarea id="commentTextInput" maxlength="180" placeholder="Yorumunuzu yazın (Maks 180 karakter)..." style="min-height:55px; font-size:12.5px;"></textarea>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
@@ -916,9 +924,9 @@
           </div>
         </div>
 
-        <!-- ÜYE OLMAYANLAR İÇİN UYARI -->
-        <div id="commentLoggedOutBox" style="display:none; font-size:11.5px; color:#666; background:#F0F4F8; padding:10px 12px; border-radius:10px; text-align:center;">
-          🔒 Yorum yapabilmek ve emoji reaksiyonu verebilmek için <b>Yemekhane hesabınızla (e-posta)</b> giriş yapmalısınız.
+        <!-- ÜYE OLMAYANLAR İÇİN KISALTILMIŞ LİNK UYARISI -->
+        <div id="commentLoggedOutBox" style="display:none; font-size:12px; color:#555; background:#F0F4F8; padding:8px 12px; border-radius:10px; text-align:center;">
+          🔒 Yorum yapmak için <a href="#" id="commentGoLoginLink" style="color:var(--clay); font-weight:700; text-decoration:underline;">Üye Girişi Yapın</a> veya <a href="#" id="commentGoRegisterLink" style="color:var(--navy-mid); font-weight:700; text-decoration:underline;">Yeni Kayıt</a> oluşturun.
         </div>
       </div>
     </div>
@@ -962,7 +970,7 @@
     <div class="feedback-msg" id="profileFeedback"></div>
   </div>
 
-  <!-- ÖNERİ - İLETİŞİM MODALI (CÜMLE YÖNETİME EKLENEREK GÜNCELLENDİ) -->
+  <!-- ÖNERİ - İLETİŞİM MODALI (GÜNCEL) -->
   <div class="card" id="feedbackModal" style="display:none;">
     <div class="card-header"><h2>Öneri - İletişim</h2><button class="card-close" data-close="feedbackModal" aria-label="Kapat">✕</button></div>
     <div class="sub" style="color:#444; line-height:1.5;">
@@ -976,7 +984,7 @@
     <div class="feedback-msg" id="feedbackModalFeedback"></div>
   </div>
 
-  <!-- SOHBET MODALI (GENİŞLİK BOZMAYAN EMOJİ ÇUBUKLARI EKLENDİ) -->
+  <!-- SOHBET MODALI (KURUMSAL EMOJİLERLE GÜNCELLENDİ) -->
   <div class="card" id="chatModal" style="display:none;">
     <div class="card-header"><h2>🗨️ Sohbet</h2><button class="card-close" data-close="chatModal" aria-label="Kapat">✕</button></div>
 
@@ -993,18 +1001,16 @@
 
       <div id="chatPanelGeneral" class="chat-panel">
         <div id="chatGeneralMessages" class="chat-box"></div>
-        <!-- HIZLI EMOJİ EKLEME ÇUBUĞU (GENEL) -->
+        <!-- HIZLI KURUMSAL EMOJİ ÇUBUĞU (GENEL) -->
         <div class="chat-emoji-row">
           <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('genel','👍')">👍</button>
           <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('genel','❤️')">❤️</button>
           <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('genel','😊')">😊</button>
           <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('genel','👏')">👏</button>
-          <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('genel','🔥')">🔥</button>
-          <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('genel','🎉')">🎉</button>
-          <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('genel','🙋‍♂️')">🙋‍♂️</button>
           <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('genel','🙏')">🙏</button>
-          <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('genel','💪')">💪</button>
-          <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('genel','👌')">👌</button>
+          <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('genel','✅')">✅</button>
+          <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('genel','📌')">📌</button>
+          <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('genel','ℹ️')">ℹ️</button>
         </div>
         <div class="chat-input-row">
           <input type="text" id="chatGeneralInput" placeholder="Mesajınızı yazın..." maxlength="1000">
@@ -1018,18 +1024,16 @@
           <button type="button" id="chatBackToContacts" style="background:none;border:none;color:var(--clay);font-size:12px;cursor:pointer;padding:0 0 8px;">← Kişi Listesine Dön</button>
           <div id="chatDirectTitle" style="font-weight:700;font-size:14px;margin-bottom:8px;"></div>
           <div id="chatDirectMessages" class="chat-box"></div>
-          <!-- HIZLI EMOJİ EKLEME ÇUBUĞU (ÖZEL) -->
+          <!-- HIZLI KURUMSAL EMOJİ ÇUBUĞU (ÖZEL) -->
           <div class="chat-emoji-row">
             <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('direct','👍')">👍</button>
             <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('direct','❤️')">❤️</button>
             <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('direct','😊')">😊</button>
             <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('direct','👏')">👏</button>
-            <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('direct','🔥')">🔥</button>
-            <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('direct','🎉')">🎉</button>
-            <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('direct','🙋‍♂️')">🙋‍♂️</button>
             <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('direct','🙏')">🙏</button>
-            <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('direct','💪')">💪</button>
-            <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('direct','👌')">👌</button>
+            <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('direct','✅')">✅</button>
+            <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('direct','📌')">📌</button>
+            <button type="button" class="chat-emoji-btn" onclick="insertEmojiToChat('direct','ℹ️')">ℹ️</button>
           </div>
           <div class="chat-input-row">
             <input type="text" id="chatDirectInput" placeholder="Mesajınızı yazın..." maxlength="1000">
@@ -1364,13 +1368,29 @@ async function refreshCount() {
   } catch { document.getElementById('subCount').textContent = ''; }
 }
 
+function setBellStatusUI(active) {
+  const b = document.getElementById('bellStatus');
+  if (!b) return;
+  if (active) {
+    b.className = 'bell-status-compact active';
+    b.title = 'Bildirimler ve Ses Aktif';
+  } else {
+    b.className = 'bell-status-compact inactive';
+    b.title = 'Bildirimler Kapalı (Açmak için tıklayın)';
+  }
+}
+
 async function doSubscribe(silent) {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
     if (!silent) alert('Bu tarayıcı push bildirimi desteklemiyor.');
+    setBellStatusUI(false);
     return false;
   }
   const permission = silent ? Notification.permission : await Notification.requestPermission();
-  if (permission !== 'granted') return false;
+  if (permission !== 'granted') {
+    setBellStatusUI(false);
+    return false;
+  }
   const reg = await navigator.serviceWorker.register('/sw.js');
   let subscription = await reg.pushManager.getSubscription();
   if (!subscription) {
@@ -1379,12 +1399,24 @@ async function doSubscribe(silent) {
   }
   await fetch('/api/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...subscription.toJSON(), deviceId: getDeviceId() }) });
   document.getElementById('subscribeCard').style.display = 'none';
-  document.getElementById('bellStatus').style.display = 'inline-flex';
+  setBellStatusUI(true);
   refreshCount();
   return true;
 }
 
-if ('Notification' in window && Notification.permission === 'granted') doSubscribe(true);
+document.getElementById('bellStatus').addEventListener('click', () => {
+  if (Notification.permission !== 'granted') {
+    document.getElementById('subscribeBtn').click();
+  } else {
+    showToast('Bildirimler ve Ses Zaten Aktif', 'ok');
+  }
+});
+
+if ('Notification' in window && Notification.permission === 'granted') {
+  doSubscribe(true);
+} else {
+  setBellStatusUI(false);
+}
 setTimeout(checkFirstRunWizard, 1600);
 refreshCount();
 
@@ -1547,7 +1579,7 @@ document.getElementById('historyPrevBtn').addEventListener('click', () => { if (
 document.getElementById('historyNextBtn').addEventListener('click', () => { historyPage++; loadHistory(); });
 loadHistory();
 
-// ---------- MANŞET ----------
+// ---------- MANŞET (KATEGORİ ETİKETİ KALDIRILDI, TARİH İTALİK OLARAK SAĞ ALTA TAŞINDI) ----------
 let mansetItems = [];
 let mansetIdx = 0;
 let mansetTimer = null;
@@ -1589,7 +1621,6 @@ function renderManset() {
     <div class="manset-nav">
       ${mansetItems.length > 1 ? '<button type="button" class="manset-nav-btn" id="mansetPrevBtn" aria-label="Önceki">‹</button>' : ''}
       <div class="manset-card" style="--manset-c1:${c1}; --manset-c2:${c2};" id="mansetCard">
-        <span class="manset-tag">${catNames[m.category] || 'Genel'}</span>
         <div class="manset-title">${esc(m.title)}</div>
         <div class="manset-date">📅 ${formatTime(m.time)}</div>
       </div>
@@ -1671,7 +1702,7 @@ async function openDuyuruDetay(id) {
     if (listBtn) { listBtn.classList.add('done'); listBtn.innerHTML = '✓ Okundu'; }
   };
 
-  // E-Posta İle Giriş Yapıp Yapmadığını Kontrol Et (Yorum ve Emoji İzni İçin)
+  // E-Posta Giriş Kontrolü
   const token = mealsGetToken();
   if (token) {
     document.getElementById('commentLoggedInBox').style.display = 'block';
@@ -1684,6 +1715,31 @@ async function openDuyuruDetay(id) {
   loadComments(m.id);
   document.getElementById('duyuruDetayOverlay').classList.add('show');
 }
+
+// YORUM ALANINDAKİ ÜYE GİRİŞİ VEYA KAYIT OL LİNKLERİ
+document.getElementById('commentGoLoginLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  document.getElementById('duyuruDetayOverlay').classList.remove('show');
+  document.querySelectorAll('.tabs .tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  const yemekTab = document.querySelector('.tabs .tab-btn[data-tab="notlar"]');
+  if (yemekTab) yemekTab.classList.add('active');
+  document.getElementById('panel-notlar').classList.add('active');
+  document.getElementById('yemekSubTabRecords').click();
+  inlineMealsShowStep('inlineMealsStepLogin');
+});
+
+document.getElementById('commentGoRegisterLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  document.getElementById('duyuruDetayOverlay').classList.remove('show');
+  document.querySelectorAll('.tabs .tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  const yemekTab = document.querySelector('.tabs .tab-btn[data-tab="notlar"]');
+  if (yemekTab) yemekTab.classList.add('active');
+  document.getElementById('panel-notlar').classList.add('active');
+  document.getElementById('yemekSubTabRecords').click();
+  inlineMealsShowStep('inlineMealsStepRegister');
+});
 
 const commentInputEl = document.getElementById('commentTextInput');
 if (commentInputEl) {
@@ -2692,7 +2748,7 @@ async function deleteGeneric(type, id) {
   } catch { alert('Silinemedi.'); }
 }
 
-// ---------- YEMEK KAYDIM VE DAHİLİ SEKME İŞLEMLERİ ----------
+// ---------- YEMEK KAYDIM İŞLEMLERİ ----------
 function mealsGetToken() { return localStorage.getItem('mealsToken') || ''; }
 function mealsSetToken(t) { if (t) localStorage.setItem('mealsToken', t); else localStorage.removeItem('mealsToken'); updateMealsWelcomeBar(); }
 let mealsPendingEmail = '';
