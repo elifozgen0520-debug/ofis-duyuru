@@ -5,20 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Müdürlük Duyuru Sistemi</title>
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#1F2430">
+<meta name="theme-color" content="#0B2A4C">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
   :root {
-    --ink: #1F2430;
-    --paper: #F7F5F0;
-    --paper-shadow: rgba(0,0,0,0.18);
-    --amber: #E0972C;
-    --sage: #6B8F71;
-    --clay: #B5674A;
-    --gold: #C9A24B;
-    --line: rgba(255,255,255,0.12);
-    --muted: #9AA0AE;
+    /* Kurumsal lacivert + turuncu palet (referans bankacılık arayüzünden) */
+    --ink: #0B2A4C;
+    --paper: #FFFFFF;
+    --paper-shadow: rgba(4,20,38,0.32);
+    --amber: #EF7D1B;
+    --sage: #1E9E5A;
+    --clay: #C6432D;
+    --gold: #C79A3D;
+    --line: rgba(255,255,255,0.15);
+    --muted: #93A2B8;
+
+    /* Hero/gradyan için yardımcı tonlar */
+    --navy-deep: #06213D;
+    --navy-mid: #123E68;
+    --blue-bright: #1E88D0;
+    --brand-gradient: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy-mid) 55%, var(--blue-bright) 100%);
   }
 
   body[data-theme="lacivert"] { --amber: #3E8FD0; --gold: #5AA8E0; --ink: #0F1F33; }
@@ -30,20 +37,24 @@
   body {
     margin: 0; font-family: 'Inter', sans-serif; background: var(--ink);
     background-image:
-      radial-gradient(circle at 20% 10%, rgba(224,151,44,0.06), transparent 40%),
-      radial-gradient(circle at 80% 80%, rgba(107,143,113,0.06), transparent 40%);
-    color: var(--paper); min-height: 100vh; padding: 32px 16px 90px;
+      radial-gradient(circle at 15% 0%, rgba(239,125,27,0.12), transparent 45%),
+      radial-gradient(circle at 85% 100%, rgba(30,136,208,0.18), transparent 45%),
+      var(--brand-gradient);
+    background-attachment: fixed;
+    color: var(--paper); min-height: 100vh; padding: 32px 16px 165px;
   }
 
   .wrap { max-width: 640px; margin: 0 auto; }
 
   header {
     display: flex; align-items: center; justify-content: space-between;
-    gap: 12px; margin-bottom: 22px; border-bottom: 1px solid var(--line);
-    padding-bottom: 18px; flex-wrap: wrap;
+    gap: 12px; margin-bottom: 22px; flex-wrap: wrap;
+    padding: 18px 20px; border-radius: 18px;
+    background: linear-gradient(120deg, var(--navy-mid) 0%, var(--blue-bright) 100%);
+    box-shadow: 0 16px 34px rgba(4,20,38,0.45);
   }
-  h1 { font-family: 'Fraunces', serif; font-weight: 700; font-size: clamp(20px, 6vw, 26px); margin: 0; }
-  .pin-count { font-size: 12px; color: var(--muted); }
+  h1 { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: clamp(20px, 6vw, 26px); margin: 0; letter-spacing: -0.01em; }
+  .pin-count { font-size: 12px; color: rgba(255,255,255,0.82); }
 
   /* SALLANAN LOGO VE ZİL ANİMASYONU */
   .sway-logo {
@@ -58,7 +69,7 @@
   }
 
   .status-card {
-    background: var(--paper); color: var(--ink); border-radius: 4px; padding: 16px 18px;
+    background: var(--paper); color: var(--ink); border-radius: 16px; padding: 16px 18px;
     margin-bottom: 20px; box-shadow: 0 8px 24px var(--paper-shadow); position: relative;
   }
   .status-card::before {
@@ -74,7 +85,7 @@
 
   button {
     font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px;
-    border: none; border-radius: 4px; padding: 10px 16px; cursor: pointer;
+    border: none; border-radius: 10px; padding: 10px 16px; cursor: pointer;
     transition: transform 0.1s ease, opacity 0.15s ease;
   }
   button:active { transform: scale(0.97); }
@@ -96,10 +107,10 @@
   .tab-panel.active { display: block; }
 
   .card {
-    background: var(--paper); color: var(--ink); border-radius: 4px; padding: 20px;
+    background: var(--paper); color: var(--ink); border-radius: 18px; padding: 20px;
     box-shadow: 0 12px 28px var(--paper-shadow); margin-bottom: 18px;
   }
-  .card h2 { font-family: 'Fraunces', serif; font-size: 17px; margin: 0; }
+  .card h2 { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 17px; margin: 0; }
   .card .sub { font-size: 12.5px; color: #6b6b6b; margin-bottom: 16px; }
   .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
   .card-close {
@@ -161,15 +172,15 @@
   .chat-box {
     flex: 1;
     min-height: 120px;
-    overflow-y: auto; background: #f5f3ee; border-radius: 8px;
+    overflow-y: auto; background: #EEF3F8; border-radius: 8px;
     padding: 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;
   }
   .chat-bubble {
     max-width: 78%; padding: 8px 12px; border-radius: 14px; font-size: 13px; line-height: 1.4;
     word-wrap: break-word; position: relative;
   }
-  .chat-bubble.mine { align-self: flex-end; background: var(--bordo, #7A2331); color: #fff; border-bottom-right-radius: 3px; }
-  .chat-bubble.theirs { align-self: flex-start; background: #fff; color: var(--ink); border: 1px solid #e2ddd2; border-bottom-left-radius: 3px; }
+  .chat-bubble.mine { align-self: flex-end; background: var(--blue-bright); color: #fff; border-bottom-right-radius: 3px; }
+  .chat-bubble.theirs { align-self: flex-start; background: #fff; color: var(--ink); border: 1px solid #DCE6F0; border-bottom-left-radius: 3px; }
   .chat-bubble .cb-name { font-size: 10.5px; font-weight: 700; opacity: 0.75; margin-bottom: 2px; }
   .chat-bubble .cb-time { font-size: 9.5px; opacity: 0.55; margin-top: 3px; text-align: right; }
   .chat-bubble .cb-tick { opacity: 0.85; }
@@ -196,14 +207,14 @@
     display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-radius: 6px;
     cursor: pointer; transition: background 0.15s ease;
   }
-  .contact-row:hover { background: #f5f3ee; }
+  .contact-row:hover { background: #EEF3F8; }
   .contact-avatar {
     width: 36px; height: 36px; border-radius: 50%; background: #ddd; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700;
     color: #777; object-fit: cover; position: relative;
   }
   .contact-online-dot {
-    width: 9px; height: 9px; border-radius: 50%; background: #3E7A4F; border: 2px solid #fff;
+    width: 9px; height: 9px; border-radius: 50%; background: var(--sage); border: 2px solid #fff;
     position: absolute; bottom: -1px; right: -1px;
   }
   .contact-name { font-size: 13.5px; font-weight: 600; }
@@ -214,9 +225,9 @@
     text-transform: uppercase; color: #777; margin-bottom: 6px; margin-top: 14px;
   }
 
-  input[type="text"], input[type="tel"], input[type="password"], textarea, select {
+  input[type="text"], input[type="tel"], input[type="password"], input[type="email"], textarea, select {
     width: 100%; font-family: 'Inter', sans-serif; font-size: 14px;
-    padding: 9px 11px; border: 1.5px solid #ddd; border-radius: 3px; background: #fff; color: var(--ink);
+    padding: 9px 11px; border: 1.5px solid #ddd; border-radius: 10px; background: #fff; color: var(--ink);
   }
   textarea { resize: vertical; min-height: 70px; }
 
@@ -255,10 +266,10 @@
   .li-read-btn:hover { border-color: var(--sage); color: var(--sage); }
   .li-read-btn.done { background: var(--sage); border-color: var(--sage); color: #fff; cursor: default; }
 
-  .list-section h3 { font-family: 'Fraunces', serif; font-size: 16px; margin: 0 0 12px; color: var(--paper); }
+  .list-section h3 { font-family: 'Manrope', sans-serif; font-size: 16px; margin: 0 0 12px; color: var(--paper); }
   .list-item {
-    background: var(--paper); color: var(--ink); border-radius: 4px;
-    padding: 13px 15px; margin-bottom: 9px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    background: var(--paper); color: var(--ink); border-radius: 14px;
+    padding: 13px 15px; margin-bottom: 9px; box-shadow: 0 4px 12px rgba(4,20,38,0.14);
     border-left: 4px solid var(--ink); display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
   }
   .list-item.acil { border-left-color: var(--amber); }
@@ -268,11 +279,11 @@
   .list-item .li-main { flex: 1; min-width: 0; }
   .list-item .li-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 3px; }
   .li-toggle {
-    background: rgba(224,151,44,0.12); border: none; color: var(--amber); font-size: 26px; line-height: 1; cursor: pointer;
+    background: rgba(239,125,27,0.12); border: none; color: var(--amber); font-size: 26px; line-height: 1; cursor: pointer;
     padding: 4px 10px; border-radius: 6px; transition: transform 0.2s ease, background 0.15s ease; flex-shrink: 0;
     animation: chevron-bounce 1.6s ease-in-out infinite; font-weight: 900;
   }
-  .li-toggle:hover { background: rgba(224,151,44,0.22); }
+  .li-toggle:hover { background: rgba(239,125,27,0.22); }
   .li-toggle.open { transform: rotate(180deg); animation: none; }
   @keyframes chevron-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
   .attach-wrap { overflow: hidden; max-height: 0; transition: max-height 0.25s ease; }
@@ -290,9 +301,9 @@
   .page-nav .page-info { font-size: 12.5px; color: var(--muted); }
   .list-item .li-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #888; }
   .list-item .li-time { font-size: 10.5px; color: #999; }
-  .list-item .li-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 14.5px; margin: 0 0 2px; }
+  .list-item .li-title { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 14.5px; margin: 0 0 2px; }
   .list-item .li-body { font-size: 12.5px; color: #555; line-height: 1.45; margin: 0; }
-  .list-item .li-phone { font-family: 'Fraunces', serif; font-weight: 700; font-size: 16px; color: var(--clay); text-decoration: none; }
+  .list-item .li-phone { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 16px; color: var(--clay); text-decoration: none; }
   .list-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 18px; }
 
   /* MANŞET (öne çıkan duyuru carousel'i) */
@@ -332,7 +343,7 @@
     letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 11px; border-radius: 20px;
     margin-bottom: 12px; width: fit-content;
   }
-  .manset-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 20px; margin: 0 0 8px; line-height: 1.25; }
+  .manset-title { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 20px; margin: 0 0 8px; line-height: 1.25; }
   .manset-date { font-size: 12px; opacity: 0.82; }
   .manset-dots { display: flex; gap: 6px; justify-content: center; margin-top: 12px; }
   .manset-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.28); cursor: pointer; border: none; padding: 0; transition: background 0.2s ease, transform 0.2s ease; }
@@ -344,7 +355,7 @@
   .dd-close { position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 18px; color: #999; cursor: pointer; line-height: 1; }
   .dd-close:hover { color: var(--ink); }
   .dd-tag { display: inline-block; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #fff; padding: 3px 10px; border-radius: 20px; margin-bottom: 10px; }
-  .dd-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 19px; margin: 0 0 6px; color: var(--ink); }
+  .dd-title { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 19px; margin: 0 0 6px; color: var(--ink); }
   .dd-meta { font-size: 11.5px; color: #999; margin-bottom: 14px; }
   .dd-body { font-size: 14px; line-height: 1.6; color: #333; margin-bottom: 8px; white-space: pre-wrap; }
   .dd-read-info { font-size: 12px; color: #888; margin: 12px 0 4px; }
@@ -363,18 +374,18 @@
 
   #notifBanner {
     display: none; max-width: 640px; margin: 0 auto 20px; padding: 20px 22px;
-    border-radius: 4px; font-family: 'Inter', sans-serif; color: #fff;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    border-radius: 16px; font-family: 'Inter', sans-serif; color: #fff;
+    box-shadow: 0 8px 20px rgba(4,20,38,0.3);
   }
   #notifBanner.show { display: block; }
   #notifBanner .tag { display: block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; margin-bottom: 8px; }
-  #notifBanner .btitle { font-family: 'Fraunces', serif; font-size: 24px; line-height: 1.2; font-weight: 700; margin: 0 0 8px; }
+  #notifBanner .btitle { font-family: 'Manrope', sans-serif; font-size: 24px; line-height: 1.2; font-weight: 700; margin: 0 0 8px; }
   #notifBanner .bbody { font-size: 14px; line-height: 1.5; margin: 0; opacity: 0.95; }
-  #notifBanner.acil { background: linear-gradient(135deg, #E0972C, #B5674A); }
+  #notifBanner.acil { background: linear-gradient(135deg, var(--amber), var(--clay)); }
 
   .site-footer {
-    position: fixed; left: 0; right: 0; bottom: 0; background: var(--ink);
-    border-top: 1px solid var(--line); text-align: center; padding: 10px 12px;
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--navy-deep);
+    border-top: 1px solid var(--line); text-align: center; padding: 12px 14px 10px;
     font-size: 11.5px; z-index: 50;
   }
   .site-footer a { color: var(--muted); text-decoration: none; }
@@ -388,19 +399,19 @@
   }
   .wizard-card {
     background: var(--paper); color: var(--ink); max-width: 500px; width: 100%;
-    border-radius: 6px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border: 2px solid var(--amber);
+    border-radius: 20px; padding: 24px; box-shadow: 0 20px 40px rgba(4,20,38,0.5); border: 2px solid var(--amber);
   }
   .wizard-step { display: none; }
   .wizard-step.active { display: block; }
   .step-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
   .dot { width: 10px; height: 10px; border-radius: 50%; background: #ccc; }
   .dot.active { background: var(--amber); width: 24px; border-radius: 10px; }
-  .guide-box { background: #FAF5E9; border: 1px solid #E6D7B8; padding: 12px; border-radius: 4px; font-size: 12.5px; color: #555; margin: 12px 0; text-align: left; line-height: 1.5; }
+  .guide-box { background: #EEF4FA; border: 1px solid #CADCEC; padding: 12px; border-radius: 10px; font-size: 12.5px; color: #555; margin: 12px 0; text-align: left; line-height: 1.5; }
 
   /* TAKVİM */
   .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
   .cal-nav button { background: var(--paper); color: var(--ink); padding: 8px 14px; font-size: 13px; font-weight: 600; }
-  .cal-nav .cal-title { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 700; color: var(--paper); }
+  .cal-nav .cal-title { font-family: 'Manrope', sans-serif; font-size: 19px; font-weight: 700; color: var(--paper); }
   .cal-view-toggle { display: flex; gap: 6px; margin-bottom: 16px; }
   .cal-view-toggle button { background: rgba(255,255,255,0.12); color: var(--paper); padding: 7px 16px; font-size: 12.5px; border-radius: 20px; font-weight: 600; }
   .cal-view-toggle button.active { background: var(--amber); color: var(--ink); }
@@ -416,10 +427,10 @@
   .cal-day.empty { background: transparent; box-shadow: none; cursor: default; }
   .cal-day.empty:hover { transform: none; }
   .cal-day.today { outline: 2.5px solid var(--amber); outline-offset: 1px; }
-  .cal-day.weekend { background: #EFE7D6; }
+  .cal-day.weekend { background: #E7EEF6; }
   .cal-day.holiday { background: #FDECEA; }
   .cal-day.note-holiday { border: 2px solid #B03030; }
-  .cal-day .cd-num { font-family: 'Fraunces', serif; font-weight: 700; font-size: 15px; }
+  .cal-day .cd-num { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 15px; }
   .cal-day .cd-dot { position: absolute; bottom: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 0 2px var(--paper); }
   .cal-day .cd-holiday-dot { position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: #D93838; box-shadow: 0 0 0 2px var(--paper); animation: cd-blink 2.2s ease-in-out infinite; }
   @keyframes cd-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
@@ -427,19 +438,63 @@
   .cal-year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
   .cal-mini-month { background: var(--paper); border-radius: 8px; padding: 12px; cursor: pointer; color: var(--ink); box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: transform 0.15s ease; }
   .cal-mini-month:hover { transform: translateY(-2px); }
-  .cal-mini-month .cmm-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+  .cal-mini-month .cmm-title { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
   .cal-mini-month .cmm-count { font-size: 11px; color: var(--clay); font-weight: 600; }
   .cal-search-box { display: flex; gap: 8px; margin-bottom: 16px; }
   .cal-search-box input { flex: 1; }
   .toast-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
   .toast-overlay.show { display: flex; }
-  .toast-box { background: var(--paper); color: var(--ink); border-radius: 8px; padding: 26px 24px; max-width: 360px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
-  .toast-box .ttitle { font-family: 'Fraunces', serif; font-weight: 700; font-size: 17px; margin-bottom: 8px; }
+  .toast-box { background: var(--paper); color: var(--ink); border-radius: 18px; padding: 26px 24px; max-width: 360px; width: 100%; box-shadow: 0 20px 50px rgba(4,20,38,0.4); }
+  .toast-box .ttitle { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 17px; margin-bottom: 8px; }
 
   /* İŞLER içindeki alt sekme (İşler / Takvim) */
   .isler-subtabs { display: flex; gap: 6px; margin-bottom: 18px; }
   .isler-subtabs button { background: rgba(255,255,255,0.08); color: var(--paper); padding: 8px 18px; font-size: 13px; font-weight: 600; border-radius: 20px; }
   .isler-subtabs button.active { background: var(--amber); color: var(--ink); }
+
+  /* KURUM LOGOSU — footer ve profil içinde ortak marka/öneri butonu */
+  .kurum-brand {
+    display: flex; align-items: center; gap: 10px; width: 100%; max-width: 480px;
+    margin: 0 auto 10px; background: rgba(255,255,255,0.07); border: 1px solid var(--line);
+    border-radius: 14px; padding: 8px 12px; cursor: pointer; text-align: left;
+    font-family: 'Inter', sans-serif;
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+  .kurum-brand:hover { background: rgba(255,255,255,0.13); }
+  .kurum-brand:active { transform: scale(0.98); }
+  .kurum-brand-logo {
+    width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0;
+    object-fit: cover; background: #fff; box-shadow: 0 2px 6px rgba(4,20,38,0.3);
+  }
+  .kurum-brand-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .kurum-brand-text strong { font-size: 12.5px; font-weight: 700; color: var(--paper); line-height: 1.25; }
+  .kurum-brand-text small { font-size: 10.5px; color: var(--muted); line-height: 1.3; }
+  .kurum-brand--inline { background: #EEF4FA; border: 1px solid #D7E6F2; margin: 0 0 16px; }
+  .kurum-brand--inline:hover { background: #E3EEF9; }
+  .kurum-brand--inline .kurum-brand-text strong { color: var(--ink); }
+  .kurum-brand--inline .kurum-brand-text small { color: #5B7086; }
+
+  /* ÖNERİ MODALINI GERÇEK BİR POPUP OLARAK AÇMAK */
+  .modal-backdrop {
+    display: none; position: fixed; inset: 0; background: rgba(4,18,34,0.55);
+    z-index: 1650; opacity: 0; transition: opacity 0.2s ease;
+  }
+  .modal-backdrop.show { display: block; opacity: 1; }
+  #feedbackModal {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: min(460px, calc(100vw - 32px)); max-height: 85vh; overflow-y: auto;
+    z-index: 1700;
+  }
+  @keyframes popup-in {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.94); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+  @keyframes popup-out {
+    from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    to { opacity: 0; transform: translate(-50%, -50%) scale(0.94); }
+  }
+  #feedbackModal.anim-open { animation: popup-in 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
+  #feedbackModal.anim-close { animation: popup-out 0.2s ease forwards; }
 </style>
 </head>
 <body>
@@ -451,8 +506,8 @@
 <!-- ADIM ADIM KURULUM VE GÖRSEL MARKA AYAR SİHİRBAZI -->
 <!-- KVKK AYDINLATMA METNİ MODALI -->
 <div id="kvkkModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:2000; align-items:center; justify-content:center; padding:16px;">
-  <div style="background:var(--paper); color:var(--ink); max-width:520px; width:100%; max-height:85vh; overflow-y:auto; border-radius:8px; padding:24px;">
-    <h2 style="font-family:'Fraunces',serif; font-size:18px; margin:0 0 14px;">KVKK Aydınlatma Metni</h2>
+  <div style="background:var(--paper); color:var(--ink); max-width:520px; width:100%; max-height:85vh; overflow-y:auto; border-radius:18px; padding:24px;">
+    <h2 style="font-family:'Manrope',sans-serif; font-size:18px; margin:0 0 14px;">KVKK Aydınlatma Metni</h2>
     <div style="font-size:13px; line-height:1.7; color:#333;">
       <p><b>Veri Sorumlusu:</b> Amasya Çevre, Şehircilik ve İklim Değişikliği İl Müdürlüğü.</p>
       <p><b>İşlenen Kişisel Veriler:</b> Ad-soyad, telefon numarası, e-posta adresi, kan grubu, profil fotoğrafı, cihaz kimliği, uygulama içi sohbet mesajları ve bildirim okuma zaman bilgisi.</p>
@@ -579,7 +634,7 @@
         🔔 Bildirimlere Şimdi İzin Ver
       </button>
 
-      <div id="permFailedNotice" style="display:none; margin-top:14px; background:#FBEFE0; border:1.5px solid var(--amber); border-radius:6px; padding:12px 14px;">
+      <div id="permFailedNotice" style="display:none; margin-top:14px; background:#FCEEDF; border:1.5px solid var(--amber); border-radius:10px; padding:12px 14px;">
         <div style="font-size:13px; font-weight:700; margin-bottom:4px;">⚠️ Otomatik izin penceresi açılmadı</div>
         <div style="font-size:12.5px; color:#555; margin-bottom:10px;">Bazı telefonlarda bu normal. Sizi ayar ekranına yönlendirmeyi deniyoruz — açılmazsa Ayarlar &gt; Uygulamalar &gt; Amasya CSB Acil Duyuru &gt; Bildirimler'e girip elle açın.</div>
         <button type="button" class="btn-primary" onclick="tryOpenAndroidNotifSettings()" style="width:100%; font-size:12.5px; padding:8px; margin-bottom:8px;">⚙️ Ayarları Açmayı Tekrar Dene</button>
@@ -615,7 +670,7 @@
       <h1>Duyurular</h1>
     </div>
     <div style="display:flex; align-items:center; gap:10px;">
-      <select id="themeSelect" style="background:transparent; color:var(--muted); border:1px solid var(--line); border-radius:20px; font-size:11px; padding:4px 8px;">
+      <select id="themeSelect" style="background:rgba(255,255,255,0.12); color:#fff; border:1px solid rgba(255,255,255,0.35); border-radius:20px; font-size:11px; padding:4px 8px;">
         <option value="klasik">🎨 Varsayılan</option>
         <option value="lacivert">🔵 Lacivert</option>
         <option value="zeytin">🟢 Zeytin</option>
@@ -641,7 +696,7 @@
 
   <div class="tab-panel active" id="panel-duyurular">
     <div id="upcomingBox" style="display:none; background:rgba(255,255,255,0.06); border-radius:8px; padding:14px 16px; margin-bottom:16px;">
-      <div style="font-family:'Fraunces',serif; font-weight:700; font-size:14px; color:var(--paper); margin-bottom:8px;">📅 Yaklaşanlar</div>
+      <div style="font-family:'Manrope',sans-serif; font-weight:700; font-size:14px; color:var(--paper); margin-bottom:8px;">📅 Yaklaşanlar</div>
       <div id="upcomingList"></div>
     </div>
     <div class="manset-wrap" id="duyuruManset" style="display:none;"></div>
@@ -761,6 +816,14 @@
   <!-- PROFİL MODALI -->
   <div class="card" id="profileModal" style="display:none;">
     <div class="card-header"><h2>Profilim</h2><button class="card-close" data-close="profileModal" aria-label="Kapat">✕</button></div>
+    <!-- KURUM LOGOSU: footer'daki ile aynı davranış, profil ekranında da tekrarlanır -->
+    <button type="button" class="kurum-brand kurum-brand--inline" id="profileKurumLogoBtn" aria-haspopup="dialog" aria-label="Kurum bilgisi ve görüş/öneri gönder">
+      <img src="/icon-192.png" alt="Amasya İl Müdürlüğü logosu" class="kurum-brand-logo">
+      <span class="kurum-brand-text">
+        <strong>T.C. Amasya Valiliği</strong>
+        <small>Çevre, Şehircilik ve İklim Değişikliği İl Müdürlüğü · Görüş bildir</small>
+      </span>
+    </button>
     <div class="sub">Adınızı girerek okundu kayıtlarında görünmesini sağlayabilirsiniz.</div>
 
     <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
@@ -800,7 +863,8 @@
     </div>
   </div>
 
-  <!-- GÖRÜŞ MODALI -->
+  <!-- GÖRÜŞ MODALI (popup) -->
+  <div class="modal-backdrop" id="feedbackBackdrop"></div>
   <div class="card" id="feedbackModal" style="display:none;">
     <div class="card-header"><h2>Öneri</h2><button class="card-close" data-close="feedbackModal" aria-label="Kapat">✕</button></div>
     <div class="sub">Yönetime iletmek istediğiniz not veya talebiniz:</div>
@@ -857,7 +921,7 @@
     <!-- Adım: Kayıt formu -->
     <div id="mealsStepRegister">
       <div class="sub">Kendi yemekhane geçmişini ve borcunu görebilmek için kişisel e-postanla kayıt ol.</div>
-      <div style="background:#eff6ff; border:1px solid #dbeafe; border-radius:10px; padding:10px 12px; font-size:12px; color:#1e40af; margin-bottom:14px;">
+      <div style="background:#EAF4FC; border:1px solid #C7E2F5; border-radius:10px; padding:10px 12px; font-size:12px; color:var(--navy-mid); margin-bottom:14px;">
         ℹ️ Yalnızca kişisel <b>Gmail</b> veya <b>Hotmail</b> adresiyle kayıt olabilirsin. Kurumsal e-postalar kabul edilmiyor.
       </div>
       <label>Adın Soyadın</label>
@@ -907,7 +971,7 @@
       </div>
       <div id="mealsDebtBox" style="background:var(--ink); color:var(--paper); border-radius:10px; padding:16px; text-align:center; margin-bottom:14px;">
         <div style="font-size:11px; opacity:0.7; text-transform:uppercase; letter-spacing:0.05em;">Toplam Borç</div>
-        <div style="font-family:'Fraunces',serif; font-size:1.8rem; font-weight:700;" id="mealsDebtAmount">—</div>
+        <div style="font-family:'Manrope',sans-serif; font-size:1.8rem; font-weight:700;" id="mealsDebtAmount">—</div>
       </div>
       <div id="mealsRecordsList" class="list-empty">Yükleniyor...</div>
     </div>
@@ -991,6 +1055,14 @@
 </div>
 
 <footer class="site-footer">
+  <!-- KURUM LOGOSU: /icon-192.png yerine kendi kurum logonuzun dosya yolunu yazabilirsiniz -->
+  <button type="button" class="kurum-brand" id="kurumLogoBtn" aria-haspopup="dialog" aria-label="Kurum bilgisi ve görüş/öneri gönder">
+    <img src="/icon-192.png" alt="Amasya İl Müdürlüğü logosu" class="kurum-brand-logo">
+    <span class="kurum-brand-text">
+      <strong>Amasya İl Müdürlüğü</strong>
+      <small>Görüş &amp; Öneri Gönder</small>
+    </span>
+  </button>
   <a href="#" id="profileLink">👤 Profilim</a>
   <span class="fdot">·</span>
   <a href="#" id="feedbackLink">💬 Öneri</a>
@@ -1343,10 +1415,10 @@ function getHolidayName(dateKey) {
 
 // --- TAKVİM KATEGORİLERİ ---
 const CAL_CATEGORIES = {
-  genel: { label: 'Genel', color: '#7A2331' },
-  toplanti: { label: 'Toplantı', color: '#6B8F71' },
-  hatirlatma: { label: 'Hatırlatma', color: '#E0972C' },
-  etkinlik: { label: 'Etkinlik', color: '#C9A24B' },
+  genel: { label: 'Genel', color: 'var(--navy-mid)' },
+  toplanti: { label: 'Toplantı', color: 'var(--sage)' },
+  hatirlatma: { label: 'Hatırlatma', color: 'var(--amber)' },
+  etkinlik: { label: 'Etkinlik', color: 'var(--gold)' },
 };
 
 function renderAttachment(att) {
@@ -1441,11 +1513,11 @@ let mansetTimer = null;
 
 function mansetColors(cat) {
   const map = {
-    acil: ['#E0972C', '#B5674A'],
-    yemek: ['#6B8F71', '#3E5C43'],
-    vefat: ['#4A4A52', '#1F2430'],
-    dogum: ['#C9A24B', '#8A6D2F'],
-    genel: ['#7A2331', '#5A1622'],
+    acil: ['var(--amber)', 'var(--clay)'],
+    yemek: ['var(--sage)', '#0F6B3C'],
+    vefat: ['#454B54', 'var(--ink)'],
+    dogum: ['var(--gold)', '#8A6D2F'],
+    genel: ['var(--navy-mid)', 'var(--navy-deep)'],
   };
   return map[cat] || map.genel;
 }
@@ -1614,7 +1686,7 @@ function renderMenuWeek() {
     const holidayName = getHolidayName(key);
     html += '<div class="list-item" style="flex-direction:column; align-items:stretch;' + (isToday ? ' border-left-width:6px;' : '') + '">' +
       '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">' +
-        '<span style="font-family:\'Fraunces\',serif; font-weight:700; font-size:14px;">' + TR_DOW_NAMES[i] + ' — ' + d.getDate() + ' ' + TR_MONTHS[d.getMonth()] + (isToday ? ' <span style="color:var(--amber); font-size:11px;">(Bugün)</span>' : '') + '</span>' +
+        '<span style="font-family:\'Manrope\',sans-serif; font-weight:700; font-size:14px;">' + TR_DOW_NAMES[i] + ' — ' + d.getDate() + ' ' + TR_MONTHS[d.getMonth()] + (isToday ? ' <span style="color:var(--amber); font-size:11px;">(Bugün)</span>' : '') + '</span>' +
       '</div>' +
       (holidayName ? '<div style="font-size:11.5px; color:var(--clay); margin-bottom:6px;">🎉 ' + esc(holidayName) + ' — yemekhane kapalı olabilir</div>' : '') +
       (item
@@ -1835,19 +1907,22 @@ function openModal(modalId) {
       const el = document.getElementById(id);
       el.classList.remove('anim-open');
       el.style.display = 'none';
+      if (id === 'feedbackModal') document.getElementById('feedbackBackdrop').classList.remove('show');
     }
   });
   const m = document.getElementById(modalId);
   m.style.display = (modalId === 'chatModal') ? 'flex' : 'block';
   m.classList.remove('anim-close');
   m.classList.add('anim-open');
-  if (modalId !== 'chatModal') m.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  if (modalId === 'feedbackModal') document.getElementById('feedbackBackdrop').classList.add('show');
+  if (modalId !== 'chatModal' && modalId !== 'feedbackModal') m.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 function closeModal(modalId) {
   const m = document.getElementById(modalId);
   if (m.style.display === 'none') return;
   m.classList.remove('anim-open');
   m.classList.add('anim-close');
+  if (modalId === 'feedbackModal') document.getElementById('feedbackBackdrop').classList.remove('show');
   setTimeout(() => {
     m.style.display = 'none';
     m.classList.remove('anim-close');
@@ -1941,6 +2016,13 @@ document.getElementById('profileSaveBtn').addEventListener('click', async () => 
 });
 
 document.getElementById('feedbackLink').addEventListener('click', (e) => { e.preventDefault(); toggleModal('feedbackModal'); });
+
+// KURUM LOGOSU — footer ve profildeki logoya tıklayınca Öneri popup'ını açar
+document.getElementById('kurumLogoBtn').addEventListener('click', () => openModal('feedbackModal'));
+document.getElementById('profileKurumLogoBtn').addEventListener('click', () => openModal('feedbackModal'));
+// Karartılmış arka plana (backdrop) tıklayınca popup'ı kapat
+document.getElementById('feedbackBackdrop').addEventListener('click', () => closeModal('feedbackModal'));
+
 document.getElementById('feedbackSendBtn').addEventListener('click', async () => {
   const text = document.getElementById('feedbackText').value.trim();
   const name = document.getElementById('feedbackName').value.trim();
