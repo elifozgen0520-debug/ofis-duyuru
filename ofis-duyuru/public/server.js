@@ -1486,7 +1486,7 @@ app.post('/api/self-login', async (req, res) => {
   const tokens = await loadJson(SELF_TOKENS_KEY, {});
   tokens[token] = { email, olusturulma: Date.now() };
   await saveJson(SELF_TOKENS_KEY, tokens);
-  res.json({ ok: true, token, adSoyad: acc.adSoyad });
+  res.json({ ok: true, token, adSoyad: acc.adSoyad, telefon: acc.telefon });
 });
 
 async function selfAuthMiddleware(req, res, next) {
