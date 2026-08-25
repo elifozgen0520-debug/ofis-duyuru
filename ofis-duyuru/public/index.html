@@ -327,13 +327,22 @@
   }
   .manset-nav-btn:hover { background: rgba(255,255,255,0.16); }
   .manset-card {
-    flex: 1; position: relative; border-radius: 14px; overflow: hidden; padding: 24px 22px 34px;
-    min-height: 140px; display: flex; flex-direction: column; justify-content: center;
-    color: #fff; cursor: pointer; box-shadow: 0 14px 32px rgba(0,0,0,0.35);
+    flex: 1; position: relative; border-radius: 14px; overflow: hidden;
+    aspect-ratio: 16 / 9; min-height: 160px; max-height: 260px;
+    display: flex; align-items: flex-end; cursor: pointer; box-shadow: 0 14px 32px rgba(0,0,0,0.35);
     background: linear-gradient(135deg, var(--manset-c1, var(--ink)), var(--manset-c2, #000));
     transition: transform 0.15s ease;
     animation: manset-fade-in 0.5s cubic-bezier(0.22, 1, 0.36, 1);
   }
+  .manset-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center; display: block;
+  }
+  .manset-overlay {
+    position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0,0.72) 100%);
+  }
+  .manset-content { position: relative; z-index: 1; padding: 18px 20px 16px; width: 100%; }
   .manset-card::after {
     content: ''; position: absolute; inset: 0; pointer-events: none;
     background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.16) 45%, transparent 60%);
@@ -349,9 +358,8 @@
     to { background-position: -30% 0; }
   }
   .manset-card:hover { transform: translateY(-2px); }
-  .manset-title { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 20px; margin: 0; line-height: 1.3; }
-  .manset-date { position: absolute; bottom: 10px; right: 16px; font-size: 11.5px; font-style: italic; opacity: 0.85; display: flex; align-items: center; gap: 4px; }
-  .manset-card.has-image .manset-title, .manset-card.has-image .manset-date { text-shadow: 0 2px 8px rgba(0,0,0,0.55); }
+  .manset-title { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 20px; margin: 0; line-height: 1.3; text-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+  .manset-date { font-size: 11.5px; font-style: italic; opacity: 0.9; display: flex; align-items: center; gap: 4px; margin-top: 4px; text-shadow: 0 2px 8px rgba(0,0,0,0.5); }
   .manset-dots { display: flex; gap: 6px; justify-content: center; margin-top: 12px; }
   .manset-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.28); cursor: pointer; border: none; padding: 0; transition: background 0.2s ease, transform 0.2s ease; }
   .manset-dot.active { background: var(--paper); transform: scale(1.35); }
@@ -378,6 +386,13 @@
   .comment-user { font-weight: 700; color: var(--ink); margin-bottom: 2px; font-size: 11px; }
   .comment-text { color: #333; line-height: 1.35; }
   .comment-date { font-size: 9.5px; color: #999; text-align: right; margin-top: 2px; }
+  .comment-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+  .comment-action-link { font-size: 10px; color: var(--clay,#B5674A); font-weight: 600; cursor: pointer; background: none; border: none; padding: 0; }
+  .comment-action-link:hover { text-decoration: underline; }
+  .comment-edit-box { margin-top: 4px; }
+  .comment-edit-box textarea { width: 100%; font-size: 12px; padding: 6px 8px; border-radius: 8px; border: 1px solid #ddd; resize: vertical; min-height: 44px; }
+  .comment-edit-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+  .comment-edit-actions button { font-size: 10.5px; padding: 4px 10px; }
 
   #splash {
     position: fixed; inset: 0; background: var(--ink); display: flex;
@@ -500,7 +515,7 @@
   .modal-backdrop.show { display: block; opacity: 1; }
 
   /* POPUP SAYFALARI */
-  #feedbackModal, #profileModal, #mealsModal {
+  #feedbackModal, #profileModal, #mealsModal, #pollModal {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
     width: min(480px, calc(100vw - 32px)); max-height: 85vh; overflow-y: auto;
     z-index: 1700; margin-bottom: 0;
@@ -513,8 +528,8 @@
     from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
     to { opacity: 0; transform: translate(-50%, -50%) scale(0.94); }
   }
-  #feedbackModal.anim-open, #profileModal.anim-open, #mealsModal.anim-open, #chatModal.anim-open { animation: popup-in 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
-  #feedbackModal.anim-close, #profileModal.anim-close, #mealsModal.anim-close, #chatModal.anim-close { animation: popup-out 0.2s ease forwards; }
+  #feedbackModal.anim-open, #profileModal.anim-open, #mealsModal.anim-open, #chatModal.anim-open, #pollModal.anim-open { animation: popup-in 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
+  #feedbackModal.anim-close, #profileModal.anim-close, #mealsModal.anim-close, #chatModal.anim-close, #pollModal.anim-close { animation: popup-out 0.2s ease forwards; }
 </style>
 </head>
 <body>
@@ -1650,17 +1665,19 @@ function renderManset() {
   const m = mansetItems[mansetIdx];
   const [c1, c2] = mansetColors(m.category);
   const hasImage = m.attachment && m.attachment.type === 'image';
-  // Resim varsa: resmi kapak (cover) olarak yerleştir + üzerine koyu bir gradyan bindir (yazı okunsun diye).
-  // Resim yoksa: eskisi gibi kategoriye göre renkli gradyan.
-  const cardStyle = hasImage
-    ? `--manset-c1:${c1}; --manset-c2:${c2}; background-image: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.75) 100%), url('${m.attachment.url}'); background-size: cover; background-position: center;`
-    : `--manset-c1:${c1}; --manset-c2:${c2};`;
+  // Resim varsa: sabit en-boy oranlı kutuya gerçek <img> + object-fit:cover ile yerleştiriyoruz —
+  // resmin boyutu/oranı ne olursa olsun kutuyu düzgünce dolduruyor, üstüne okunabilirlik için
+  // alttan yukarı doğru koyulaşan bir gradyan biniyor. Resim yoksa kategoriye göre renkli gradyan kalıyor.
   wrap.innerHTML = `
     <div class="manset-nav">
       ${mansetItems.length > 1 ? '<button type="button" class="manset-nav-btn" id="mansetPrevBtn" aria-label="Önceki">‹</button>' : ''}
-      <div class="manset-card ${hasImage ? 'has-image' : ''}" style="${cardStyle}" id="mansetCard">
-        <div class="manset-title">${esc(m.title)}</div>
-        <div class="manset-date">📅 ${formatTime(m.time)}</div>
+      <div class="manset-card ${hasImage ? 'has-image' : ''}" style="--manset-c1:${c1}; --manset-c2:${c2};" id="mansetCard">
+        ${hasImage ? `<img class="manset-img" src="${m.attachment.url}" alt="" loading="lazy">` : ''}
+        ${hasImage ? '<div class="manset-overlay"></div>' : ''}
+        <div class="manset-content">
+          <div class="manset-title">${esc(m.title)}</div>
+          <div class="manset-date">📅 ${formatTime(m.time)}</div>
+        </div>
       </div>
       ${mansetItems.length > 1 ? '<button type="button" class="manset-nav-btn" id="mansetNextBtn" aria-label="Sonraki">›</button>' : ''}
     </div>
@@ -1691,26 +1708,85 @@ function addEmojiToComment(emoji) {
   }
 }
 
+let commentEditingId = null;
+
 async function loadComments(msgId) {
   const container = document.getElementById('duyuruCommentsList');
   try {
-    const res = await fetch(`/api/messages/${msgId}/comments`);
+    const token = mealsGetToken();
+    const res = await fetch(`/api/messages/${msgId}/comments`, {
+      headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+    });
     const data = await res.json();
     const list = data.comments || [];
     if (list.length === 0) {
       container.innerHTML = '<div style="font-size:11.5px; color:#999; text-align:center; padding:10px 0;">Henüz yorum yapılmadı. İlk yorumu sen yaz!</div>';
       return;
     }
-    container.innerHTML = list.map(c => `
+    container.innerHTML = list.map(c => {
+      if (commentEditingId === c.id) {
+        return `
+        <div class="comment-item">
+          <div class="comment-user">${esc(c.userName || 'Kullanıcı')}</div>
+          <div class="comment-edit-box">
+            <textarea id="commentEditInput-${c.id}" maxlength="180">${esc(c.text)}</textarea>
+            <div class="comment-edit-actions">
+              <button type="button" class="btn-primary" onclick="saveCommentEdit('${msgId}','${c.id}')">Kaydet</button>
+              <button type="button" class="btn-danger" onclick="cancelCommentEdit('${msgId}')">Vazgeç</button>
+            </div>
+          </div>
+        </div>`;
+      }
+      return `
       <div class="comment-item">
         <div class="comment-user">${esc(c.userName || 'Kullanıcı')}</div>
         <div class="comment-text">${esc(c.text)}</div>
-        <div class="comment-date">${formatTime(c.time)}</div>
+        <div class="comment-date">${formatTime(c.time)}${c.editedAt ? ' · düzenlendi' : ''}</div>
+        ${c.mine ? `<div class="comment-actions">
+            <button type="button" class="comment-action-link" onclick="startCommentEdit('${msgId}','${c.id}')">Düzenle</button>
+            <button type="button" class="comment-action-link" onclick="deleteOwnComment('${msgId}','${c.id}')">Sil</button>
+          </div>` : ''}
       </div>
-    `).join('');
+    `;
+    }).join('');
   } catch {
     container.innerHTML = '<div style="font-size:11.5px; color:#999; text-align:center;">Yorumlar yüklenemedi.</div>';
   }
+}
+
+function startCommentEdit(msgId, commentId) { commentEditingId = commentId; loadComments(msgId); }
+function cancelCommentEdit(msgId) { commentEditingId = null; loadComments(msgId); }
+
+async function saveCommentEdit(msgId, commentId) {
+  const input = document.getElementById('commentEditInput-' + commentId);
+  const text = input.value.trim();
+  if (!text) { showToast('Yorum boş olamaz.', 'err'); return; }
+  try {
+    const res = await fetch(`/api/messages/${msgId}/comments/${commentId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + mealsGetToken() },
+      body: JSON.stringify({ text })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Güncellenemedi.');
+    commentEditingId = null;
+    showToast('Yorumunuz güncellendi.', 'ok');
+    loadComments(msgId);
+  } catch (err) { showToast(err.message || 'Güncellenemedi.', 'err'); }
+}
+
+async function deleteOwnComment(msgId, commentId) {
+  if (!confirm('Yorumunuzu silmek istediğinize emin misiniz?')) return;
+  try {
+    const res = await fetch(`/api/messages/${msgId}/comments/${commentId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + mealsGetToken() }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Silinemedi.');
+    showToast('Yorumunuz silindi.', 'ok');
+    loadComments(msgId);
+  } catch (err) { showToast(err.message || 'Silinemedi.', 'err'); }
 }
 
 async function openDuyuruDetay(id) {
