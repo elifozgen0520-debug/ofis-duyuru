@@ -174,6 +174,7 @@ const DIRECT_KEY = 'direct-messages';
 const CHAT_GENERAL_KEY = 'chat-general';
 const CHAT_DIRECT_KEY = 'chat-direct';
 const PRESENCE_KEY = 'presence';
+const COMMENTS_KEY = 'message-comments';
 const ADMIN_PASSWORD = (process.env.ADMIN_PASSWORD || 'degistir-bu-sifreyi').trim();
 
 const loginAttempts = new Map();
@@ -1395,6 +1396,41 @@ app.get('/api/my-meals', selfAuthMiddleware, async (req, res) => {
     console.error('Köprü API hatası:', err.message);
     res.status(502).json({ ok: false, error: 'Yemekhane sistemine şu an ulaşılamıyor, lütfen daha sonra tekrar deneyin.' });
   }
+});
+
+// --- DUYURU YORUMLARI ROTALARI ---
+app.get('/api/messages/:id/comments', async (req, res) => {
+  const commentsMap = await loadJson(COMMENTS_KEY, {});
+  const comments = commentsMap[req.params.id] || [];
+  res.json({ comments });
+});
+
+app.post('/api/messages/:id/comments', selfAuthMiddleware, async (req, res) => {
+  const { text } = req.body;
+  const cleanText = (text || '').trim().slice(0, 180);
+  if (!cleanText) return res.status(400).json({ ok: false, error: 'Yorum metni boş olamaz.' });
+
+  const accounts = await loadJson(SELF_ACCOUNTS_KEY);
+  const acc = accounts.find(a => a.email === req.selfEmail);
+  const userName = acc ? acc.adSoyad : 'Kullanıcı';
+
+  const commentsMap = await loadJson(COMMENTS_KEY, {});
+  if (!commentsMap[req.params.id]) commentsMap[req.params.id] = [];
+
+  const comment = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    userName,
+    text: cleanText,
+    time: new Date().toISOString()
+  };
+
+  commentsMap[req.params.id].push(comment);
+  if (commentsMap[req.params.id].length > 200) {
+    commentsMap[req.params.id] = commentsMap[req.params.id].slice(-200);
+  }
+  await saveJson(COMMENTS_KEY, commentsMap);
+
+  res.json({ ok: true, comment });
 });
 
 // --- Eşleşmeyen /api/* istekleri: HTML 404 sayfası yerine anlamlı JSON dön ---
