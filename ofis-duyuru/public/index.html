@@ -1802,7 +1802,7 @@ const catNames = { acil: 'Acil', yemek: 'Yemek Listesi', vefat: 'Vefat', dogum: 
 function formatTime(iso) { return new Date(iso).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); }
 function esc(s) { return (s || '').replace(/</g, '&lt;'); }
 
-const TR_MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+const TR_MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylul','Ekim','Kasım','Aralık'];
 
 const TR_HOLIDAYS_FIXED = [
   { m: 1, d: 1, name: 'Yılbaşı' },
