@@ -336,13 +336,17 @@
   }
   .manset-img {
     position: absolute; inset: 0; width: 100%; height: 100%;
-    object-fit: cover; object-position: center; display: block;
+    /* "contain": resim ne boyutta/oranda olursa olsun TAMAMI görünsün, kırpılmasın.
+       Kutunun geri kalanı (varsa) kategori rengindeki gradyanla dolar, çirkin siyah bant kalmaz. */
+    object-fit: contain; object-position: center; display: block;
   }
-  .manset-overlay {
-    position: absolute; inset: 0; pointer-events: none;
-    background: linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0,0.72) 100%);
+  .manset-content {
+    position: relative; z-index: 1; width: 100%; padding: 18px 20px 16px;
   }
-  .manset-content { position: relative; z-index: 1; padding: 18px 20px 16px; width: 100%; }
+  .manset-card.has-image .manset-content {
+    /* Yazının her resimde okunur kalması için düz, yarı saydam siyah bant. */
+    background: rgba(0,0,0,0.62); padding: 12px 18px;
+  }
   .manset-card::after {
     content: ''; position: absolute; inset: 0; pointer-events: none;
     background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.16) 45%, transparent 60%);
@@ -606,25 +610,88 @@
       <button class="btn-primary" id="btnNext1" style="width:100%; margin-top:12px;">Devam Et (2/4) ➔</button>
     </div>
 
-    <!-- ADIM 2: PROFİL BİLGİSİ -->
+    <!-- ADIM 2: HESAP (kayıt + giriş + e-posta doğrulama tek arada) -->
     <div class="wizard-step" id="step2">
-      <div style="font-size:36px; text-align:center; margin-bottom:8px;">👤</div>
-      <h2 style="text-align:center; margin:0 0 8px;">Adım 2: Profilinizi Yazın</h2>
 
-      <label>Adınız Soyadınız *</label>
-      <input type="text" id="wizName" placeholder="Örn: Salih Özgen">
-      <label>Telefon Numarası (Opsiyonel)</label>
-      <input type="tel" id="wizPhone" placeholder="Örn: 0555 xxx xx xx">
+      <!-- 2a: Kayıt formu (varsayılan görünüm) -->
+      <div id="step2-form">
+        <div style="font-size:36px; text-align:center; margin-bottom:8px;">👤</div>
+        <h2 style="text-align:center; margin:0 0 8px;">Adım 2: Hesabını Oluştur</h2>
+        <p style="font-size:12.5px; color:#666; text-align:center; margin-bottom:4px;">Bu bilgiler hem duyuru bildirimlerin hem de (istersen) yemekhane kaydın için kullanılır — tek seferde hallediyoruz.</p>
 
-      <label style="display:flex; align-items:flex-start; gap:8px; margin-top:16px; cursor:pointer; text-transform:none; letter-spacing:normal; font-weight:400; font-size:12.5px; color:#555;">
-        <input type="checkbox" id="wizKvkkConsent" style="margin-top:2px; flex-shrink:0;">
-        <span>
-          <a href="#" id="kvkkLinkOpen" style="color:var(--clay); font-weight:600; text-decoration:underline;">KVKK Aydınlatma Metni</a>'ni okudum, kişisel verilerimin yalnızca kurum içi duyuru ve iletişim amacıyla işlenmesini kabul ediyorum. *
-        </span>
-      </label>
+        <label>Adınız Soyadınız *</label>
+        <input type="text" id="wizName" placeholder="Örn: Salih Özgen">
+        <label>Telefon Numarası *</label>
+        <input type="tel" id="wizPhone" placeholder="Örn: 0555 xxx xx xx">
+        <label>Kan Grubu (opsiyonel — acil durumlarda kullanılır)</label>
+        <select id="wizBloodType">
+          <option value="">Seçiniz</option>
+          <option value="A Rh+">A Rh+</option>
+          <option value="A Rh-">A Rh-</option>
+          <option value="B Rh+">B Rh+</option>
+          <option value="B Rh-">B Rh-</option>
+          <option value="AB Rh+">AB Rh+</option>
+          <option value="AB Rh-">AB Rh-</option>
+          <option value="0 Rh+">0 Rh+</option>
+          <option value="0 Rh-">0 Rh-</option>
+        </select>
 
-      <button class="btn-primary" id="btnNext2" style="width:100%; margin-top:16px;">Kaydet ve Devam Et ➔</button>
-      <div id="kvkkWarning" style="display:none; color:var(--clay); font-size:12px; margin-top:8px; text-align:center;">Devam etmek için KVKK metnini onaylamanız gerekiyor.</div>
+        <label>E-posta — Gmail/Hotmail (opsiyonel, yemekhane kaydını görmek istersen doldur)</label>
+        <input type="email" id="wizEmail" placeholder="ornek@gmail.com">
+        <div id="wizEmailHint" style="display:none; font-size:11px; color:#1e40af; background:#eff6ff; border-radius:8px; padding:8px 10px; margin-top:-4px; margin-bottom:4px;">
+          ℹ️ Yalnızca kişisel Gmail/Hotmail kabul edilir, kurumsal e-postalar (.gov.tr, .com.tr vb.) olmaz.
+        </div>
+        <div id="wizPassWrap" style="display:none;">
+          <label>Şifre</label>
+          <input type="password" id="wizPass" placeholder="En az 6 karakter">
+        </div>
+
+        <label style="display:flex; align-items:flex-start; gap:8px; margin-top:16px; cursor:pointer; text-transform:none; letter-spacing:normal; font-weight:400; font-size:12.5px; color:#555;">
+          <input type="checkbox" id="wizKvkkConsent" style="margin-top:2px; flex-shrink:0;">
+          <span>
+            <a href="#" id="kvkkLinkOpen" style="color:var(--clay); font-weight:600; text-decoration:underline;">KVKK Aydınlatma Metni</a>'ni okudum, kişisel verilerimin yalnızca kurum içi duyuru ve iletişim amacıyla işlenmesini kabul ediyorum. *
+          </span>
+        </label>
+
+        <button class="btn-primary" id="btnNext2" style="width:100%; margin-top:16px;">Kaydet ve Devam Et ➔</button>
+        <div id="kvkkWarning" style="display:none; color:var(--clay); font-size:12px; margin-top:8px; text-align:center;">Devam etmek için KVKK metnini onaylamanız gerekiyor.</div>
+        <div class="feedback-msg" id="wizFormFeedback"></div>
+
+        <div style="text-align:center; margin-top:14px; font-size:12.5px; color:#777;">
+          Zaten hesabın var mı? <a href="#" id="wizGoLoginLink" style="color:var(--clay); font-weight:600;">Giriş yap</a>
+        </div>
+      </div>
+
+      <!-- 2b: E-posta doğrulama (yalnızca e-posta ile kayıt olunduysa gösterilir) -->
+      <div id="step2-otp" style="display:none;">
+        <div style="font-size:36px; text-align:center; margin-bottom:8px;">📧</div>
+        <h2 style="text-align:center; margin:0 0 8px;">Kodu Girin</h2>
+        <p style="font-size:13px; color:#555; text-align:center;" id="wizOtpEmailNote"></p>
+        <input type="text" id="wizOtpCode" maxlength="6" inputmode="numeric" placeholder="000000"
+          style="text-align:center; font-size:1.6rem; letter-spacing:8px; font-weight:800; padding:16px;">
+        <button class="btn-primary" id="btnWizVerify" style="width:100%; margin-top:12px;">Doğrula</button>
+        <button type="button" id="btnWizResend" style="width:100%; background:none; color:#777; font-weight:600; font-size:12.5px; margin-top:8px;">Kodu Tekrar Gönder</button>
+        <div class="feedback-msg" id="wizOtpFeedback"></div>
+      </div>
+
+      <!-- 2c: Giriş formu (zaten üye olanlar için) -->
+      <div id="step2-login" style="display:none;">
+        <div style="font-size:36px; text-align:center; margin-bottom:8px;">🔑</div>
+        <h2 style="text-align:center; margin:0 0 8px;">Giriş Yap</h2>
+        <label>E-posta</label>
+        <input type="email" id="wizLoginEmail" placeholder="ornek@gmail.com">
+        <label>Şifre</label>
+        <input type="password" id="wizLoginPass" placeholder="Şifren">
+        <label style="display:flex; align-items:center; gap:8px; margin-top:12px; cursor:pointer; text-transform:none; letter-spacing:normal; font-weight:400; font-size:12.5px; color:#555;">
+          <input type="checkbox" id="wizRememberMe" checked>
+          <span>Bu cihazda beni hatırla</span>
+        </label>
+        <button class="btn-primary" id="btnWizLogin" style="width:100%; margin-top:14px;">Giriş Yap</button>
+        <div class="feedback-msg" id="wizLoginFeedback"></div>
+        <div style="text-align:center; margin-top:14px; font-size:12.5px; color:#777;">
+          Hesabın yok mu? <a href="#" id="wizGoRegisterLink" style="color:var(--clay); font-weight:600;">Kayıt ol</a>
+        </div>
+      </div>
     </div>
 
     <!-- ADIM 3: BİLDİRİM VE MARKA BAZLI SES REHBERİ -->
@@ -724,6 +791,9 @@
     <h2>Bildirimleri Aç</h2>
     <p>Duyuruları telefonunuza anında anlık bildirim olarak almak için izin verin.</p>
     <button class="btn-primary" id="subscribeBtn">Bildirim Kurulumunu Başlat</button>
+    <div style="text-align:center; margin-top:8px;">
+      <a href="#" id="notifHelpLink" style="font-size:11.5px; color:var(--muted); text-decoration:underline;">❓ Nasıl açılır, adım adım anlat</a>
+    </div>
   </div>
 
   <!-- ANA SEKMELER -->
@@ -1173,7 +1243,7 @@
     <img src="/icon-192.png" alt="Amasya Valiliği" class="footer-center-logo">
   </div>
 
-  <a href="#" id="mealsLink">🍽️ Yemek Kaydım</a>
+  <a href="#" id="mealsLink" style="display:none;">🍽️ Yemek Kaydım</a>
   <a href="#" id="pollLink">📊 Anket</a>
   <a href="/admin/" id="adminSecretBtn" title="" style="color:var(--line); text-decoration:none; padding:0 4px; font-size:14px;">•</a>
 </footer>
@@ -1300,13 +1370,14 @@ function showWizardStep(stepNum) {
   }
   document.getElementById('step' + stepNum).classList.add('active');
   document.getElementById('dot' + stepNum).classList.add('active');
+  if (stepNum === 2) wizShowStep2Panel('step2-form');
 }
 
 function checkFirstRunWizard() {
   const perm = Notification.permission;
-  const hasName = localStorage.getItem('selfName');
+  const hasName = localStorage.getItem('selfName') || mealsGetToken();
   if (!hasName) {
-    // Hiç kayıt olmamış: sihirbazı en baştan (PWA kurulum + profil formu) göster
+    // Hiç kayıt olmamış: sihirbazı en baştan (PWA kurulum + hesap formu) göster
     document.getElementById('wizardModal').style.display = 'flex';
     if (isInstalledApp && perm === 'default') {
       showWizardStep(3);
@@ -1314,8 +1385,8 @@ function checkFirstRunWizard() {
       showWizardStep(1);
     }
   } else if (perm === 'default') {
-    // Zaten kayıtlı — sadece bildirim izni henüz sorulmamışsa (reddedilmemiş) o adımı göster,
-    // isim/telefon formunu bir daha SORMA.
+    // Zaten kayıtlı/giriş yapmış — sadece bildirim izni henüz sorulmamışsa o adımı göster,
+    // isim/telefon/e-posta formunu veya girişi bir daha SORMA.
     document.getElementById('wizardModal').style.display = 'flex';
     showWizardStep(3);
   }
@@ -1332,6 +1403,13 @@ document.getElementById('subscribeBtn').addEventListener('click', () => {
   }
 });
 
+document.getElementById('notifHelpLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  unlockAudioEngine();
+  document.getElementById('wizardModal').style.display = 'flex';
+  showWizardStep(3);
+});
+
 document.getElementById('btnPwaInstall').addEventListener('click', async () => {
   if (deferredPrompt) {
     deferredPrompt.prompt();
@@ -1345,13 +1423,39 @@ document.getElementById('btnPwaInstall').addEventListener('click', async () => {
 
 document.getElementById('btnNext1').addEventListener('click', () => showWizardStep(2));
 
+function wizShowStep2Panel(panel) {
+  ['step2-form', 'step2-otp', 'step2-login'].forEach(id => {
+    document.getElementById(id).style.display = (id === panel) ? 'block' : 'none';
+  });
+}
+
+document.getElementById('wizEmail').addEventListener('input', (e) => {
+  const has = e.target.value.trim().length > 0;
+  document.getElementById('wizEmailHint').style.display = has ? 'block' : 'none';
+  document.getElementById('wizPassWrap').style.display = has ? 'block' : 'none';
+});
+
+let wizPendingEmail = '';
+let wizPendingPassword = '';
+
 document.getElementById('btnNext2').addEventListener('click', async () => {
   const name = document.getElementById('wizName').value.trim();
   const phone = document.getElementById('wizPhone').value.trim();
+  const bloodType = document.getElementById('wizBloodType').value;
+  const email = document.getElementById('wizEmail').value.trim();
+  const sifre = document.getElementById('wizPass').value;
   const kvkkOk = document.getElementById('wizKvkkConsent').checked;
-  if (!name) { alert('Lütfen adınızı soyadınızı girin.'); return; }
+  const fb = document.getElementById('wizFormFeedback');
+  fb.textContent = ''; fb.className = 'feedback-msg';
+
+  if (!name) { fb.textContent = 'Lütfen adınızı soyadınızı girin.'; fb.className = 'feedback-msg err'; return; }
+  if (!phone) { fb.textContent = 'Lütfen telefon numaranızı girin.'; fb.className = 'feedback-msg err'; return; }
   if (!kvkkOk) { document.getElementById('kvkkWarning').style.display = 'block'; return; }
   document.getElementById('kvkkWarning').style.display = 'none';
+  if (email && sifre.length < 6) { fb.textContent = 'E-posta ile kayıt olmak için şifre en az 6 karakter olmalı.'; fb.className = 'feedback-msg err'; return; }
+
+  const btn = document.getElementById('btnNext2');
+  btn.disabled = true;
 
   localStorage.setItem('selfName', name);
   localStorage.setItem('selfPhone', phone);
@@ -1360,11 +1464,103 @@ document.getElementById('btnNext2').addEventListener('click', async () => {
   try {
     await fetch('/api/self-profile', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ deviceId: getDeviceId(), name, phone, kvkkConsent: true, kvkkConsentAt: new Date().toISOString() })
+      body: JSON.stringify({ deviceId: getDeviceId(), name, phone, email: email || undefined, bloodType, kvkkConsent: true, kvkkConsentAt: new Date().toISOString() })
     });
   } catch(e){}
 
-  showWizardStep(Notification.permission === 'granted' ? 4 : 3);
+  if (email) {
+    // E-posta girildiyse yemekhane hesabını da aynı anda oluştur — kod doğrulanınca otomatik giriş yapılır.
+    try {
+      const res = await fetch('/api/self-register', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adSoyad: name, telefon: phone, email, sifre })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Kayıt olunamadı.');
+      wizPendingEmail = email;
+      wizPendingPassword = sifre;
+      document.getElementById('wizOtpEmailNote').textContent = email + ' adresine gönderilen 6 haneli kodu girin.';
+      wizShowStep2Panel('step2-otp');
+    } catch (e) {
+      fb.textContent = e.message; fb.className = 'feedback-msg err';
+      btn.disabled = false;
+      return;
+    }
+  } else {
+    showWizardStep(Notification.permission === 'granted' ? 4 : 3);
+  }
+  btn.disabled = false;
+});
+
+document.getElementById('btnWizVerify').addEventListener('click', async () => {
+  const kod = document.getElementById('wizOtpCode').value.trim();
+  const fb = document.getElementById('wizOtpFeedback');
+  if (!kod) { fb.textContent = 'Kodu girin.'; fb.className = 'feedback-msg err'; return; }
+  try {
+    const res = await fetch('/api/self-verify', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: wizPendingEmail, kod })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Doğrulanamadı.');
+    // Doğrulama başarılı — kullanıcıya şifreyi tekrar sormadan otomatik giriş yapıyoruz.
+    try {
+      const loginRes = await fetch('/api/self-login', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: wizPendingEmail, sifre: wizPendingPassword })
+      });
+      const loginData = await loginRes.json();
+      if (loginRes.ok) mealsSetToken(loginData.token, true);
+    } catch(e){}
+    wizPendingPassword = '';
+    showWizardStep(Notification.permission === 'granted' ? 4 : 3);
+  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
+});
+
+document.getElementById('btnWizResend').addEventListener('click', async () => {
+  const fb = document.getElementById('wizOtpFeedback');
+  try {
+    const res = await fetch('/api/self-resend', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: wizPendingEmail })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Gönderilemedi.');
+    fb.textContent = 'Yeni kod gönderildi.'; fb.className = 'feedback-msg ok';
+  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
+});
+
+document.getElementById('wizGoLoginLink').addEventListener('click', (e) => { e.preventDefault(); wizShowStep2Panel('step2-login'); });
+document.getElementById('wizGoRegisterLink').addEventListener('click', (e) => { e.preventDefault(); wizShowStep2Panel('step2-form'); });
+
+document.getElementById('btnWizLogin').addEventListener('click', async () => {
+  const email = document.getElementById('wizLoginEmail').value.trim();
+  const sifre = document.getElementById('wizLoginPass').value;
+  const remember = document.getElementById('wizRememberMe').checked;
+  const fb = document.getElementById('wizLoginFeedback');
+  if (!email || !sifre) { fb.textContent = 'E-posta ve şifre gerekli.'; fb.className = 'feedback-msg err'; return; }
+  const btn = document.getElementById('btnWizLogin');
+  btn.disabled = true; fb.textContent = 'Giriş yapılıyor...'; fb.className = 'feedback-msg';
+  try {
+    const res = await fetch('/api/self-login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, sifre })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Giriş yapılamadı.');
+    mealsSetToken(data.token, remember);
+    localStorage.setItem('selfName', data.adSoyad || '');
+    localStorage.setItem('selfPhone', data.telefon || '');
+    localStorage.setItem('kvkkConsent', 'true');
+    try {
+      await fetch('/api/self-profile', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceId: getDeviceId(), name: data.adSoyad || '', phone: data.telefon || '', email, kvkkConsent: true, kvkkConsentAt: new Date().toISOString() })
+      });
+    } catch(e){}
+    showWizardStep(Notification.permission === 'granted' ? 4 : 3);
+  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
+  finally { btn.disabled = false; }
 });
 
 document.getElementById('kvkkLinkOpen').addEventListener('click', (e) => {
@@ -1673,7 +1869,6 @@ function renderManset() {
       ${mansetItems.length > 1 ? '<button type="button" class="manset-nav-btn" id="mansetPrevBtn" aria-label="Önceki">‹</button>' : ''}
       <div class="manset-card ${hasImage ? 'has-image' : ''}" style="--manset-c1:${c1}; --manset-c2:${c2};" id="mansetCard">
         ${hasImage ? `<img class="manset-img" src="${m.attachment.url}" alt="" loading="lazy">` : ''}
-        ${hasImage ? '<div class="manset-overlay"></div>' : ''}
         <div class="manset-content">
           <div class="manset-title">${esc(m.title)}</div>
           <div class="manset-date">📅 ${formatTime(m.time)}</div>
@@ -2936,8 +3131,12 @@ async function deleteGeneric(type, id) {
 }
 
 // ---------- YEMEK KAYDIM İŞLEMLERİ ----------
-function mealsGetToken() { return localStorage.getItem('mealsToken') || ''; }
-function mealsSetToken(t) { if (t) localStorage.setItem('mealsToken', t); else localStorage.removeItem('mealsToken'); updateMealsWelcomeBar(); }
+function mealsGetToken() { return localStorage.getItem('mealsToken') || sessionStorage.getItem('mealsToken') || ''; }
+function mealsSetToken(t, remember) {
+  localStorage.removeItem('mealsToken'); sessionStorage.removeItem('mealsToken');
+  if (t) { (remember === false ? sessionStorage : localStorage).setItem('mealsToken', t); }
+  updateMealsWelcomeBar();
+}
 let mealsPendingEmail = '';
 
 async function updateMealsWelcomeBar() {
