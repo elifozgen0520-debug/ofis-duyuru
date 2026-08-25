@@ -474,16 +474,19 @@
   .kurum-brand--inline .kurum-brand-text strong { color: var(--ink); }
   .kurum-brand--inline .kurum-brand-text small { color: #5B7086; }
 
-  /* ÖNERİ MODALINI GERÇEK BİR POPUP OLARAK AÇMAK */
+  /* POPUP AÇILDIĞINDA ARKA PLAN BLUR / KARARTMA */
   .modal-backdrop {
-    display: none; position: fixed; inset: 0; background: rgba(4,18,34,0.55);
+    display: none; position: fixed; inset: 0; background: rgba(4,18,34,0.65);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
     z-index: 1650; opacity: 0; transition: opacity 0.2s ease;
   }
   .modal-backdrop.show { display: block; opacity: 1; }
-  #feedbackModal {
+
+  /* PROFİL, ÖNERİ VE YEMEK KAYDIM POPUP SAYFASI STİLLERİ */
+  #feedbackModal, #profileModal, #mealsModal {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: min(460px, calc(100vw - 32px)); max-height: 85vh; overflow-y: auto;
-    z-index: 1700;
+    width: min(480px, calc(100vw - 32px)); max-height: 85vh; overflow-y: auto;
+    z-index: 1700; margin-bottom: 0;
   }
   @keyframes popup-in {
     from { opacity: 0; transform: translate(-50%, -50%) scale(0.94); }
@@ -493,8 +496,8 @@
     from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
     to { opacity: 0; transform: translate(-50%, -50%) scale(0.94); }
   }
-  #feedbackModal.anim-open { animation: popup-in 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
-  #feedbackModal.anim-close { animation: popup-out 0.2s ease forwards; }
+  #feedbackModal.anim-open, #profileModal.anim-open, #mealsModal.anim-open { animation: popup-in 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
+  #feedbackModal.anim-close, #profileModal.anim-close, #mealsModal.anim-close { animation: popup-out 0.2s ease forwards; }
 </style>
 </head>
 <body>
@@ -812,8 +815,10 @@
     </div>
   </div>
 
+  <!-- GENEL POPUP BLUR BACKDROP -->
+  <div class="modal-backdrop" id="feedbackBackdrop"></div>
 
-  <!-- PROFİL MODALI -->
+  <!-- PROFİL MODALI (POPUP) -->
   <div class="card" id="profileModal" style="display:none;">
     <div class="card-header"><h2>Profilim</h2><button class="card-close" data-close="profileModal" aria-label="Kapat">✕</button></div>
     <!-- KURUM LOGOSU: footer'daki ile aynı davranış, profil ekranında da tekrarlanır -->
@@ -864,7 +869,6 @@
   </div>
 
   <!-- GÖRÜŞ MODALI (popup) -->
-  <div class="modal-backdrop" id="feedbackBackdrop"></div>
   <div class="card" id="feedbackModal" style="display:none;">
     <div class="card-header"><h2>Öneri</h2><button class="card-close" data-close="feedbackModal" aria-label="Kapat">✕</button></div>
     <div class="sub">Yönetime iletmek istediğiniz not veya talebiniz:</div>
@@ -914,7 +918,7 @@
     </div>
   </div>
 
-  <!-- YEMEK KAYDIM MODALI (self-servis kayıt/giriş + kişisel yemekhane geçmişi) -->
+  <!-- YEMEK KAYDIM MODALI (POPUP) (self-servis kayıt/giriş + kişisel yemekhane geçmişi) -->
   <div class="card" id="mealsModal" style="display:none;">
     <div class="card-header"><h2>🍽️ Yemek Kaydım</h2><button class="card-close" data-close="mealsModal" aria-label="Kapat">✕</button></div>
 
@@ -1055,14 +1059,6 @@
 </div>
 
 <footer class="site-footer">
-  <!-- KURUM LOGOSU: /icon-192.png yerine kendi kurum logonuzun dosya yolunu yazabilirsiniz -->
-  <button type="button" class="kurum-brand" id="kurumLogoBtn" aria-haspopup="dialog" aria-label="Kurum bilgisi ve görüş/öneri gönder">
-    <img src="/icon-192.png" alt="Amasya İl Müdürlüğü logosu" class="kurum-brand-logo">
-    <span class="kurum-brand-text">
-      <strong>Amasya İl Müdürlüğü</strong>
-      <small>Görüş &amp; Öneri Gönder</small>
-    </span>
-  </button>
   <a href="#" id="profileLink">👤 Profilim</a>
   <span class="fdot">·</span>
   <a href="#" id="feedbackLink">💬 Öneri</a>
@@ -1117,6 +1113,7 @@ window.addEventListener('load', () => {
     const s = document.getElementById('splash');
     if (s) { s.classList.add('hide'); setTimeout(() => s.remove(), 600); }
   }, 1200);
+  updateMealsLinkText();
 });
 
 const themeSelect = document.getElementById('themeSelect');
@@ -1183,9 +1180,6 @@ if (isIOS) {
   document.getElementById('iosPwaNotice').style.display = 'block';
 }
 
-// Uygulama, kurulu APK (TWA) içinden mi açıldı? (tarayıcıdan mı yoksa yüklü uygulamadan mı)
-// Uygulama, kurulu APK (TWA) içinden mi açıldı? (Android'e özel — iOS Ana Ekran modunu bu kapsamın dışında tutuyoruz,
-// çünkü Android'e özel "Bilinmeyen uygulama / Play Protect" mesajları iPhone'da anlamsız kalır)
 const isInstalledApp = !isIOS && (document.referrer.startsWith('android-app://') || window.matchMedia('(display-mode: standalone)').matches);
 if (isInstalledApp) {
   document.getElementById('step1-download').style.display = 'none';
@@ -1206,7 +1200,6 @@ function checkFirstRunWizard() {
   const hasName = localStorage.getItem('selfName');
   if (perm !== 'granted' || !hasName) {
     document.getElementById('wizardModal').style.display = 'flex';
-    // Kurulu APK'da ve izin daha hiç sorulmadıysa: direkt izin adımına atla, isim/adım1'i bekletme.
     if (isInstalledApp && perm === 'default') {
       showWizardStep(3);
     } else {
@@ -1257,7 +1250,6 @@ document.getElementById('btnNext2').addEventListener('click', async () => {
     });
   } catch(e){}
 
-  // İzin bu adımdan önce (kurulu APK akışında) zaten verilmiş olabilir, o zaman direkt bitir.
   showWizardStep(Notification.permission === 'granted' ? 4 : 3);
 });
 
@@ -1273,10 +1265,8 @@ document.getElementById('btnGrantPush').addEventListener('click', async () => {
   unlockAudioEngine();
   const ok = await doSubscribe(false);
   if (ok) {
-    // Kurulu APK akışında izin adımı isimden ÖNCE geldiyse, şimdi ismi soralım.
     showWizardStep(localStorage.getItem('selfName') ? 4 : 2);
   } else {
-    // İzin penceresi hiç çıkmadıysa ya da reddedildiyse: doğrudan ayar ekranına götürmeyi dene.
     document.getElementById('permFailedNotice').style.display = 'block';
     if (isInstalledApp) tryOpenAndroidNotifSettings();
   }
@@ -1907,22 +1897,20 @@ function openModal(modalId) {
       const el = document.getElementById(id);
       el.classList.remove('anim-open');
       el.style.display = 'none';
-      if (id === 'feedbackModal') document.getElementById('feedbackBackdrop').classList.remove('show');
     }
   });
   const m = document.getElementById(modalId);
   m.style.display = (modalId === 'chatModal') ? 'flex' : 'block';
   m.classList.remove('anim-close');
   m.classList.add('anim-open');
-  if (modalId === 'feedbackModal') document.getElementById('feedbackBackdrop').classList.add('show');
-  if (modalId !== 'chatModal' && modalId !== 'feedbackModal') m.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  document.getElementById('feedbackBackdrop').classList.add('show');
 }
 function closeModal(modalId) {
   const m = document.getElementById(modalId);
   if (m.style.display === 'none') return;
   m.classList.remove('anim-open');
   m.classList.add('anim-close');
-  if (modalId === 'feedbackModal') document.getElementById('feedbackBackdrop').classList.remove('show');
+  document.getElementById('feedbackBackdrop').classList.remove('show');
   setTimeout(() => {
     m.style.display = 'none';
     m.classList.remove('anim-close');
@@ -1964,7 +1952,6 @@ document.getElementById('profileLink').addEventListener('click', async (e) => {
   document.getElementById('profilePhone').value = localStorage.getItem('selfPhone') || '';
   document.getElementById('profileEmail').value = localStorage.getItem('selfEmail') || '';
   document.getElementById('profileBloodType').value = localStorage.getItem('selfBloodType') || '';
-  // Sunucudan güncel profili (avatar dahil) çek
   try {
     const res = await fetch('/api/self-profile/' + getDeviceId());
     const data = await res.json();
@@ -2017,11 +2004,12 @@ document.getElementById('profileSaveBtn').addEventListener('click', async () => 
 
 document.getElementById('feedbackLink').addEventListener('click', (e) => { e.preventDefault(); toggleModal('feedbackModal'); });
 
-// KURUM LOGOSU — footer ve profildeki logoya tıklayınca Öneri popup'ını açar
-document.getElementById('kurumLogoBtn').addEventListener('click', () => openModal('feedbackModal'));
+// KURUM LOGOSU — profildeki logoya tıklayınca Öneri popup'ını açar
 document.getElementById('profileKurumLogoBtn').addEventListener('click', () => openModal('feedbackModal'));
-// Karartılmış arka plana (backdrop) tıklayınca popup'ı kapat
-document.getElementById('feedbackBackdrop').addEventListener('click', () => closeModal('feedbackModal'));
+// Karartılmış arka plana (backdrop) tıklayınca açık olan popup'ı kapat
+document.getElementById('feedbackBackdrop').addEventListener('click', () => {
+  ['profileModal', 'feedbackModal', 'adminModal', 'chatModal', 'mealsModal'].forEach(id => closeModal(id));
+});
 
 document.getElementById('feedbackSendBtn').addEventListener('click', async () => {
   const text = document.getElementById('feedbackText').value.trim();
@@ -2148,9 +2136,6 @@ async function sendPresenceHeartbeat() {
   try { await fetch('/api/presence', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId() }) }); } catch {}
 }
 
-// Sohbet açıkken bile telefon arka plana düşünce (ekran kilitlendi, başka uygulamaya geçildi)
-// "hayattayım" sinyalini durdur — yoksa kişi saatlerdir uygulamayı görmese bile "Çevrimiçi" görünmeye devam eder.
-// Öne gelince hemen bir sinyal daha at ve pollamayı yeniden başlat.
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
     if (presencePoll) { clearInterval(presencePoll); presencePoll = null; }
@@ -2324,7 +2309,6 @@ document.getElementById('chatLink').addEventListener('click', (e) => {
   }
 });
 
-// Sohbet kapatılınca polling'i durdur
 document.querySelectorAll('.card-close').forEach(btn => {
   if (btn.dataset.close === 'chatModal') {
     btn.addEventListener('click', () => {
@@ -2334,14 +2318,12 @@ document.querySelectorAll('.card-close').forEach(btn => {
   }
 });
 
-
 let selectedCategory = 'genel';
 document.getElementById('catRow').addEventListener('click', (e) => {
   const btn = e.target.closest('.cat-btn'); if (!btn) return;
   document.querySelectorAll('#catRow .cat-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active'); selectedCategory = btn.dataset.cat;
 });
-
 
 document.getElementById('adminLoginBtn').addEventListener('click', async () => {
   const pass = document.getElementById('adminGlobalPassword').value.trim();
@@ -2569,8 +2551,25 @@ async function deleteGeneric(type, id) {
 
 // ---------- YEMEK KAYDIM (self-servis kayıt / giriş / OTP / kişisel yemekhane geçmişi) ----------
 function mealsGetToken() { return localStorage.getItem('mealsToken') || ''; }
-function mealsSetToken(t) { if (t) localStorage.setItem('mealsToken', t); else localStorage.removeItem('mealsToken'); }
+function mealsSetToken(t) { if (t) localStorage.setItem('mealsToken', t); else localStorage.removeItem('mealsToken'); updateMealsLinkText(); }
 let mealsPendingEmail = '';
+
+async function updateMealsLinkText() {
+  const link = document.getElementById('mealsLink');
+  if (!link) return;
+  const token = mealsGetToken();
+  if (token) {
+    try {
+      const res = await fetch('/api/my-meals', { headers: { 'Authorization': 'Bearer ' + token } });
+      const data = await res.json();
+      if (data.ok && data.adSoyad) {
+        link.innerHTML = '🍽️ Hoşgeldin, ' + esc(data.adSoyad);
+        return;
+      }
+    } catch(e){}
+  }
+  link.innerHTML = '🍽️ Yemek Kaydım';
+}
 
 function mealsShowStep(step) {
   ['mealsStepRegister', 'mealsStepVerify', 'mealsStepLogin', 'mealsStepRecords'].forEach(id => {
@@ -2684,6 +2683,10 @@ async function mealsLoadRecords() {
 
     whoEl.textContent = `${data.adSoyad || ''}${data.birim ? ' · ' + data.birim : ''}`;
     debtEl.textContent = (data.toplamBorc || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₺';
+
+    if (data.adSoyad) {
+      document.getElementById('mealsLink').innerHTML = '🍽️ Hoşgeldin, ' + esc(data.adSoyad);
+    }
 
     if (!data.kayitlar || data.kayitlar.length === 0) {
       listEl.className = 'list-empty'; listEl.textContent = 'Henüz yemek kaydın yok.'; return;
