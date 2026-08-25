@@ -31,6 +31,12 @@
   body[data-theme="lacivert"] { --amber: #3E8FD0; --gold: #5AA8E0; --ink: #0F1F33; }
   body[data-theme="zeytin"] { --amber: #7C9A4A; --gold: #A3C15E; --ink: #1E2A1C; }
   body[data-theme="bordo"] { --amber: #B5384A; --gold: #D46B7A; --ink: #2A1418; }
+  /* BANKA TEMASI: canlı lacivert→camgöbeği gradyan + turuncu vurgular */
+  body[data-theme="banka"] {
+    --ink: #0A2F5C; --amber: #FF7A1A; --gold: #FF9A47; --sage: #16A34A; --clay: #E11D48;
+    --navy-deep: #0A2F5C; --navy-mid: #1665C0; --blue-bright: #3FA9F5;
+    --brand-gradient: linear-gradient(135deg, #0A2F5C 0%, #1665C0 55%, #3FA9F5 100%);
+  }
 
   * { box-sizing: border-box; }
 
@@ -56,7 +62,7 @@
   h1 { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: clamp(20px, 6vw, 26px); margin: 0; letter-spacing: -0.01em; }
   .pin-count { font-size: 12px; color: rgba(255,255,255,0.82); }
 
-  /* ÜST HOŞGELDİN MESAJI BARI */
+  /* ÜST HOŞGELDİN MESAJI BARI (artık tıklanabilir, açılır menülü) */
   .top-welcome-badge {
     display: inline-flex; align-items: center; gap: 6px;
     background: rgba(255, 255, 255, 0.18);
@@ -64,7 +70,22 @@
     border: 1px solid rgba(255, 255, 255, 0.25);
     color: #fff; font-size: 12.5px; font-weight: 600;
     padding: 4px 12px; border-radius: 20px; margin-top: 4px;
+    cursor: pointer; position: relative;
   }
+  .top-welcome-badge:hover { background: rgba(255, 255, 255, 0.28); }
+  .account-menu {
+    display: none; position: absolute; top: calc(100% + 8px); left: 0;
+    background: var(--paper); color: var(--ink); border-radius: 10px; min-width: 200px;
+    box-shadow: 0 14px 30px rgba(0,0,0,0.35); overflow: hidden; z-index: 1800;
+  }
+  .account-menu.show { display: block; }
+  .account-menu button {
+    display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+    background: none; border: none; padding: 11px 14px; font-size: 13px; font-weight: 500;
+    color: var(--ink); cursor: pointer; border-radius: 0;
+  }
+  .account-menu button:hover { background: #f5f3ee; }
+  .account-menu button + button { border-top: 1px solid #eee; }
 
   /* SALLANAN LOGO ANİMASYONU */
   .sway-logo {
@@ -450,34 +471,15 @@
     50% { transform: scale(1.12); box-shadow: 0 8px 26px rgba(239, 125, 27, 0.75); }
   }
 
-  /* SİHİRBAZ WIZARD - AÇILIŞ VE KAPANIŞ ANİMASYONLARI EKLENDİ */
-  @keyframes wizard-in {
-    from { opacity: 0; transform: scale(0.92) translateY(15px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
-  }
-  @keyframes wizard-out {
-    from { opacity: 1; transform: scale(1) translateY(0); }
-    to { opacity: 0; transform: scale(0.92) translateY(15px); }
-  }
-  
+  /* SİHİRBAZ WIZARD */
   .wizard-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 1000;
     display: flex; align-items: center; justify-content: center; padding: 16px;
-    transition: background-color 0.3s ease;
   }
-  
   .wizard-card {
     background: var(--paper); color: var(--ink); max-width: 500px; width: 100%;
     border-radius: 20px; padding: 24px; box-shadow: 0 20px 40px rgba(4,20,38,0.5); border: 2px solid var(--amber);
-    max-height: 90vh; /* İçerik çok uzarsa ekrana sığdırır */
-    overflow-y: auto; /* Otomatik kaydırma çubuğu çıkarır */
-    animation: wizard-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards; /* Bonus Açılış Efekti */
   }
-  
-  .wizard-card.closing {
-    animation: wizard-out 0.3s ease forwards; /* Bonus Kapanış Efekti */
-  }
-  
   .wizard-step { display: none; }
   .wizard-step.active { display: block; }
   .step-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
@@ -632,17 +634,8 @@
     <!-- ADIM 2: HESAP (kayıt + giriş + e-posta doğrulama tek arada) -->
     <div class="wizard-step" id="step2">
 
-      <!-- YENİ EKLENEN: 2-Seçim Ekranı (İlk girişte bu sorulacak) -->
-      <div id="step2-choice">
-        <div style="font-size:36px; text-align:center; margin-bottom:8px;">👋</div>
-        <h2 style="text-align:center; margin:0 0 16px;">Hoş Geldiniz</h2>
-        <p style="font-size:13px; color:#555; text-align:center; margin-bottom:20px;">Devam etmek için mevcut hesabınızla giriş yapın veya yeni bir kayıt oluşturun.</p>
-        <button type="button" class="btn-primary" id="btnGoToLogin" style="width:100%; margin-bottom:12px; padding:12px; font-size:14px; background:var(--ink);">🔑 Giriş Yap</button>
-        <button type="button" class="btn-primary" id="btnGoToRegister" style="width:100%; padding:12px; font-size:14px; background:var(--sage);">👤 Yeni Kayıt Ol</button>
-      </div>
-
-      <!-- 2a: Kayıt formu (varsayılan görünüm GİZLENDİ) -->
-      <div id="step2-form" style="display:none;">
+      <!-- 2a: Kayıt formu (varsayılan görünüm) -->
+      <div id="step2-form">
         <div style="display:flex; align-items:center; gap:14px; justify-content:center; margin-bottom:14px;">
           <img id="wizAvatarPreview" src="" alt="" style="width:56px; height:56px; border-radius:50%; object-fit:cover; background:#eee; display:none; border:2px solid var(--line);">
           <div id="wizAvatarPlaceholder" style="width:56px; height:56px; border-radius:50%; background:#eee; display:flex; align-items:center; justify-content:center; font-size:24px; color:#aaa;">👤</div>
@@ -809,9 +802,15 @@
           <!-- DİNAMİK BİLDİRİM ZİL İKONU (AKTİF/KAPALI DURUMU & ANİMASYONU) -->
           <div class="bell-status-compact inactive" id="bellStatus" title="Bildirimler Kapalı (Açmak için tıklayın)">🔔</div>
         </div>
-        <!-- HOŞ GELDİN MESAJI -->
-        <div id="topWelcomeBar" style="display:none;" class="top-welcome-badge">
-          👋 <span id="topWelcomeText"></span>
+        <!-- HESABIM / HOŞ GELDİN AÇILIR MENÜSÜ -->
+        <div id="topWelcomeBar" class="top-welcome-badge">
+          <span id="topWelcomeIcon">👤</span> <span id="topWelcomeText">Hesabım</span>
+          <div class="account-menu" id="accountMenu">
+            <button type="button" id="accMenuProfile">👤 Profil</button>
+            <button type="button" id="accMenuMeals">🍽️ Yemekhane Kayıtlarım &amp; Borç</button>
+            <button type="button" id="accMenuBloodBank">🩸 Kan Bankası</button>
+            <button type="button" id="accMenuPoll">📊 Anket</button>
+          </div>
         </div>
       </div>
     </div>
@@ -821,6 +820,7 @@
         <option value="lacivert">🔵 Lacivert</option>
         <option value="zeytin">🟢 Zeytin</option>
         <option value="bordo">🔴 Bordo</option>
+        <option value="banka">🏦 Banka</option>
       </select>
       <span class="pin-count" id="subCount">— abone</span>
     </div>
@@ -895,10 +895,36 @@
           <div style="background:#EAF4FC; border:1px solid #C7E2F5; border-radius:10px; padding:10px 12px; font-size:12px; color:var(--navy-mid); margin-bottom:14px;">
             ℹ️ Yalnızca kişisel <b>Gmail</b> veya <b>Hotmail</b> adresiyle kayıt olabilirsin.
           </div>
+
+          <div style="display:flex; align-items:center; gap:14px; justify-content:center; margin-bottom:14px;">
+            <img id="inlineMealsAvatarPreview" src="" alt="" style="width:56px; height:56px; border-radius:50%; object-fit:cover; background:#eee; display:none; border:2px solid var(--line);">
+            <div id="inlineMealsAvatarPlaceholder" style="width:56px; height:56px; border-radius:50%; background:#eee; display:flex; align-items:center; justify-content:center; font-size:24px; color:#aaa;">👤</div>
+            <div>
+              <input type="file" id="inlineMealsAvatarInput" accept="image/png,image/jpeg,image/webp" style="display:none;">
+              <button type="button" class="btn-primary" id="inlineMealsAvatarBtn" style="font-size:12px; padding:7px 12px;">Fotoğraf Ekle (opsiyonel)</button>
+            </div>
+          </div>
+
           <label>Adın Soyadın</label>
           <input type="text" id="inlineMealsRegName" placeholder="Örn: Ahmet Yılmaz">
           <label>Telefon Numaran</label>
           <input type="tel" id="inlineMealsRegPhone" placeholder="Örn: 0555 111 22 33">
+          <label>Kan Grubu (opsiyonel — acil durumlarda kullanılır)</label>
+          <select id="inlineMealsRegBloodType">
+            <option value="">Seçiniz</option>
+            <option value="A Rh+">A Rh+</option>
+            <option value="A Rh-">A Rh-</option>
+            <option value="B Rh+">B Rh+</option>
+            <option value="B Rh-">B Rh-</option>
+            <option value="AB Rh+">AB Rh+</option>
+            <option value="AB Rh-">AB Rh-</option>
+            <option value="0 Rh+">0 Rh+</option>
+            <option value="0 Rh-">0 Rh-</option>
+          </select>
+          <label style="display:flex; align-items:flex-start; gap:8px; margin-top:8px; cursor:pointer; text-transform:none; letter-spacing:normal; font-weight:400; font-size:12px; color:#555;">
+            <input type="checkbox" id="inlineMealsRegDonorOptIn" style="margin-top:2px; flex-shrink:0;">
+            <span>🩸 Acil kan ihtiyacında adım ve telefonumun <b>Kan Bankası</b>'nda diğer personele gösterilmesine izin veriyorum.</span>
+          </label>
           <label>E-posta (Gmail veya Hotmail)</label>
           <input type="email" id="inlineMealsRegEmail" placeholder="ornek@gmail.com">
           <label>Şifre</label>
@@ -1298,30 +1324,20 @@
 
 <!-- SABİT ALT FOOTER -->
 <footer class="site-footer">
-  <a href="#" id="profileLink">👤 Profilim</a>
+  <a href="#" id="profileLink" style="display:none;">👤 Profilim</a>
   <a href="#" id="chatLink">🗨️ Sohbet</a>
-  
+
   <div class="footer-center-logo-wrap" id="centerLogoBtn" title="Öneri ve İletişim">
     <img src="/icon-192.png" alt="Amasya Valiliği" class="footer-center-logo">
   </div>
 
   <a href="#" id="mealsLink" style="display:none;">🍽️ Yemek Kaydım</a>
-  <a href="#" id="pollLink">📊 Anket</a>
-  <a href="#" id="bloodBankLink">🩸 Kan Bankası</a>
+  <a href="#" id="pollLink" style="display:none;">📊 Anket</a>
+  <a href="#" id="bloodBankLink" style="display:none;">🩸 Kan Bankası</a>
   <a href="/admin/" id="adminSecretBtn" title="" style="color:var(--line); text-decoration:none; padding:0 4px; font-size:14px;">•</a>
 </footer>
 
 <script>
-// --- YENİ EKLENEN: SİHİRBAZ KAPATMA FONKSİYONU (Efektli) ---
-function closeWizardWithEffect() {
-  const card = document.querySelector('.wizard-card');
-  if (card) card.classList.add('closing');
-  setTimeout(() => {
-    document.getElementById('wizardModal').style.display = 'none';
-    if (card) card.classList.remove('closing');
-  }, 300); // Animasyon süresi ile eşzamanlı
-}
-
 // --- OTOMATİK SES KİLİDİ AÇICI ---
 let audioUnlocked = false;
 function unlockAudioEngine() {
@@ -1443,13 +1459,14 @@ function showWizardStep(stepNum) {
   }
   document.getElementById('step' + stepNum).classList.add('active');
   document.getElementById('dot' + stepNum).classList.add('active');
-  if (stepNum === 2) wizShowStep2Panel('step2-choice');
+  if (stepNum === 2) wizShowStep2Panel('step2-form');
 }
 
 function checkFirstRunWizard() {
   const perm = Notification.permission;
   const hasName = localStorage.getItem('selfName') || mealsGetToken();
   if (!hasName) {
+    // Hiç kayıt olmamış: sihirbazı en baştan (PWA kurulum + hesap formu) göster
     document.getElementById('wizardModal').style.display = 'flex';
     if (isInstalledApp && perm === 'default') {
       showWizardStep(3);
@@ -1457,9 +1474,12 @@ function checkFirstRunWizard() {
       showWizardStep(1);
     }
   } else if (perm === 'default') {
+    // Zaten kayıtlı/giriş yapmış — sadece bildirim izni henüz sorulmamışsa o adımı göster,
+    // isim/telefon/e-posta formunu veya girişi bir daha SORMA.
     document.getElementById('wizardModal').style.display = 'flex';
     showWizardStep(3);
   }
+  // perm === 'granted' || perm === 'denied' ve hasName varsa: zaten kayıtlı, rahatsız etme.
 }
 
 document.getElementById('subscribeBtn').addEventListener('click', () => {
@@ -1493,15 +1513,10 @@ document.getElementById('btnPwaInstall').addEventListener('click', async () => {
 document.getElementById('btnNext1').addEventListener('click', () => showWizardStep(2));
 
 function wizShowStep2Panel(panel) {
-  ['step2-choice', 'step2-form', 'step2-otp', 'step2-login'].forEach(id => {
-    const el = document.getElementById(id);
-    if(el) el.style.display = (id === panel) ? 'block' : 'none';
+  ['step2-form', 'step2-otp', 'step2-login'].forEach(id => {
+    document.getElementById(id).style.display = (id === panel) ? 'block' : 'none';
   });
 }
-
-// YENİ EKLENEN: Seçim ekranı buton görevleri
-document.getElementById('btnGoToLogin').addEventListener('click', () => wizShowStep2Panel('step2-login'));
-document.getElementById('btnGoToRegister').addEventListener('click', () => wizShowStep2Panel('step2-form'));
 
 document.getElementById('wizEmail').addEventListener('input', (e) => {
   const has = e.target.value.trim().length > 0;
@@ -1564,6 +1579,7 @@ document.getElementById('btnNext2').addEventListener('click', async () => {
   } catch(e){}
 
   if (email) {
+    // E-posta girildiyse yemekhane hesabını da aynı anda oluştur — kod doğrulanınca otomatik giriş yapılır.
     try {
       const res = await fetch('/api/self-register', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -1597,6 +1613,7 @@ document.getElementById('btnWizVerify').addEventListener('click', async () => {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Doğrulanamadı.');
+    // Doğrulama başarılı — kullanıcıya şifreyi tekrar sormadan otomatik giriş yapıyoruz.
     try {
       const loginRes = await fetch('/api/self-login', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -1684,10 +1701,8 @@ document.getElementById('permRetryBtn').addEventListener('click', async () => {
 
 document.getElementById('wizTestSound').addEventListener('click', () => playNotifSound());
 document.getElementById('wizTestLock').addEventListener('click', () => triggerLockTest());
-
-// YENİ EKLENEN: Final butonunda efektli kapatma kullanılıyor
 document.getElementById('btnFinishWizard').addEventListener('click', () => {
-  closeWizardWithEffect();
+  document.getElementById('wizardModal').style.display = 'none';
 });
 
 // --- PUSH VE ABONELİK ---
@@ -1802,7 +1817,7 @@ const catNames = { acil: 'Acil', yemek: 'Yemek Listesi', vefat: 'Vefat', dogum: 
 function formatTime(iso) { return new Date(iso).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); }
 function esc(s) { return (s || '').replace(/</g, '&lt;'); }
 
-const TR_MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylul','Ekim','Kasım','Aralık'];
+const TR_MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 
 const TR_HOLIDAYS_FIXED = [
   { m: 1, d: 1, name: 'Yılbaşı' },
@@ -1956,6 +1971,9 @@ function renderManset() {
   const m = mansetItems[mansetIdx];
   const [c1, c2] = mansetColors(m.category);
   const hasImage = m.attachment && m.attachment.type === 'image';
+  // Resim varsa: sabit en-boy oranlı kutuya gerçek <img> + object-fit:cover ile yerleştiriyoruz —
+  // resmin boyutu/oranı ne olursa olsun kutuyu düzgünce dolduruyor, üstüne okunabilirlik için
+  // alttan yukarı doğru koyulaşan bir gradyan biniyor. Resim yoksa kategoriye göre renkli gradyan kalıyor.
   wrap.innerHTML = `
     <div class="manset-nav">
       ${mansetItems.length > 1 ? '<button type="button" class="manset-nav-btn" id="mansetPrevBtn" aria-label="Önceki">‹</button>' : ''}
@@ -2103,6 +2121,7 @@ async function openDuyuruDetay(id) {
     if (listBtn) { listBtn.classList.add('done'); listBtn.innerHTML = '✓ Okundu'; }
   };
 
+  // E-Posta Giriş Kontrolü
   const token = mealsGetToken();
   if (token) {
     document.getElementById('commentLoggedInBox').style.display = 'block';
@@ -2562,6 +2581,8 @@ document.getElementById('profileLink').addEventListener('click', async (e) => {
   } catch {}
 });
 
+// Tek gerçek hesap (e-posta + şifre, yemekhane kaydı) durumunu burada gösteriyoruz —
+// böylece "Profilim" kendi başına ikinci bir kayıt formu gibi görünmüyor, gerçek hesaba yönlendiriyor.
 function renderProfileAccountBox() {
   const box = document.getElementById('profileAccountBox');
   const token = mealsGetToken();
@@ -3256,24 +3277,50 @@ function mealsSetToken(t, remember) {
 let mealsPendingEmail = '';
 
 async function updateMealsWelcomeBar() {
-  const topBar = document.getElementById('topWelcomeBar');
   const topText = document.getElementById('topWelcomeText');
+  const topIcon = document.getElementById('topWelcomeIcon');
   const token = mealsGetToken();
   if (token) {
     try {
       const res = await fetch('/api/my-meals', { headers: { 'Authorization': 'Bearer ' + token } });
       const data = await res.json();
       if (data.ok && data.adSoyad) {
-        if (topBar && topText) {
-          topText.textContent = 'Hoşgeldin, ' + data.adSoyad;
-          topBar.style.display = 'inline-flex';
-        }
+        topIcon.textContent = '👋';
+        topText.textContent = 'Hoşgeldin, ' + data.adSoyad;
         return;
       }
     } catch(e){}
   }
-  if (topBar) topBar.style.display = 'none';
+  topIcon.textContent = '👤';
+  topText.textContent = localStorage.getItem('selfName') || 'Hesabım';
 }
+
+document.getElementById('topWelcomeBar').addEventListener('click', (e) => {
+  e.stopPropagation();
+  document.getElementById('accountMenu').classList.toggle('show');
+});
+document.addEventListener('click', () => document.getElementById('accountMenu').classList.remove('show'));
+
+document.getElementById('accMenuProfile').addEventListener('click', (e) => {
+  e.stopPropagation();
+  document.getElementById('accountMenu').classList.remove('show');
+  document.getElementById('profileLink').click();
+});
+document.getElementById('accMenuMeals').addEventListener('click', (e) => {
+  e.stopPropagation();
+  document.getElementById('accountMenu').classList.remove('show');
+  document.getElementById('mealsLink').click();
+});
+document.getElementById('accMenuBloodBank').addEventListener('click', (e) => {
+  e.stopPropagation();
+  document.getElementById('accountMenu').classList.remove('show');
+  document.getElementById('bloodBankLink').click();
+});
+document.getElementById('accMenuPoll').addEventListener('click', (e) => {
+  e.stopPropagation();
+  document.getElementById('accountMenu').classList.remove('show');
+  document.getElementById('pollLink').click();
+});
 
 document.getElementById('mealsLink').addEventListener('click', (e) => {
   e.preventDefault();
@@ -3283,6 +3330,20 @@ document.getElementById('mealsLink').addEventListener('click', (e) => {
   if (yemekTab) yemekTab.classList.add('active');
   document.getElementById('panel-notlar').classList.add('active');
   document.getElementById('yemekSubTabRecords').click();
+  if (!mealsGetToken()) {
+    // Bu cihazdan zaten bilinen bilgiler varsa (isim/telefon/kan grubu/foto) kayıt formunu önceden dolduruyoruz.
+    const n = localStorage.getItem('selfName'); if (n) document.getElementById('inlineMealsRegName').value = n;
+    const p = localStorage.getItem('selfPhone'); if (p) document.getElementById('inlineMealsRegPhone').value = p;
+    const b = localStorage.getItem('selfBloodType'); if (b) document.getElementById('inlineMealsRegBloodType').value = b;
+    fetch('/api/self-profile/' + getDeviceId()).then(r => r.json()).then(data => {
+      if (data.profile && data.profile.avatar) {
+        const img = document.getElementById('inlineMealsAvatarPreview');
+        img.src = data.profile.avatar; img.style.display = 'block';
+        document.getElementById('inlineMealsAvatarPlaceholder').style.display = 'none';
+      }
+      if (data.profile && data.profile.bloodDonorOptIn) document.getElementById('inlineMealsRegDonorOptIn').checked = true;
+    }).catch(() => {});
+  }
 });
 
 // ---------- ANKET (kullanıcı: listeleme + oy kullanma, cihaz başına 1 oy) ----------
@@ -3422,9 +3483,30 @@ function inlineMealsShowStep(step) {
 document.getElementById('inlineMealsGoLoginLink').addEventListener('click', (e) => { e.preventDefault(); inlineMealsShowStep('inlineMealsStepLogin'); });
 document.getElementById('inlineMealsGoRegisterLink').addEventListener('click', (e) => { e.preventDefault(); inlineMealsShowStep('inlineMealsStepRegister'); });
 
+document.getElementById('inlineMealsAvatarBtn').addEventListener('click', () => {
+  document.getElementById('inlineMealsAvatarInput').click();
+});
+document.getElementById('inlineMealsAvatarInput').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const fd = new FormData();
+  fd.append('avatar', file);
+  fd.append('deviceId', getDeviceId());
+  try {
+    const res = await fetch('/api/self-profile/avatar', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Yüklenemedi');
+    const img = document.getElementById('inlineMealsAvatarPreview');
+    img.src = data.avatar; img.style.display = 'block';
+    document.getElementById('inlineMealsAvatarPlaceholder').style.display = 'none';
+  } catch (err) { showToast(err.message || 'Fotoğraf yüklenemedi.', 'err'); }
+});
+
 document.getElementById('inlineMealsRegisterBtn').addEventListener('click', async () => {
   const adSoyad = document.getElementById('inlineMealsRegName').value.trim();
   const telefon = document.getElementById('inlineMealsRegPhone').value.trim();
+  const bloodType = document.getElementById('inlineMealsRegBloodType').value;
+  const bloodDonorOptIn = document.getElementById('inlineMealsRegDonorOptIn').checked;
   const email = document.getElementById('inlineMealsRegEmail').value.trim();
   const sifre = document.getElementById('inlineMealsRegPass').value;
   const fb = document.getElementById('inlineMealsRegFeedback');
@@ -3438,6 +3520,16 @@ document.getElementById('inlineMealsRegisterBtn').addEventListener('click', asyn
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Kayıt olunamadı.');
+    // Kan grubu/izin/isim/telefon bilgisini de bu cihazın push-bildirim profiline yazıyoruz
+    // (avatar zaten seçilir seçilmez ayrıca yükleniyor) — tek form, tüm alanlar aynı anda kaydedilsin.
+    try {
+      await fetch('/api/self-profile', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceId: getDeviceId(), name: adSoyad, phone: telefon, email, bloodType, bloodDonorOptIn, kvkkConsent: true, kvkkConsentAt: new Date().toISOString() })
+      });
+      localStorage.setItem('selfName', adSoyad); localStorage.setItem('selfPhone', telefon);
+      localStorage.setItem('selfBloodType', bloodType); localStorage.setItem('kvkkConsent', 'true');
+    } catch(e){}
     mealsPendingEmail = email;
     fb.textContent = ''; fb.className = 'feedback-msg';
     inlineMealsShowStep('inlineMealsStepVerify');
@@ -3520,11 +3612,11 @@ async function inlineMealsLoadRecords() {
     debtEl.textContent = (data.toplamBorc || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₺';
 
     if (data.adSoyad) {
-      const topBar = document.getElementById('topWelcomeBar');
+      const topIcon = document.getElementById('topWelcomeIcon');
       const topText = document.getElementById('topWelcomeText');
-      if (topBar && topText) {
+      if (topIcon && topText) {
+        topIcon.textContent = '👋';
         topText.textContent = 'Hoşgeldin, ' + data.adSoyad;
-        topBar.style.display = 'inline-flex';
       }
     }
 
