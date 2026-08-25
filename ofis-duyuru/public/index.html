@@ -519,7 +519,7 @@
   .modal-backdrop.show { display: block; opacity: 1; }
 
   /* POPUP SAYFALARI */
-  #feedbackModal, #profileModal, #mealsModal, #pollModal {
+  #feedbackModal, #profileModal, #mealsModal, #pollModal, #bloodBankModal {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
     width: min(480px, calc(100vw - 32px)); max-height: 85vh; overflow-y: auto;
     z-index: 1700; margin-bottom: 0;
@@ -532,8 +532,8 @@
     from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
     to { opacity: 0; transform: translate(-50%, -50%) scale(0.94); }
   }
-  #feedbackModal.anim-open, #profileModal.anim-open, #mealsModal.anim-open, #chatModal.anim-open, #pollModal.anim-open { animation: popup-in 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
-  #feedbackModal.anim-close, #profileModal.anim-close, #mealsModal.anim-close, #chatModal.anim-close, #pollModal.anim-close { animation: popup-out 0.2s ease forwards; }
+  #feedbackModal.anim-open, #profileModal.anim-open, #mealsModal.anim-open, #chatModal.anim-open, #pollModal.anim-open, #bloodBankModal.anim-open { animation: popup-in 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
+  #feedbackModal.anim-close, #profileModal.anim-close, #mealsModal.anim-close, #chatModal.anim-close, #pollModal.anim-close, #bloodBankModal.anim-close { animation: popup-out 0.2s ease forwards; }
 </style>
 </head>
 <body>
@@ -615,7 +615,14 @@
 
       <!-- 2a: Kayıt formu (varsayılan görünüm) -->
       <div id="step2-form">
-        <div style="font-size:36px; text-align:center; margin-bottom:8px;">👤</div>
+        <div style="display:flex; align-items:center; gap:14px; justify-content:center; margin-bottom:14px;">
+          <img id="wizAvatarPreview" src="" alt="" style="width:56px; height:56px; border-radius:50%; object-fit:cover; background:#eee; display:none; border:2px solid var(--line);">
+          <div id="wizAvatarPlaceholder" style="width:56px; height:56px; border-radius:50%; background:#eee; display:flex; align-items:center; justify-content:center; font-size:24px; color:#aaa;">👤</div>
+          <div>
+            <input type="file" id="wizAvatarInput" accept="image/png,image/jpeg,image/webp" style="display:none;">
+            <button type="button" class="btn-primary" id="wizAvatarBtn" style="font-size:12px; padding:7px 12px;">Fotoğraf Ekle (opsiyonel)</button>
+          </div>
+        </div>
         <h2 style="text-align:center; margin:0 0 8px;">Adım 2: Hesabını Oluştur</h2>
         <p style="font-size:12.5px; color:#666; text-align:center; margin-bottom:4px;">Bu bilgiler hem duyuru bildirimlerin hem de (istersen) yemekhane kaydın için kullanılır — tek seferde hallediyoruz.</p>
 
@@ -635,6 +642,10 @@
           <option value="0 Rh+">0 Rh+</option>
           <option value="0 Rh-">0 Rh-</option>
         </select>
+        <label style="display:flex; align-items:flex-start; gap:8px; margin-top:8px; cursor:pointer; text-transform:none; letter-spacing:normal; font-weight:400; font-size:12px; color:#555;">
+          <input type="checkbox" id="wizBloodDonorOptIn" style="margin-top:2px; flex-shrink:0;">
+          <span>🩸 Acil kan ihtiyacında adım ve telefonumun <b>Kan Bankası</b>'nda diğer personele gösterilmesine izin veriyorum.</span>
+        </label>
 
         <label>E-posta — Gmail/Hotmail (opsiyonel, yemekhane kaydını görmek istersen doldur)</label>
         <input type="email" id="wizEmail" placeholder="ornek@gmail.com">
@@ -1052,6 +1063,10 @@
       <option value="0 Rh+">0 Rh+</option>
       <option value="0 Rh-">0 Rh-</option>
     </select>
+    <label style="display:flex; align-items:flex-start; gap:8px; margin-top:8px; cursor:pointer; text-transform:none; letter-spacing:normal; font-weight:400; font-size:12px; color:#555;">
+      <input type="checkbox" id="profileBloodDonorOptIn" style="margin-top:2px; flex-shrink:0;">
+      <span>🩸 Acil kan ihtiyacında adım ve telefonumun <b>Kan Bankası</b>'nda diğer personele gösterilmesine izin veriyorum.</span>
+    </label>
     <div class="send-row"><button class="btn-primary" id="profileSaveBtn" style="width:100%;">Kaydet</button></div>
     <div class="feedback-msg" id="profileFeedback"></div>
   </div>
@@ -1138,6 +1153,25 @@
   <div class="card" id="pollModal" style="display:none;">
     <div class="card-header"><h2>📊 Anket</h2><button class="card-close" data-close="pollModal" aria-label="Kapat">✕</button></div>
     <div id="pollList" class="list-empty">Yükleniyor...</div>
+  </div>
+
+  <!-- KAN BANKASI MODALI -->
+  <div class="card" id="bloodBankModal" style="display:none;">
+    <div class="card-header"><h2>🩸 Kan Bankası</h2><button class="card-close" data-close="bloodBankModal" aria-label="Kapat">✕</button></div>
+    <div class="sub">Acil kan ihtiyacında, izin vermiş personeli kan grubuna göre arayıp doğrudan arayabilirsin.</div>
+    <label>Kan Grubu</label>
+    <select id="bloodBankTypeSelect">
+      <option value="">Tümü</option>
+      <option value="A Rh+">A Rh+</option>
+      <option value="A Rh-">A Rh-</option>
+      <option value="B Rh+">B Rh+</option>
+      <option value="B Rh-">B Rh-</option>
+      <option value="AB Rh+">AB Rh+</option>
+      <option value="AB Rh-">AB Rh-</option>
+      <option value="0 Rh+">0 Rh+</option>
+      <option value="0 Rh-">0 Rh-</option>
+    </select>
+    <div id="bloodBankResults" class="list-empty" style="margin-top:14px;">Bir kan grubu seç.</div>
   </div>
 
   <!-- YÖNETİCİ MODALI -->
@@ -1245,6 +1279,7 @@
 
   <a href="#" id="mealsLink" style="display:none;">🍽️ Yemek Kaydım</a>
   <a href="#" id="pollLink">📊 Anket</a>
+  <a href="#" id="bloodBankLink">🩸 Kan Bankası</a>
   <a href="/admin/" id="adminSecretBtn" title="" style="color:var(--line); text-decoration:none; padding:0 4px; font-size:14px;">•</a>
 </footer>
 
@@ -1438,10 +1473,30 @@ document.getElementById('wizEmail').addEventListener('input', (e) => {
 let wizPendingEmail = '';
 let wizPendingPassword = '';
 
+document.getElementById('wizAvatarBtn').addEventListener('click', () => {
+  document.getElementById('wizAvatarInput').click();
+});
+document.getElementById('wizAvatarInput').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const fd = new FormData();
+  fd.append('avatar', file);
+  fd.append('deviceId', getDeviceId());
+  try {
+    const res = await fetch('/api/self-profile/avatar', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Yüklenemedi');
+    const img = document.getElementById('wizAvatarPreview');
+    img.src = data.avatar; img.style.display = 'block';
+    document.getElementById('wizAvatarPlaceholder').style.display = 'none';
+  } catch (err) { showToast(err.message || 'Fotoğraf yüklenemedi.', 'err'); }
+});
+
 document.getElementById('btnNext2').addEventListener('click', async () => {
   const name = document.getElementById('wizName').value.trim();
   const phone = document.getElementById('wizPhone').value.trim();
   const bloodType = document.getElementById('wizBloodType').value;
+  const bloodDonorOptIn = document.getElementById('wizBloodDonorOptIn').checked;
   const email = document.getElementById('wizEmail').value.trim();
   const sifre = document.getElementById('wizPass').value;
   const kvkkOk = document.getElementById('wizKvkkConsent').checked;
@@ -1459,12 +1514,13 @@ document.getElementById('btnNext2').addEventListener('click', async () => {
 
   localStorage.setItem('selfName', name);
   localStorage.setItem('selfPhone', phone);
+  localStorage.setItem('selfBloodType', bloodType);
   localStorage.setItem('kvkkConsent', 'true');
 
   try {
     await fetch('/api/self-profile', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ deviceId: getDeviceId(), name, phone, email: email || undefined, bloodType, kvkkConsent: true, kvkkConsentAt: new Date().toISOString() })
+      body: JSON.stringify({ deviceId: getDeviceId(), name, phone, email: email || undefined, bloodType, bloodDonorOptIn, kvkkConsent: true, kvkkConsentAt: new Date().toISOString() })
     });
   } catch(e){}
 
@@ -2398,7 +2454,7 @@ document.getElementById('islerSubTabPhones').addEventListener('click', () => {
 
 // --- MODALLAR ---
 function openModal(modalId) {
-  ['profileModal', 'feedbackModal', 'adminModal', 'chatModal', 'mealsModal', 'pollModal'].forEach(id => {
+  ['profileModal', 'feedbackModal', 'adminModal', 'chatModal', 'mealsModal', 'pollModal', 'bloodBankModal'].forEach(id => {
     if (id !== modalId) {
       const el = document.getElementById(id);
       if (el) {
@@ -2440,7 +2496,7 @@ document.querySelectorAll('.card-close').forEach(btn => {
 });
 
 document.getElementById('feedbackBackdrop').addEventListener('click', () => {
-  ['profileModal', 'feedbackModal', 'adminModal', 'chatModal', 'mealsModal', 'pollModal'].forEach(id => closeModal(id));
+  ['profileModal', 'feedbackModal', 'adminModal', 'chatModal', 'mealsModal', 'pollModal', 'bloodBankModal'].forEach(id => closeModal(id));
 });
 
 document.getElementById('centerLogoBtn').addEventListener('click', (e) => {
@@ -2461,6 +2517,7 @@ document.getElementById('profileLink').addEventListener('click', async (e) => {
     const data = await res.json();
     if (data.profile) {
       if (data.profile.bloodType) document.getElementById('profileBloodType').value = data.profile.bloodType;
+      document.getElementById('profileBloodDonorOptIn').checked = !!data.profile.bloodDonorOptIn;
       if (data.profile.avatar) {
         const img = document.getElementById('profileAvatarPreview');
         img.src = data.profile.avatar; img.style.display = 'block';
@@ -2522,9 +2579,10 @@ document.getElementById('profileSaveBtn').addEventListener('click', async () => 
   const name = document.getElementById('profileName').value.trim();
   const phone = document.getElementById('profilePhone').value.trim();
   const bloodType = document.getElementById('profileBloodType').value;
+  const bloodDonorOptIn = document.getElementById('profileBloodDonorOptIn').checked;
   const fb = document.getElementById('profileFeedback');
   try {
-    await fetch('/api/self-profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), name, phone, bloodType }) });
+    await fetch('/api/self-profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), name, phone, bloodType, bloodDonorOptIn }) });
     localStorage.setItem('selfName', name); localStorage.setItem('selfPhone', phone);
     localStorage.setItem('selfBloodType', bloodType);
     fb.textContent = ''; showToast('Profil kaydedildi.', 'ok');
@@ -3200,6 +3258,38 @@ document.getElementById('pollLink').addEventListener('click', (e) => {
   openModal('pollModal');
   loadPolls();
 });
+
+// ---------- KAN BANKASI ----------
+document.getElementById('bloodBankLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  openModal('bloodBankModal');
+  loadBloodBank();
+});
+document.getElementById('bloodBankTypeSelect').addEventListener('change', loadBloodBank);
+
+async function loadBloodBank() {
+  const type = document.getElementById('bloodBankTypeSelect').value;
+  const el = document.getElementById('bloodBankResults');
+  if (!type) { el.className = 'list-empty'; el.textContent = 'Bir kan grubu seç.'; return; }
+  el.className = 'list-empty'; el.textContent = 'Aranıyor...';
+  try {
+    const res = await fetch('/api/blood-bank?type=' + encodeURIComponent(type));
+    const data = await res.json();
+    const list = data.results || [];
+    if (list.length === 0) {
+      el.className = 'list-empty';
+      el.textContent = 'Bu kan grubunda, aranmaya izin vermiş kimse bulunamadı.';
+      return;
+    }
+    el.className = '';
+    el.innerHTML = list.map(p => `
+      <div class="list-item"><div class="li-main">
+        <div class="li-title">${esc(p.name)} <span style="font-weight:400; color:#B5674A;">· ${esc(p.bloodType)}</span></div>
+        <a class="li-phone" href="tel:${esc(p.phone)}">${esc(p.phone)}</a>
+      </div></div>
+    `).join('');
+  } catch { el.className = 'list-empty'; el.textContent = 'Yüklenemedi.'; }
+}
 
 async function loadPolls() {
   const el = document.getElementById('pollList');
