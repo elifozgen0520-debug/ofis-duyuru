@@ -170,6 +170,7 @@ const SUBS_KEY = 'subscriptions';
 const MESSAGES_KEY = 'messages';
 const PROFILES_KEY = 'profiles';
 const FEEDBACK_KEY = 'feedback';
+const POLLS_KEY = 'polls';
 const DIRECT_KEY = 'direct-messages';
 const CHAT_GENERAL_KEY = 'chat-general';
 const CHAT_DIRECT_KEY = 'chat-direct';
@@ -470,9 +471,28 @@ app.post('/api/feedback', async (req, res) => {
   const name = (req.body.name || '').trim();
   if (!text) return res.status(400).json({ ok: false, error: 'Boş gönderilemez.' });
   const list = await loadJson(FEEDBACK_KEY);
-  list.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), text, name: name || null, time: new Date().toISOString() });
+  const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), text, name: name || null, time: new Date().toISOString() };
+  list.push(item);
   await saveJson(FEEDBACK_KEY, list.slice(-200));
   res.json({ ok: true });
+
+  // --- İletişim formu bildirimi: her mesaj anında salihozgen35@gmail.com'a e-postayla düşer ---
+  // (Doğum/vefat gibi acil konular buradan da gelebileceği için beklemeden, arka planda gönderiyoruz;
+  // e-posta gönderimi başarısız olsa bile kullanıcıya verilen cevabı etkilemez.)
+  if (resend) {
+    resend.emails.send({
+      from: RESEND_FROM,
+      to: 'salihozgen35@gmail.com',
+      subject: `📩 Yeni İletişim Formu Mesajı${name ? ' — ' + name : ''}`,
+      html: `<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;">
+        <h2 style="color:#7A2331;">Yeni bir mesaj geldi</h2>
+        <p><b>Gönderen:</b> ${name ? name.replace(/</g, '&lt;') : 'İsimsiz'}</p>
+        <p><b>Zaman:</b> ${new Date(item.time).toLocaleString('tr-TR')}</p>
+        <div style="background:#f7f5f0; border-radius:8px; padding:14px 16px; margin-top:10px; white-space:pre-wrap; color:#1F2430;">${text.replace(/</g, '&lt;')}</div>
+        <p style="color:#999; font-size:12px; margin-top:16px;">Bu mesaj Görüş &amp; İletişim formu üzerinden otomatik gönderilmiştir. Cevap yazmak için gönderene ait bir iletişim bilgisi paylaşılmadıysa yönetim panelinden bakabilirsiniz.</p>
+      </div>`,
+    }).catch(err => console.error('İletişim formu e-postası gönderilemedi:', err.message));
+  }
 });
 
 app.get('/api/feedback', async (req, res) => {
@@ -502,6 +522,107 @@ app.delete('/api/feedback/:id', async (req, res) => {
   if (passwordCheckResponse(res, result)) return;
   const list = (await loadJson(FEEDBACK_KEY)).filter(i => i.id !== req.params.id);
   await saveJson(FEEDBACK_KEY, list);
+  res.json({ ok: true });
+});
+
+// ============================================================================
+// ANKET (POLL) — yönetici anket açar, her cihaz (deviceId) yalnızca 1 kez oy
+// kullanabilir. Oylar sunucuda deviceId->seçenek eşlemesiyle tutulur, bu yüzden
+// aynı cihaz sayfayı yenileyip tekrar oy vermeye çalışsa bile engellenir.
+// ============================================================================
+app.post('/api/polls', async (req, res) => {
+  const { password, question, options } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const q = (question || '').trim();
+  const opts = Array.isArray(options) ? options.map(o => (o || '').trim()).filter(Boolean) : [];
+  if (!q) return res.status(400).json({ ok: false, error: 'Soru gerekli.' });
+  if (opts.length < 2) return res.status(400).json({ ok: false, error: 'En az 2 seçenek gerekli.' });
+
+  const polls = await loadJson(POLLS_KEY);
+  const poll = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    question: q,
+    options: opts.map(text => ({ text, votes: 0 })),
+    voters: {}, // { deviceId: optionIndex }
+    active: true,
+    createdAt: new Date().toISOString(),
+  };
+  polls.push(poll);
+  await saveJson(POLLS_KEY, polls);
+  res.json({ ok: true, poll });
+});
+
+// Yönetici: tüm anketleri (oy dağılımlarıyla) listeler.
+app.get('/api/polls', async (req, res) => {
+  const result = checkPassword(req.query.password, req);
+  if (passwordCheckResponse(res, result)) return;
+  res.json({ polls: (await loadJson(POLLS_KEY)).slice().reverse() });
+});
+
+// Herkese açık: sadece aktif anketleri, bu cihazın daha önce oy kullanıp kullanmadığı bilgisiyle döner.
+app.get('/api/polls/active', async (req, res) => {
+  const { deviceId } = req.query;
+  const polls = await loadJson(POLLS_KEY);
+  const active = polls.filter(p => p.active).slice().reverse();
+  const out = active.map(p => {
+    const total = p.options.reduce((s, o) => s + o.votes, 0);
+    const myVote = deviceId && p.voters && p.voters[deviceId] !== undefined ? p.voters[deviceId] : null;
+    return {
+      id: p.id,
+      question: p.question,
+      options: p.options.map(o => ({ text: o.text, votes: o.votes })),
+      createdAt: p.createdAt,
+      totalVotes: total,
+      myVote,
+    };
+  });
+  res.json({ polls: out });
+});
+
+app.post('/api/polls/:id/vote', async (req, res) => {
+  const { deviceId, optionIndex } = req.body;
+  if (!deviceId) return res.status(400).json({ ok: false, error: 'Cihaz kimliği gerekli.' });
+  const idx = parseInt(optionIndex, 10);
+
+  const polls = await loadJson(POLLS_KEY);
+  const poll = polls.find(p => p.id === req.params.id);
+  if (!poll) return res.status(404).json({ ok: false, error: 'Anket bulunamadı.' });
+  if (!poll.active) return res.status(400).json({ ok: false, error: 'Bu anket kapatılmış, artık oy kullanılamaz.' });
+  if (isNaN(idx) || idx < 0 || idx >= poll.options.length) return res.status(400).json({ ok: false, error: 'Geçersiz seçenek.' });
+  if (!poll.voters) poll.voters = {};
+  if (poll.voters[deviceId] !== undefined) return res.status(400).json({ ok: false, error: 'Bu cihazdan bu ankete zaten oy kullanılmış.' });
+
+  poll.voters[deviceId] = idx;
+  poll.options[idx].votes = (poll.options[idx].votes || 0) + 1;
+  await saveJson(POLLS_KEY, polls);
+
+  const total = poll.options.reduce((s, o) => s + o.votes, 0);
+  res.json({
+    ok: true,
+    poll: { id: poll.id, question: poll.question, options: poll.options.map(o => ({ text: o.text, votes: o.votes })), myVote: idx, totalVotes: total },
+  });
+});
+
+// Yönetici: anketi kapat/yeniden aç.
+app.put('/api/polls/:id', async (req, res) => {
+  const { password, active } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const polls = await loadJson(POLLS_KEY);
+  const poll = polls.find(p => p.id === req.params.id);
+  if (!poll) return res.status(404).json({ ok: false, error: 'Anket bulunamadı.' });
+  if (active !== undefined) poll.active = !!active;
+  await saveJson(POLLS_KEY, polls);
+  res.json({ ok: true });
+});
+
+app.delete('/api/polls/:id', async (req, res) => {
+  const { password } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const polls = (await loadJson(POLLS_KEY)).filter(p => p.id !== req.params.id);
+  await saveJson(POLLS_KEY, polls);
   res.json({ ok: true });
 });
 

@@ -351,6 +351,7 @@
   .manset-card:hover { transform: translateY(-2px); }
   .manset-title { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 20px; margin: 0; line-height: 1.3; }
   .manset-date { position: absolute; bottom: 10px; right: 16px; font-size: 11.5px; font-style: italic; opacity: 0.85; display: flex; align-items: center; gap: 4px; }
+  .manset-card.has-image .manset-title, .manset-card.has-image .manset-date { text-shadow: 0 2px 8px rgba(0,0,0,0.55); }
   .manset-dots { display: flex; gap: 6px; justify-content: center; margin-top: 12px; }
   .manset-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.28); cursor: pointer; border: none; padding: 0; transition: background 0.2s ease, transform 0.2s ease; }
   .manset-dot.active { background: var(--paper); transform: scale(1.35); }
@@ -1048,6 +1049,12 @@
     <div class="card-header"><h2>🍽️ Yemek Kaydım</h2><button class="card-close" data-close="mealsModal" aria-label="Kapat">✕</button></div>
   </div>
 
+  <!-- ANKET MODALI -->
+  <div class="card" id="pollModal" style="display:none;">
+    <div class="card-header"><h2>📊 Anket</h2><button class="card-close" data-close="pollModal" aria-label="Kapat">✕</button></div>
+    <div id="pollList" class="list-empty">Yükleniyor...</div>
+  </div>
+
   <!-- YÖNETİCİ MODALI -->
   <div class="card" id="adminModal" style="display:none;">
     <div class="card-header"><h2>Yönetici Paneli</h2><button class="card-close" data-close="adminModal" aria-label="Kapat">✕</button></div>
@@ -1065,6 +1072,7 @@
         <button class="tab-btn" id="admTabItems">Not/Tel/İş Ekle</button>
         <button class="tab-btn" id="admTabInbox">Gelen Mesajlar</button>
         <button class="tab-btn" id="admTabDevices">Cihazlar</button>
+        <button class="tab-btn" id="admTabPolls">Anket</button>
       </div>
 
       <div id="admPanelSend">
@@ -1121,6 +1129,22 @@
         <h4 style="margin-top:16px;">Duyuru Bazında Okunma</h4>
         <div id="adminStatsPerMessage" class="list-empty">Yükleniyor...</div>
       </div>
+
+      <div id="admPanelPolls" style="display:none;">
+        <h4>Yeni Anket Oluştur</h4>
+        <label>Soru</label>
+        <input type="text" id="pollQuestion" placeholder="Örn: Yıl sonu yemeği için hangi gün uygun?">
+        <label>Seçenekler (en az 2, boş bırakılanlar yok sayılır)</label>
+        <input type="text" class="poll-option-input" placeholder="Seçenek 1">
+        <input type="text" class="poll-option-input" placeholder="Seçenek 2" style="margin-top:8px;">
+        <input type="text" class="poll-option-input" placeholder="Seçenek 3 (opsiyonel)" style="margin-top:8px;">
+        <input type="text" class="poll-option-input" placeholder="Seçenek 4 (opsiyonel)" style="margin-top:8px;">
+        <div class="send-row"><button class="btn-primary" id="doCreatePollBtn">Anketi Yayınla</button></div>
+        <div class="feedback-msg" id="pollCreateFeedback"></div>
+
+        <h4 style="margin-top:22px;">Mevcut Anketler</h4>
+        <div id="adminPollList" class="list-empty">Yükleniyor...</div>
+      </div>
     </div>
   </div>
 </div>
@@ -1135,6 +1159,7 @@
   </div>
 
   <a href="#" id="mealsLink">🍽️ Yemek Kaydım</a>
+  <a href="#" id="pollLink">📊 Anket</a>
   <a href="/admin/" id="adminSecretBtn" title="" style="color:var(--line); text-decoration:none; padding:0 4px; font-size:14px;">•</a>
 </footer>
 
@@ -1265,14 +1290,21 @@ function showWizardStep(stepNum) {
 function checkFirstRunWizard() {
   const perm = Notification.permission;
   const hasName = localStorage.getItem('selfName');
-  if (perm !== 'granted' || !hasName) {
+  if (!hasName) {
+    // Hiç kayıt olmamış: sihirbazı en baştan (PWA kurulum + profil formu) göster
     document.getElementById('wizardModal').style.display = 'flex';
     if (isInstalledApp && perm === 'default') {
       showWizardStep(3);
     } else {
       showWizardStep(1);
     }
+  } else if (perm === 'default') {
+    // Zaten kayıtlı — sadece bildirim izni henüz sorulmamışsa (reddedilmemiş) o adımı göster,
+    // isim/telefon formunu bir daha SORMA.
+    document.getElementById('wizardModal').style.display = 'flex';
+    showWizardStep(3);
   }
+  // perm === 'granted' || perm === 'denied' ve hasName varsa: zaten kayıtlı, rahatsız etme.
 }
 
 document.getElementById('subscribeBtn').addEventListener('click', () => {
@@ -1617,10 +1649,16 @@ function renderManset() {
   wrap.style.display = 'block';
   const m = mansetItems[mansetIdx];
   const [c1, c2] = mansetColors(m.category);
+  const hasImage = m.attachment && m.attachment.type === 'image';
+  // Resim varsa: resmi kapak (cover) olarak yerleştir + üzerine koyu bir gradyan bindir (yazı okunsun diye).
+  // Resim yoksa: eskisi gibi kategoriye göre renkli gradyan.
+  const cardStyle = hasImage
+    ? `--manset-c1:${c1}; --manset-c2:${c2}; background-image: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.75) 100%), url('${m.attachment.url}'); background-size: cover; background-position: center;`
+    : `--manset-c1:${c1}; --manset-c2:${c2};`;
   wrap.innerHTML = `
     <div class="manset-nav">
       ${mansetItems.length > 1 ? '<button type="button" class="manset-nav-btn" id="mansetPrevBtn" aria-label="Önceki">‹</button>' : ''}
-      <div class="manset-card" style="--manset-c1:${c1}; --manset-c2:${c2};" id="mansetCard">
+      <div class="manset-card ${hasImage ? 'has-image' : ''}" style="${cardStyle}" id="mansetCard">
         <div class="manset-title">${esc(m.title)}</div>
         <div class="manset-date">📅 ${formatTime(m.time)}</div>
       </div>
@@ -2089,7 +2127,7 @@ document.getElementById('islerSubTabPhones').addEventListener('click', () => {
 
 // --- MODALLAR ---
 function openModal(modalId) {
-  ['profileModal', 'feedbackModal', 'adminModal', 'chatModal', 'mealsModal'].forEach(id => {
+  ['profileModal', 'feedbackModal', 'adminModal', 'chatModal', 'mealsModal', 'pollModal'].forEach(id => {
     if (id !== modalId) {
       const el = document.getElementById(id);
       if (el) {
@@ -2131,7 +2169,7 @@ document.querySelectorAll('.card-close').forEach(btn => {
 });
 
 document.getElementById('feedbackBackdrop').addEventListener('click', () => {
-  ['profileModal', 'feedbackModal', 'adminModal', 'chatModal', 'mealsModal'].forEach(id => closeModal(id));
+  ['profileModal', 'feedbackModal', 'adminModal', 'chatModal', 'mealsModal', 'pollModal'].forEach(id => closeModal(id));
 });
 
 document.getElementById('centerLogoBtn').addEventListener('click', (e) => {
@@ -2538,7 +2576,7 @@ document.getElementById('adminLoginBtn').addEventListener('click', async () => {
   } catch (err) { fb.textContent = err.message; fb.className = 'feedback-msg err'; }
 });
 
-const admTabs = { send: 'admPanelSend', stats: 'admPanelStats', items: 'admPanelItems', inbox: 'admPanelInbox', devices: 'admPanelDevices' };
+const admTabs = { send: 'admPanelSend', stats: 'admPanelStats', items: 'admPanelItems', inbox: 'admPanelInbox', devices: 'admPanelDevices', polls: 'admPanelPolls' };
 Object.keys(admTabs).forEach(key => {
   document.getElementById('admTab' + key.charAt(0).toUpperCase() + key.slice(1)).addEventListener('click', () => {
     Object.keys(admTabs).forEach(k => {
@@ -2550,6 +2588,7 @@ Object.keys(admTabs).forEach(key => {
     if (key === 'inbox') loadAdminInbox();
     if (key === 'devices') loadAdminDevices();
     if (key === 'stats') loadAdminStats();
+    if (key === 'polls') loadAdminPolls();
   });
 });
 
@@ -2587,6 +2626,78 @@ async function loadAdminStats() {
     sumEl.className = 'list-empty'; sumEl.textContent = err.message;
     perMsgEl.className = ''; perMsgEl.innerHTML = '';
   }
+}
+
+// ---------- ANKET (yönetici: oluşturma / listeleme / kapatma / silme) ----------
+document.getElementById('doCreatePollBtn').addEventListener('click', async () => {
+  const question = document.getElementById('pollQuestion').value.trim();
+  const options = Array.from(document.querySelectorAll('.poll-option-input')).map(i => i.value.trim()).filter(Boolean);
+  const fb = document.getElementById('pollCreateFeedback');
+  if (!question) { fb.textContent = 'Soru gerekli.'; fb.className = 'feedback-msg err'; return; }
+  if (options.length < 2) { fb.textContent = 'En az 2 seçenek girmelisin.'; fb.className = 'feedback-msg err'; return; }
+  const btn = document.getElementById('doCreatePollBtn');
+  btn.disabled = true; fb.textContent = 'Yayınlanıyor...'; fb.className = 'feedback-msg';
+  try {
+    const res = await fetch('/api/polls', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: activeAdminPassword, question, options })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Yayınlanamadı.');
+    fb.textContent = 'Anket yayınlandı.'; fb.className = 'feedback-msg ok';
+    document.getElementById('pollQuestion').value = '';
+    document.querySelectorAll('.poll-option-input').forEach(i => i.value = '');
+    loadAdminPolls();
+  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
+  finally { btn.disabled = false; }
+});
+
+async function loadAdminPolls() {
+  const el = document.getElementById('adminPollList');
+  el.className = 'list-empty'; el.textContent = 'Yükleniyor...';
+  try {
+    const res = await fetch('/api/polls?password=' + encodeURIComponent(activeAdminPassword));
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Yüklenemedi');
+    if (!data.polls || data.polls.length === 0) { el.className = 'list-empty'; el.textContent = 'Henüz anket yok.'; return; }
+    el.className = '';
+    el.innerHTML = data.polls.map(p => {
+      const total = p.options.reduce((s, o) => s + o.votes, 0);
+      const barsHtml = p.options.map(o => {
+        const pct = total > 0 ? Math.round((o.votes / total) * 100) : 0;
+        return `<div style="margin:6px 0;">
+            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:2px;"><span>${esc(o.text)}</span><span style="color:#888;">${o.votes} oy · %${pct}</span></div>
+            <div style="background:#eee; border-radius:20px; height:7px; overflow:hidden;"><div style="width:${pct}%; height:100%; background:var(--sage,#6B8F71);"></div></div>
+          </div>`;
+      }).join('');
+      return `<div class="admin-box" style="margin-bottom:10px;">
+          <div style="font-weight:700; margin-bottom:4px;">${esc(p.question)} ${p.active ? '' : '<span style="font-size:10px; color:#B5674A; font-weight:700;">(KAPALI)</span>'}</div>
+          <div style="font-size:11px; color:#888; margin-bottom:8px;">${formatTime(p.createdAt)} · Toplam ${total} oy</div>
+          ${barsHtml}
+          <div style="display:flex; gap:8px; margin-top:10px;">
+            <button type="button" class="btn-primary" style="font-size:11px; padding:6px 10px;" onclick="togglePollActive('${p.id}', ${!p.active})">${p.active ? 'Anketi Kapat' : 'Yeniden Aç'}</button>
+            <button type="button" class="btn-danger" style="font-size:11px; padding:6px 10px;" onclick="deletePoll('${p.id}')">Sil</button>
+          </div>
+        </div>`;
+    }).join('');
+  } catch (e) { el.className = 'list-empty'; el.textContent = e.message; }
+}
+
+async function togglePollActive(id, active) {
+  try {
+    await fetch('/api/polls/' + id, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: activeAdminPassword, active })
+    });
+    loadAdminPolls();
+  } catch { alert('İşlem başarısız.'); }
+}
+async function deletePoll(id) {
+  if (!confirm('Bu anketi kalıcı olarak silmek istediğine emin misin?')) return;
+  try {
+    await fetch('/api/polls/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: activeAdminPassword }) });
+    loadAdminPolls();
+  } catch { alert('Silinemedi.'); }
 }
 
 document.getElementById('doSendBtn').addEventListener('click', async () => {
@@ -2782,6 +2893,102 @@ document.getElementById('mealsLink').addEventListener('click', (e) => {
   document.getElementById('panel-notlar').classList.add('active');
   document.getElementById('yemekSubTabRecords').click();
 });
+
+// ---------- ANKET (kullanıcı: listeleme + oy kullanma, cihaz başına 1 oy) ----------
+document.getElementById('pollLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  openModal('pollModal');
+  loadPolls();
+});
+
+async function loadPolls() {
+  const el = document.getElementById('pollList');
+  el.className = 'list-empty'; el.textContent = 'Yükleniyor...';
+  try {
+    const res = await fetch('/api/polls/active?deviceId=' + encodeURIComponent(getDeviceId()));
+    const data = await res.json();
+    if (!data.polls || data.polls.length === 0) { el.className = 'list-empty'; el.textContent = 'Şu anda aktif anket yok.'; return; }
+    el.className = '';
+    el.innerHTML = data.polls.map(p => renderPollCard(p)).join('');
+    wirePollEvents();
+  } catch { el.className = 'list-empty'; el.textContent = 'Yüklenemedi.'; }
+}
+
+function renderPollCard(p) {
+  const oyKullanildi = p.myVote !== null && p.myVote !== undefined;
+  if (oyKullanildi) {
+    // Zaten oy kullanılmış: sonuçları (yüzde çubuğu) göster, seçim kilitli.
+    const barsHtml = p.options.map((o, i) => {
+      const pct = p.totalVotes > 0 ? Math.round((o.votes / p.totalVotes) * 100) : 0;
+      const mine = i === p.myVote;
+      return `<div style="margin:8px 0;">
+          <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:3px;">
+            <span>${mine ? '✓ ' : ''}${esc(o.text)}</span><span style="color:#888;">%${pct}</span>
+          </div>
+          <div style="background:#eee; border-radius:20px; height:8px; overflow:hidden;">
+            <div style="width:${pct}%; height:100%; background:${mine ? 'var(--clay,#B5674A)' : 'var(--sage,#6B8F71)'};"></div>
+          </div>
+        </div>`;
+    }).join('');
+    return `<div class="list-item" style="display:block;">
+        <div class="li-title" style="margin-bottom:6px;">${esc(p.question)}</div>
+        ${barsHtml}
+        <div style="font-size:11px; color:#999; margin-top:6px;">Toplam ${p.totalVotes} oy · Oyun kaydedildi, teşekkürler!</div>
+      </div>`;
+  }
+  // Henüz oy kullanılmamış: seçenekleri seçilebilir olarak göster, "Oyumu Kullan" ile onaylı gönderim.
+  const optsHtml = p.options.map((o, i) =>
+    `<button type="button" class="poll-choice-btn" data-poll-id="${p.id}" data-opt-idx="${i}" style="display:block; width:100%; text-align:left; background:#fff; border:1.5px solid #ddd; border-radius:8px; padding:10px 14px; margin-bottom:6px; font-size:13px; cursor:pointer;">${esc(o.text)}</button>`
+  ).join('');
+  return `<div class="list-item" style="display:block;" data-poll-card="${p.id}">
+      <div class="li-title" style="margin-bottom:8px;">${esc(p.question)}</div>
+      <div id="pollOpts-${p.id}">${optsHtml}</div>
+      <button type="button" class="btn-primary" id="pollVoteBtn-${p.id}" style="width:100%; margin-top:8px;" disabled>Bir seçenek seç</button>
+      <div class="feedback-msg" id="pollFb-${p.id}"></div>
+    </div>`;
+}
+
+let pollSelected = {}; // { pollId: optionIndex }
+
+function wirePollEvents() {
+  document.querySelectorAll('.poll-choice-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const pollId = btn.dataset.pollId;
+      const idx = parseInt(btn.dataset.optIdx, 10);
+      pollSelected[pollId] = idx;
+      document.querySelectorAll(`#pollOpts-${pollId} .poll-choice-btn`).forEach(b => {
+        const sel = parseInt(b.dataset.optIdx, 10) === idx;
+        b.style.borderColor = sel ? 'var(--clay,#B5674A)' : '#ddd';
+        b.style.background = sel ? '#fdf3f1' : '#fff';
+        b.style.fontWeight = sel ? '700' : '400';
+      });
+      const voteBtn = document.getElementById('pollVoteBtn-' + pollId);
+      voteBtn.disabled = false;
+      voteBtn.textContent = 'Oyumu Kullan';
+    });
+  });
+  document.querySelectorAll('[id^="pollVoteBtn-"]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const pollId = btn.id.replace('pollVoteBtn-', '');
+      const idx = pollSelected[pollId];
+      if (idx === undefined) return;
+      // Kazara/rastgele tek dokunuşla oy gitmesin diye son bir onay istiyoruz — cihaz başına tek hak olduğu için önemli.
+      if (!confirm('Oyunu kullanmak üzeresin, bu işlem geri alınamaz. Onaylıyor musun?')) return;
+      const fb = document.getElementById('pollFb-' + pollId);
+      btn.disabled = true; fb.textContent = 'Gönderiliyor...'; fb.className = 'feedback-msg';
+      try {
+        const res = await fetch('/api/polls/' + pollId + '/vote', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ deviceId: getDeviceId(), optionIndex: idx })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Oy kullanılamadı.');
+        showToast('Oyun kaydedildi, teşekkürler!', 'ok');
+        loadPolls();
+      } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; btn.disabled = false; }
+    });
+  });
+}
 
 function inlineMealsShowStep(step) {
   ['inlineMealsStepRegister', 'inlineMealsStepVerify', 'inlineMealsStepLogin', 'inlineMealsStepRecords'].forEach(id => {
