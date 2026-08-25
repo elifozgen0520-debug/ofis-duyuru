@@ -1523,7 +1523,20 @@ app.get('/api/my-meals', selfAuthMiddleware, async (req, res) => {
 app.get('/api/messages/:id/comments', async (req, res) => {
   const commentsMap = await loadJson(COMMENTS_KEY, {});
   const comments = commentsMap[req.params.id] || [];
-  res.json({ comments });
+  // E-posta adresini herkese açık cevapta göstermiyoruz — sadece "bu yorum bana mı ait" bilgisini
+  // (varsa Authorization token'ından) döndürüyoruz, düzenle/sil butonlarını ona göre göstermek için.
+  let myEmail = null;
+  const authHeader = req.headers['authorization'] || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+  if (token) {
+    const tokens = await loadJson(SELF_TOKENS_KEY, {});
+    if (tokens[token]) myEmail = tokens[token].email;
+  }
+  const safeComments = comments.map(c => ({
+    id: c.id, userName: c.userName, text: c.text, time: c.time, editedAt: c.editedAt || null,
+    mine: !!(myEmail && c.email === myEmail),
+  }));
+  res.json({ comments: safeComments });
 });
 
 app.post('/api/messages/:id/comments', selfAuthMiddleware, async (req, res) => {
@@ -1541,6 +1554,7 @@ app.post('/api/messages/:id/comments', selfAuthMiddleware, async (req, res) => {
   const comment = {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
     userName,
+    email: req.selfEmail, // sahiplik kontrolü (düzenleme/silme) için — kullanıcıya gösterilmez
     text: cleanText,
     time: new Date().toISOString()
   };
@@ -1552,6 +1566,36 @@ app.post('/api/messages/:id/comments', selfAuthMiddleware, async (req, res) => {
   await saveJson(COMMENTS_KEY, commentsMap);
 
   res.json({ ok: true, comment });
+});
+
+// --- KENDİ YORUMUNU DÜZENLEME ---
+app.put('/api/messages/:msgId/comments/:commentId', selfAuthMiddleware, async (req, res) => {
+  const cleanText = (req.body.text || '').trim().slice(0, 180);
+  if (!cleanText) return res.status(400).json({ ok: false, error: 'Yorum metni boş olamaz.' });
+
+  const commentsMap = await loadJson(COMMENTS_KEY, {});
+  const list = commentsMap[req.params.msgId] || [];
+  const comment = list.find(c => c.id === req.params.commentId);
+  if (!comment) return res.status(404).json({ ok: false, error: 'Yorum bulunamadı.' });
+  if (comment.email !== req.selfEmail) return res.status(403).json({ ok: false, error: 'Sadece kendi yorumunuzu düzenleyebilirsiniz.' });
+
+  comment.text = cleanText;
+  comment.editedAt = new Date().toISOString();
+  await saveJson(COMMENTS_KEY, commentsMap);
+  res.json({ ok: true, comment });
+});
+
+// --- KENDİ YORUMUNU SİLME ---
+app.delete('/api/messages/:msgId/comments/:commentId', selfAuthMiddleware, async (req, res) => {
+  const commentsMap = await loadJson(COMMENTS_KEY, {});
+  const list = commentsMap[req.params.msgId] || [];
+  const comment = list.find(c => c.id === req.params.commentId);
+  if (!comment) return res.status(404).json({ ok: false, error: 'Yorum bulunamadı.' });
+  if (comment.email !== req.selfEmail) return res.status(403).json({ ok: false, error: 'Sadece kendi yorumunuzu silebilirsiniz.' });
+
+  commentsMap[req.params.msgId] = list.filter(c => c.id !== req.params.commentId);
+  await saveJson(COMMENTS_KEY, commentsMap);
+  res.json({ ok: true });
 });
 
 // --- Eşleşmeyen /api/* istekleri: HTML 404 sayfası yerine anlamlı JSON dön ---
