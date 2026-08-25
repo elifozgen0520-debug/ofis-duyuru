@@ -427,7 +427,7 @@ app.put('/api/personnel/manual/:deviceId', async (req, res) => {
 });
 
 app.post('/api/self-profile', async (req, res) => {
-  const { deviceId, name, phone, email, bloodType, kvkkConsent, kvkkConsentAt } = req.body;
+  const { deviceId, name, phone, email, bloodType, bloodDonorOptIn, kvkkConsent, kvkkConsentAt } = req.body;
   if (!deviceId) return res.status(400).json({ ok: false, error: 'Cihaz kimliği eksik.' });
   const profiles = await loadJson(PROFILES_KEY, {});
   const existing = profiles[deviceId] || {};
@@ -437,12 +437,27 @@ app.post('/api/self-profile', async (req, res) => {
     phone: (phone || '').trim() || null,
     email: (email !== undefined ? (email || '').trim() || null : existing.email || null),
     bloodType: (bloodType !== undefined ? (bloodType || '').trim() || null : existing.bloodType || null),
+    bloodDonorOptIn: (bloodDonorOptIn !== undefined ? !!bloodDonorOptIn : existing.bloodDonorOptIn || false),
     kvkkConsent: (kvkkConsent !== undefined ? !!kvkkConsent : existing.kvkkConsent || false),
     kvkkConsentAt: (kvkkConsentAt !== undefined ? kvkkConsentAt : existing.kvkkConsentAt || null),
     updatedAt: new Date().toISOString(),
   };
   await saveJson(PROFILES_KEY, profiles);
   res.json({ ok: true });
+});
+
+// --- KAN BANKASI: acil durumda, izin veren personeli kan grubuna göre arayabilme ---
+// Sadece "bloodDonorOptIn: true" işaretlemiş kişiler listelenir — kan grubu girmiş olmak tek başına yeterli değildir,
+// telefon numarasının diğer personele görünmesine açıkça izin vermiş olmaları gerekir.
+app.get('/api/blood-bank', async (req, res) => {
+  const type = (req.query.type || '').trim();
+  const profiles = await loadJson(PROFILES_KEY, {});
+  const results = Object.values(profiles)
+    .filter(p => p.bloodDonorOptIn && p.bloodType && p.name && p.phone)
+    .filter(p => !type || p.bloodType === type)
+    .map(p => ({ name: p.name, phone: p.phone, bloodType: p.bloodType }))
+    .sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+  res.json({ results });
 });
 
 app.post('/api/self-profile/avatar', avatarUpload.single('avatar'), async (req, res) => {
