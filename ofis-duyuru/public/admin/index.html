@@ -160,6 +160,12 @@
   .cal-mini-month .cmm-count { font-size: 11px; color: var(--clay); }
   .cal-search-box { display: flex; gap: 8px; margin-bottom: 16px; }
   .cal-search-box input { flex: 1; }
+
+  /* ANKET */
+  .poll-option-row { display: flex; align-items: center; justify-content: space-between; font-size: 12px; margin: 6px 0 2px; }
+  .poll-bar-track { background: #eee; border-radius: 20px; height: 7px; overflow: hidden; margin-bottom: 8px; }
+  .poll-bar-fill { height: 100%; background: var(--sage); }
+  .admin-box { background: #fff; border-radius: 6px; padding: 12px 14px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
 </style>
 </head>
 <body>
@@ -203,6 +209,7 @@
       <div class="dash-card" data-view="sohbetdenetim"><div class="icon">🛡️</div><div class="label">Sohbet Denetimi</div><div class="count" id="countSohbet"></div></div>
       <div class="dash-card" data-view="personel"><div class="icon">👥</div><div class="label">Personel Ekle</div><div class="count" id="countPersonel"></div></div>
       <div class="dash-card" data-view="takvim"><div class="icon">📅</div><div class="label">Takvim</div><div class="count" id="countTakvim"></div></div>
+      <div class="dash-card" data-view="anket"><div class="icon">📊</div><div class="label">Anket</div><div class="count" id="countAnket"></div></div>
     </div>
   </div>
 
@@ -223,7 +230,7 @@
       <input type="text" id="title" placeholder="Örn: Bugünün Menüsü">
       <label>Mesaj</label>
       <textarea id="body" placeholder="Mesajınızı yazın..."></textarea>
-      <label>Görsel / PDF Ekle (opsiyonel)</label>
+      <label>Görsel / PDF Ekle (opsiyonel — görsel eklersen anasayfa manşetinde otomatik kapak resmi olarak kullanılır)</label>
       <input type="file" id="attachment" accept="image/jpeg,image/png,application/pdf">
 
       <label style="display:flex; align-items:center; gap:8px; margin-top:16px; cursor:pointer; text-transform:none; letter-spacing:normal; font-weight:400; font-size:13px; color:#555;">
@@ -303,7 +310,7 @@
     <a class="back-link" data-back>← Panele Dön</a>
     <div class="card">
       <h2>Görüş &amp; Öneriler</h2>
-      <div class="sub">Personelin gönderdiği görüş ve öneriler.</div>
+      <div class="sub">Personelin gönderdiği görüş ve öneriler. Bu mesajlar gönderilir gönderilmez ayrıca salihozgen35@gmail.com adresine e-posta ile de düşer.</div>
       <div id="feedbackList" style="margin-top:14px;"></div>
       <div id="feedbackPagination"></div>
     </div>
@@ -417,6 +424,27 @@
       </div>
     </div>
   </div>
+
+  <div class="view" id="view-anket">
+    <a class="back-link" data-back>← Panele Dön</a>
+    <div class="card">
+      <h2>📊 Yeni Anket Oluştur</h2>
+      <div class="sub">Sorunu ve seçeneklerini gir, yayınla. Her cihaz/telefon bir ankete yalnızca 1 kez oy kullanabilir.</div>
+      <label>Soru</label>
+      <input type="text" id="pollQuestion" placeholder="Örn: Yıl sonu yemeği için hangi gün uygun?">
+      <label>Seçenekler (en az 2, boş bırakılanlar yok sayılır)</label>
+      <input type="text" class="poll-option-input" placeholder="Seçenek 1">
+      <input type="text" class="poll-option-input" placeholder="Seçenek 2" style="margin-top:8px;">
+      <input type="text" class="poll-option-input" placeholder="Seçenek 3 (opsiyonel)" style="margin-top:8px;">
+      <input type="text" class="poll-option-input" placeholder="Seçenek 4 (opsiyonel)" style="margin-top:8px;">
+      <div class="send-row"><button class="btn-primary" id="doCreatePollBtn">Anketi Yayınla</button></div>
+      <div class="feedback-msg" id="pollCreateFeedback"></div>
+    </div>
+    <div class="list-section">
+      <h3>Mevcut Anketler</h3>
+      <div id="adminPollList" class="list-empty">Yükleniyor...</div>
+    </div>
+  </div>
 </div>
 
 <div class="toast-overlay" id="calDayOverlay">
@@ -452,7 +480,7 @@ async function showDashboard() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
   loadHistory(); loadMenu(); loadPhones(); loadTasks(); loadDevices(); loadFeedback();
-  loadStats(); loadPmDeviceList(); loadModGeneral(); loadModDirect(); loadManualPersonnel(); loadCalendar();
+  loadStats(); loadPmDeviceList(); loadModGeneral(); loadModDirect(); loadManualPersonnel(); loadCalendar(); loadAdminPolls();
 }
 
 document.getElementById('loginBtn').addEventListener('click', async () => {
@@ -822,7 +850,7 @@ function getSimpleWeeks(year, month) {
     const end = Math.min(start + 6, total);
     const weekdayDays = [];
     for (let d = start; d <= end; d++) {
-      const dow = new Date(year, month, d).getDay(); // 0=Paz..6=Cmt
+      const dow = new Date(year, month, d).getDay();
       if (dow >= 1 && dow <= 5) weekdayDays.push(d);
     }
     if (weekdayDays.length > 0) weeks.push({ start, end, days: weekdayDays });
@@ -1432,10 +1460,89 @@ async function deleteManualPersonnel(deviceId) {
   } catch { alert('Silinemedi.'); }
 }
 
+// ---------- ANKET ----------
+document.getElementById('doCreatePollBtn').addEventListener('click', async () => {
+  const question = document.getElementById('pollQuestion').value.trim();
+  const options = Array.from(document.querySelectorAll('.poll-option-input')).map(i => i.value.trim()).filter(Boolean);
+  const fb = document.getElementById('pollCreateFeedback');
+  if (!question) { fb.textContent = 'Soru gerekli.'; fb.className = 'feedback-msg err'; return; }
+  if (options.length < 2) { fb.textContent = 'En az 2 seçenek girmelisin.'; fb.className = 'feedback-msg err'; return; }
+  const btn = document.getElementById('doCreatePollBtn');
+  btn.disabled = true; fb.textContent = 'Yayınlanıyor...'; fb.className = 'feedback-msg';
+  try {
+    const res = await fetch('/api/polls', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: getAdminPassword(), question, options })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Yayınlanamadı.');
+    fb.textContent = 'Anket yayınlandı.'; fb.className = 'feedback-msg ok';
+    document.getElementById('pollQuestion').value = '';
+    document.querySelectorAll('.poll-option-input').forEach(i => i.value = '');
+    loadAdminPolls();
+  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
+  finally { btn.disabled = false; }
+});
+
+let adminPollsAllItems = [];
+async function loadAdminPolls() {
+  const el = document.getElementById('adminPollList');
+  el.className = 'list-empty'; el.textContent = 'Yükleniyor...';
+  try {
+    const res = await fetch('/api/polls?password=' + encodeURIComponent(getAdminPassword()));
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Yüklenemedi');
+    adminPollsAllItems = data.polls || [];
+    document.getElementById('countAnket').textContent = adminPollsAllItems.length + ' anket';
+    renderAdminPollList();
+  } catch (e) { el.className = 'list-empty'; el.textContent = e.message; }
+}
+
+function renderAdminPollList() {
+  const el = document.getElementById('adminPollList');
+  if (adminPollsAllItems.length === 0) { el.className = 'list-empty'; el.textContent = 'Henüz anket yok.'; return; }
+  el.className = '';
+  el.innerHTML = adminPollsAllItems.map(p => {
+    const total = p.options.reduce((s, o) => s + o.votes, 0);
+    const barsHtml = p.options.map(o => {
+      const pct = total > 0 ? Math.round((o.votes / total) * 100) : 0;
+      return '<div class="poll-option-row"><span>' + esc(o.text) + '</span><span style="color:#888;">' + o.votes + ' oy · %' + pct + '</span></div>' +
+        '<div class="poll-bar-track"><div class="poll-bar-fill" style="width:' + pct + '%;"></div></div>';
+    }).join('');
+    return '<div class="admin-box">' +
+        '<div style="font-weight:700;margin-bottom:4px;">' + esc(p.question) + (p.active ? '' : ' <span style="font-size:10px;color:var(--clay);font-weight:700;">(KAPALI)</span>') + '</div>' +
+        '<div style="font-size:11px;color:#888;margin-bottom:8px;">' + formatTime(p.createdAt) + ' · Toplam ' + total + ' oy</div>' +
+        barsHtml +
+        '<div style="display:flex;gap:8px;margin-top:10px;">' +
+          '<button type="button" class="btn-primary" style="font-size:11px;padding:6px 10px;" data-toggle-poll="' + p.id + '" data-next-active="' + (!p.active) + '">' + (p.active ? 'Anketi Kapat' : 'Yeniden Aç') + '</button>' +
+          '<button type="button" class="btn-danger" data-del-poll="' + p.id + '">Sil</button>' +
+        '</div>' +
+      '</div>';
+  }).join('');
+  el.querySelectorAll('[data-toggle-poll]').forEach(b => b.addEventListener('click', () => togglePollActive(b.dataset.togglePoll, b.dataset.nextActive === 'true')));
+  el.querySelectorAll('[data-del-poll]').forEach(b => b.addEventListener('click', () => deletePoll(b.dataset.delPoll)));
+}
+
+async function togglePollActive(id, active) {
+  try {
+    await fetch('/api/polls/' + id, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: getAdminPassword(), active })
+    });
+    loadAdminPolls();
+  } catch { alert('İşlem başarısız.'); }
+}
+async function deletePoll(id) {
+  if (!confirm('Bu anketi kalıcı olarak silmek istediğine emin misin?')) return;
+  try {
+    await fetch('/api/polls/' + id, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: getAdminPassword() }) });
+    loadAdminPolls();
+  } catch { alert('Silinemedi.'); }
+}
+
 // ---------- TAKVİM ----------
 const TR_MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 
-// --- RESMİ TATİLLER (2026-2027, doğrulanmış kaynaklardan) ---
 const TR_HOLIDAYS_FIXED = [
   { m: 1, d: 1, name: 'Yılbaşı' },
   { m: 4, d: 23, name: 'Ulusal Egemenlik ve Çocuk Bayramı' },
@@ -1464,7 +1571,6 @@ function getHolidayName(dateKey) {
   return fixed ? fixed.name : null;
 }
 
-// --- TAKVİM KATEGORİLERİ ---
 const CAL_CATEGORIES = {
   genel: { label: 'Genel', color: '#7A2331' },
   toplanti: { label: 'Toplantı', color: '#6B8F71' },
@@ -1475,7 +1581,7 @@ const TR_DOWS = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
 
 let calAllItems = [];
 let calCurrentDate = new Date();
-let calCurrentView = 'month'; // 'month' | 'year'
+let calCurrentView = 'month';
 let calSelectedDay = null;
 
 function calPad2(n) { return String(n).padStart(2, '0'); }
