@@ -887,7 +887,7 @@ app.delete('/api/messages/:id', async (req, res) => {
 
 // --- DUYURU DÜZENLEME (yeni bildirim GÖNDERMEZ, sadece metni günceller) ---
 app.put('/api/messages/:id', upload.array('newAttachments', 6), async (req, res) => {
-  const { password, title, body, category, date, removeUrls } = req.body;
+  const { password, title, body, category, date, removeUrls, coverUrl } = req.body;
   const result = checkPassword(password, req);
   if (passwordCheckResponse(res, result)) return;
   if (!title || !body) return res.status(400).json({ ok: false, error: 'Başlık ve mesaj zorunlu.' });
@@ -920,6 +920,15 @@ app.put('/api/messages/:id', upload.array('newAttachments', 6), async (req, res)
     }
   } catch (err) {
     return res.status(400).json({ ok: false, error: err.message || 'Dosya yüklenemedi.' });
+  }
+
+  // Admin belirli bir görseli manşet (kapak) olarak seçtiyse, galeri dizisinin başına taşı.
+  if (coverUrl) {
+    const idx = msg.attachments.findIndex(a => a.url === coverUrl);
+    if (idx > 0) {
+      const [chosen] = msg.attachments.splice(idx, 1);
+      msg.attachments.unshift(chosen);
+    }
   }
 
   // Manşet/bildirim kapağı olarak ilk görseli kullan (geriye dönük uyumluluk için `attachment` alanı).
