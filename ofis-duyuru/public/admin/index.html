@@ -270,6 +270,8 @@
       <input type="datetime-local" id="msgDate">
       <label>Görsel / PDF Ekle (opsiyonel — en fazla 6 dosya, ilk görsel anasayfa manşetinde otomatik kapak resmi olarak kullanılır)</label>
       <input type="file" id="attachment" accept="image/jpeg,image/png,application/pdf" multiple>
+      <label>Video Linki (opsiyonel — YouTube, Vimeo veya doğrudan .mp4 linki yapıştır)</label>
+      <input type="text" id="msgVideoUrl" placeholder="Örn: https://youtu.be/... veya https://.../video.mp4">
 
       <label style="display:flex; align-items:center; gap:8px; margin-top:16px; cursor:pointer; text-transform:none; letter-spacing:normal; font-weight:400; font-size:13px; color:#555;">
         <input type="checkbox" id="alsoEmailCheck">
@@ -654,9 +656,11 @@ document.getElementById('sendBtn').addEventListener('click', async () => {
   const body = document.getElementById('body').value.trim();
   const fileInput = document.getElementById('attachment');
   const dateVal = document.getElementById('msgDate').value;
+  const videoUrl = document.getElementById('msgVideoUrl').value.trim();
   const alsoEmail = document.getElementById('alsoEmailCheck').checked;
   const fb = document.getElementById('feedback');
   if (!title || !body) { fb.textContent = 'Başlık ve mesaj gerekli.'; fb.className = 'feedback-msg err'; return; }
+  if (videoUrl && !/^https?:\/\//i.test(videoUrl)) { fb.textContent = 'Video linki http:// veya https:// ile başlamalı.'; fb.className = 'feedback-msg err'; return; }
   const btn = document.getElementById('sendBtn');
   btn.disabled = true; fb.textContent = 'Gönderiliyor...'; fb.className = 'feedback-msg';
   try {
@@ -667,6 +671,7 @@ document.getElementById('sendBtn').addEventListener('click', async () => {
     formData.append('body', body);
     formData.append('alsoEmail', alsoEmail ? 'true' : 'false');
     if (dateVal) formData.append('date', new Date(dateVal).toISOString());
+    if (videoUrl) formData.append('videoUrl', videoUrl);
     Array.from(fileInput.files).slice(0, 6).forEach(f => formData.append('attachments', f));
     const res = await fetch('/api/send', { method: 'POST', body: formData });
     const data = await res.json();
@@ -677,7 +682,7 @@ document.getElementById('sendBtn').addEventListener('click', async () => {
       else msg += ' + ' + data.email.sent + '/' + data.email.attempted + ' e-posta gönderildi.';
     }
     fb.textContent = msg; fb.className = 'feedback-msg ok';
-    document.getElementById('title').value = ''; document.getElementById('body').value = ''; document.getElementById('msgDate').value = ''; fileInput.value = '';
+    document.getElementById('title').value = ''; document.getElementById('body').value = ''; document.getElementById('msgDate').value = ''; document.getElementById('msgVideoUrl').value = ''; fileInput.value = '';
     loadHistory();
   } catch (err) { fb.textContent = err.message; fb.className = 'feedback-msg err'; }
   finally { btn.disabled = false; }
@@ -729,6 +734,8 @@ async function loadHistory() {
             '<textarea id="editbody-' + m.id + '" style="min-height:60px;">' + esc(m.body) + '</textarea>' +
             '<label style="margin-top:8px;">Tarih</label>' +
             '<input type="datetime-local" id="editdate-' + m.id + '" value="' + toLocalDatetimeValue(m.time) + '" style="margin-bottom:8px;">' +
+            '<label>Video Linki (opsiyonel)</label>' +
+            '<input type="text" id="editvideo-' + m.id + '" value="' + esc(m.videoUrl || '') + '" placeholder="https://youtu.be/... veya .mp4 linki" style="margin-bottom:8px;">' +
             (galleryImgs.length ?
               '<label>Mevcut Görseller (★ ile manşet seç, tıklayarak kaldır)</label>' +
               '<input type="hidden" id="editcover-' + m.id + '" value="' + esc((galleryImgs[0] || {}).url || '') + '">' +
@@ -789,8 +796,10 @@ async function saveMessageEdit(id) {
   const body = document.getElementById('editbody-' + id).value.trim();
   const category = document.getElementById('editcat-' + id).value;
   const dateVal = document.getElementById('editdate-' + id).value;
+  const videoUrl = document.getElementById('editvideo-' + id).value.trim();
   const fb = document.getElementById('editfb-' + id);
   if (!title || !body) { fb.textContent = 'Başlık ve mesaj boş olamaz.'; fb.className = 'feedback-msg err'; return; }
+  if (videoUrl && !/^https?:\/\//i.test(videoUrl)) { fb.textContent = 'Video linki http:// veya https:// ile başlamalı.'; fb.className = 'feedback-msg err'; return; }
 
   const removeUrls = [];
   const thumbsWrap = document.getElementById('editimgs-' + id);
@@ -805,6 +814,7 @@ async function saveMessageEdit(id) {
     formData.append('body', body);
     formData.append('category', category);
     if (dateVal) formData.append('date', new Date(dateVal).toISOString());
+    formData.append('videoUrl', videoUrl);
     if (removeUrls.length) formData.append('removeUrls', JSON.stringify(removeUrls));
     const coverEl = document.getElementById('editcover-' + id);
     if (coverEl && coverEl.value) formData.append('coverUrl', coverEl.value);
