@@ -1192,6 +1192,8 @@
     <input type="text" id="feedbackName" placeholder="İsimsiz bırakabilirsiniz">
     <label>Telefon (Opsiyonel — size geri dönüş yapabilmemiz için)</label>
     <input type="tel" id="feedbackPhone" placeholder="Örn: 0555 xxx xx xx">
+    <label>E-posta (Opsiyonel — size geri dönüş yapabilmemiz için)</label>
+    <input type="email" id="feedbackEmail" placeholder="Örn: ornek@gmail.com">
     <label>Mesajınız / Duyuru Metniniz</label>
     <textarea id="feedbackText" placeholder="İletinizi buraya yazabilirsiniz..."></textarea>
     <div class="send-row"><button class="btn-primary" id="feedbackSendBtn">Gönder</button></div>
@@ -2792,12 +2794,12 @@ document.getElementById('authRequiredOverlay').addEventListener('click', (e) => 
 });
 document.getElementById('authRequiredLoginBtn').addEventListener('click', () => {
   document.getElementById('authRequiredOverlay').classList.remove('show');
-  document.getElementById('mealsLink').click();
+  goToYemekhaneTab();
   setTimeout(() => inlineMealsShowStep('inlineMealsStepLogin'), 50);
 });
 document.getElementById('authRequiredRegisterBtn').addEventListener('click', () => {
   document.getElementById('authRequiredOverlay').classList.remove('show');
-  document.getElementById('mealsLink').click();
+  goToYemekhaneTab();
   setTimeout(() => inlineMealsShowStep('inlineMealsStepRegister'), 50);
 });
 
@@ -2870,13 +2872,15 @@ document.getElementById('feedbackSendBtn').addEventListener('click', async () =>
   const text = document.getElementById('feedbackText').value.trim();
   const name = document.getElementById('feedbackName').value.trim();
   const phone = document.getElementById('feedbackPhone').value.trim();
+  const email = document.getElementById('feedbackEmail').value.trim();
   const fb = document.getElementById('feedbackModalFeedback');
   if (!text) { showToast('Mesaj boş bırakılamaz.', 'err'); return; }
   try {
-    const res = await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, name, phone }) });
+    const res = await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, name, phone, email }) });
     if (!res.ok) throw new Error();
     document.getElementById('feedbackText').value = '';
     document.getElementById('feedbackPhone').value = '';
+    document.getElementById('feedbackEmail').value = '';
     fb.textContent = ''; showToast('İletildi, teşekkürler.', 'ok');
     closeModal('feedbackModal');
   } catch { showToast('Gönderilemedi.', 'err'); }
@@ -3551,8 +3555,8 @@ document.getElementById('accMenuPoll').addEventListener('click', (e) => {
   document.getElementById('pollLink').click();
 });
 
-document.getElementById('mealsLink').addEventListener('click', (e) => {
-  e.preventDefault();
+// Yemekhane sekmesine gerçek geçiş — hem doğrudan tıklamadan hem de üyelik popup'ından kullanılır.
+function goToYemekhaneTab() {
   document.querySelectorAll('.tabs .tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   const yemekTab = document.querySelector('.tabs .tab-btn[data-tab="notlar"]');
@@ -3573,6 +3577,12 @@ document.getElementById('mealsLink').addEventListener('click', (e) => {
       if (data.profile && data.profile.bloodDonorOptIn) document.getElementById('inlineMealsRegDonorOptIn').checked = true;
     }).catch(() => {});
   }
+}
+
+document.getElementById('mealsLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  if (!requireMealsLogin('Yemekhane')) return;
+  goToYemekhaneTab();
 });
 
 // ---------- ANKET (kullanıcı: listeleme + oy kullanma, cihaz başına 1 oy) ----------
