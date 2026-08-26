@@ -485,9 +485,10 @@ app.post('/api/feedback', async (req, res) => {
   const text = (req.body.text || '').trim();
   const name = (req.body.name || '').trim();
   const phone = (req.body.phone || '').trim();
+  const email = (req.body.email || '').trim();
   if (!text) return res.status(400).json({ ok: false, error: 'Boş gönderilemez.' });
   const list = await loadJson(FEEDBACK_KEY);
-  const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), text, name: name || null, phone: phone || null, time: new Date().toISOString() };
+  const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), text, name: name || null, phone: phone || null, email: email || null, time: new Date().toISOString() };
   list.push(item);
   await saveJson(FEEDBACK_KEY, list.slice(-200));
   res.json({ ok: true });
@@ -496,7 +497,7 @@ app.post('/api/feedback', async (req, res) => {
   // (Doğum/vefat gibi acil konular buradan da gelebileceği için beklemeden, arka planda gönderiyoruz;
   // e-posta gönderimi başarısız olsa bile kullanıcıya verilen cevabı etkilemez.)
   if (resend) {
-    resend.emails.send({
+    const mailPayload = {
       from: RESEND_FROM,
       to: 'salihozgen35@gmail.com',
       subject: `📩 Yeni İletişim Formu Mesajı${name ? ' — ' + name : ''}`,
@@ -504,11 +505,15 @@ app.post('/api/feedback', async (req, res) => {
         <h2 style="color:#7A2331;">Yeni bir mesaj geldi</h2>
         <p><b>Gönderen:</b> ${name ? name.replace(/</g, '&lt;') : 'İsimsiz'}</p>
         ${phone ? `<p><b>Telefon:</b> ${phone.replace(/</g, '&lt;')}</p>` : ''}
+        ${email ? `<p><b>E-posta:</b> ${email.replace(/</g, '&lt;')}</p>` : ''}
         <p><b>Zaman:</b> ${new Date(item.time).toLocaleString('tr-TR')}</p>
         <div style="background:#f7f5f0; border-radius:8px; padding:14px 16px; margin-top:10px; white-space:pre-wrap; color:#1F2430;">${text.replace(/</g, '&lt;')}</div>
-        <p style="color:#999; font-size:12px; margin-top:16px;">Bu mesaj Görüş &amp; İletişim formu üzerinden otomatik gönderilmiştir.${phone ? ' Yukarıdaki numaradan geri dönüş yapabilirsiniz.' : ' Gönderene ait bir iletişim bilgisi paylaşılmadıysa yönetim panelinden bakabilirsiniz.'}</p>
+        <p style="color:#999; font-size:12px; margin-top:16px;">Bu mesaj Görüş &amp; İletişim formu üzerinden otomatik gönderilmiştir.${email ? ' Bu e-postayı doğrudan "Yanıtla" ile cevaplayabilirsiniz.' : (phone ? ' Yukarıdaki numaradan geri dönüş yapabilirsiniz.' : ' Gönderene ait bir iletişim bilgisi paylaşılmadıysa yönetim panelinden bakabilirsiniz.')}</p>
       </div>`,
-    }).catch(err => console.error('İletişim formu e-postası gönderilemedi:', err.message));
+    };
+    // E-posta girildiyse "Yanıtla" butonu doğrudan gönderene gitsin diye reply-to olarak ayarlıyoruz.
+    if (email) mailPayload.reply_to = email;
+    resend.emails.send(mailPayload).catch(err => console.error('İletişim formu e-postası gönderilemedi:', err.message));
   }
 });
 
@@ -1437,6 +1442,27 @@ app.post('/api/self-register', async (req, res) => {
   if (telefon.replace(/\D/g, '').length < 10) return res.status(400).json({ ok: false, error: 'Geçerli bir telefon numarası girin.' });
   if (!emailDomainGecerliMi(email)) return res.status(400).json({ ok: false, error: 'Yalnızca kişisel Gmail veya Hotmail adresiyle kayıt olabilirsiniz. Kurumsal e-postalar kabul edilmiyor.' });
   if (sifre.length < 6) return res.status(400).json({ ok: false, error: 'Şifre en az 6 karakter olmalı.' });
+
+  // --- KURUM DOĞRULAMASI: bu kurum içi bir uygulama, o yüzden yeni kayıt açan telefon numarası
+  // kurumun personel listesiyle (PHP tarafındaki köprü üzerinden) eşleşmek zorunda. Eşleşmezse
+  // kayıt reddedilir ve kişi sistem sorumlusuna yönlendirilir.
+  try {
+    const bridgeRes = await fetch(BRIDGE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Bridge-Key': BRIDGE_SECRET },
+      body: JSON.stringify({ telefon }),
+    });
+    const bridgeData = await bridgeRes.json();
+    if (!bridgeData.ok) {
+      return res.status(400).json({
+        ok: false,
+        error: 'Bu telefon numarası kurumumuzun personel kayıtlarıyla eşleşmiyor. Bu uygulama yalnızca kurum personeline özeldir — kaydınızın yapılabilmesi için lütfen sistem sorumlusuna (yönetici) telefon numaranızı bildirerek yazılı olarak ulaşın.',
+      });
+    }
+  } catch (err) {
+    console.error('Kayıt sırasında kurum doğrulaması yapılamadı:', err.message);
+    return res.status(502).json({ ok: false, error: 'Kurum kayıtları şu an doğrulanamadı, lütfen daha sonra tekrar deneyin.' });
+  }
 
   const accounts = await loadJson(SELF_ACCOUNTS_KEY);
   let acc = accounts.find(a => a.email === email);
