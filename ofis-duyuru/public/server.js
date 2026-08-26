@@ -1458,6 +1458,32 @@ makeListApi('notes', 'notes');
 makeListApi('phones', 'phones');
 makeListApi('tasks', 'tasks');
 
+// --- GENEL ARAMA: duyuru, yemek menüsü, takvim, iş, telefon — tek kutudan hepsine bakar ---
+app.get('/api/search', async (req, res) => {
+  const qRaw = (req.query.q || '').trim();
+  if (qRaw.length < 2) return res.json({ messages: [], menu: [], calendar: [], tasks: [], phones: [] });
+  const q = qRaw.toLocaleLowerCase('tr');
+  const qDigits = qRaw.replace(/\D/g, '');
+  const has = (s) => (s || '').toLocaleLowerCase('tr').includes(q);
+
+  const [messages, menu, calendar, tasks, phones] = await Promise.all([
+    loadJson(MESSAGES_KEY), loadJson(MENU_KEY), loadJson(CALENDAR_KEY), loadJson('tasks'), loadJson('phones'),
+  ]);
+
+  res.json({
+    messages: messages.filter(m => has(m.title) || has(m.body)).slice(-40).reverse().slice(0, 8)
+      .map(m => ({ id: m.id, title: m.title, category: m.category, time: m.time })),
+    menu: menu.filter(m => (m.dishes || []).some(d => has(d))).slice(0, 8)
+      .map(m => ({ id: m.id, date: m.date, dishes: m.dishes })),
+    calendar: calendar.filter(c => has(c.text)).slice(0, 8)
+      .map(c => ({ id: c.id, date: c.date, text: c.text, category: c.category })),
+    tasks: tasks.filter(t => has(t.text)).slice(0, 8)
+      .map(t => ({ id: t.id, text: t.text, done: t.done })),
+    phones: phones.filter(p => has(p.name) || (qDigits && (p.number || '').replace(/\D/g, '').includes(qDigits))).slice(0, 8)
+      .map(p => ({ id: p.id, name: p.name, number: p.number })),
+  });
+});
+
 // --- TELEFONLAR: CSV ŞABLONU İNDİRME ---
 // Admin bu şablonu indirip İsim/Telefon sütunlarını doldurup geri yükleyebilir —
 // tek tek eklemek yerine tüm listeyi tek seferde içeri aktarabilir. CSV, Excel'de de
