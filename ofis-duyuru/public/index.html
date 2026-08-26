@@ -58,7 +58,58 @@
   h1 { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: clamp(20px, 6vw, 26px); margin: 0; letter-spacing: -0.01em; }
   .pin-count { font-size: 12px; color: rgba(255,255,255,0.82); }
   .pin-count::after { content: ' abone'; }
-  #subCountNum { display: inline-block; font-weight: 800; font-size: 15px; color: #fff; animation: sub-pop 0.5s ease; }
+
+  /* ZİL ÜZERİNDEKİ ABONE SAYISI ROZETİ */
+  .bell-status-compact { position: relative; overflow: visible; }
+  .bell-badge {
+    position: absolute; top: -5px; right: -6px; min-width: 17px; height: 17px; padding: 0 3px;
+    background: var(--clay, #C6432D); color: #fff; font-size: 10px; font-weight: 800;
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--navy-deep, #06213D); animation: badge-pop 2.6s ease-in-out infinite;
+  }
+  @keyframes badge-pop {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.18); }
+  }
+
+  /* GENEL ARAMA ÇUBUĞU */
+  .global-search-wrap { position: relative; margin: 14px 0 18px; }
+  .global-search-box {
+    display: flex; align-items: center; gap: 0; background: #fff; border-radius: 30px;
+    border: 2px solid var(--amber, #E0972C); box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+    overflow: hidden; padding: 3px;
+  }
+  .global-search-box input {
+    flex: 1; border: none; outline: none; padding: 10px 14px; font-size: 14.5px;
+    background: transparent; color: var(--ink, #0B2A4C); min-width: 0;
+  }
+  #globalSearchClearBtn {
+    background: none; border: none; color: #999; font-size: 15px; cursor: pointer;
+    padding: 6px 8px; flex-shrink: 0;
+  }
+  #globalSearchGoBtn {
+    background: var(--amber, #E0972C); border: none; color: #fff; font-size: 16px; cursor: pointer;
+    width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  }
+  .global-search-results {
+    display: none; position: absolute; top: calc(100% + 8px); left: 0; right: 0;
+    background: #fff; border-radius: 14px; box-shadow: 0 16px 40px rgba(0,0,0,0.28);
+    max-height: 60vh; overflow-y: auto; z-index: 900; padding: 6px 0;
+  }
+  .global-search-results.show { display: block; }
+  .gsr-group-title {
+    font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;
+    color: #999; padding: 10px 16px 4px;
+  }
+  .gsr-item {
+    display: flex; align-items: center; gap: 10px; padding: 9px 16px; cursor: pointer; color: var(--ink,#0B2A4C);
+  }
+  .gsr-item:hover { background: #f5f3ee; }
+  .gsr-item .gsr-icon { font-size: 15px; flex-shrink: 0; }
+  .gsr-item .gsr-text { flex: 1; min-width: 0; font-size: 13.5px; }
+  .gsr-item .gsr-title { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gsr-item .gsr-sub { font-size: 11px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gsr-empty { padding: 18px 16px; text-align: center; color: #999; font-size: 13px; }
   @keyframes sub-pop { from { opacity: 0; transform: translateY(-4px) scale(0.85); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
   .theme-swatches { display: flex; align-items: center; gap: 6px; }
@@ -871,8 +922,11 @@
       <div>
         <div style="display:flex; align-items:center; gap:8px;">
           <h1>Duyurular</h1>
-          <!-- DİNAMİK BİLDİRİM ZİL İKONU (AKTİF/KAPALI DURUMU & ANİMASYONU) -->
-          <div class="bell-status-compact inactive" id="bellStatus" title="Bildirimler Kapalı (Açmak için tıklayın)">🔔</div>
+          <!-- DİNAMİK BİLDİRİM ZİL İKONU + ABONE SAYISI ROZETİ -->
+          <div class="bell-status-compact inactive" id="bellStatus" title="Bildirimler Kapalı (Açmak için tıklayın)">
+            🔔
+            <span class="bell-badge" id="subCountBadge">—</span>
+          </div>
         </div>
         <!-- HESABIM / HOŞ GELDİN AÇILIR MENÜSÜ -->
         <div id="topWelcomeBar" class="top-welcome-badge">
@@ -894,10 +948,19 @@
         <button type="button" class="theme-dot" data-theme-val="zeytin" style="background:linear-gradient(135deg,#1E2A1C,#7C9A4A);" title="Zeytin"></button>
         <button type="button" class="theme-dot" data-theme-val="bordo" style="background:linear-gradient(135deg,#2A1418,#B5384A);" title="Bordo"></button>
       </div>
-      <span class="pin-count" id="subCount"><span id="subCountNum">—</span></span>
       <button type="button" id="headerLogoutBtn" title="Çıkış Yap" style="display:none; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.3); color:#fff; width:26px; height:26px; border-radius:50%; padding:0; font-size:12px; cursor:pointer;">🚪</button>
     </div>
   </header>
+
+  <!-- GENEL ARAMA — duyuru, yemek, takvim, iş, telefon: hepsine tek kutudan bakar -->
+  <div class="global-search-wrap">
+    <div class="global-search-box">
+      <input type="text" id="globalSearchInput" placeholder="Duyuru, yemek, takvim, iş, telefon ara...">
+      <button type="button" id="globalSearchClearBtn" style="display:none;">✕</button>
+      <button type="button" id="globalSearchGoBtn">🔍</button>
+    </div>
+    <div class="global-search-results" id="globalSearchResults"></div>
+  </div>
 
   <!-- KURUM LOGOSU POPUP -->
   <div class="toast-overlay" id="orgLogoOverlay">
@@ -1988,16 +2051,130 @@ function urlBase64ToUint8Array(base64String) {
   return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
 }
 
+// --- GENEL ARAMA (duyuru, yemek, takvim, iş, telefon — canlı, Google tarzı) ---
+let globalSearchDebounce = null;
+
+function formatShortDate(d) {
+  if (!d) return '';
+  try { return new Date(d.length <= 10 ? d + 'T00:00:00' : d).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }); } catch { return d; }
+}
+
+document.getElementById('globalSearchInput').addEventListener('input', (e) => {
+  const val = e.target.value;
+  document.getElementById('globalSearchClearBtn').style.display = val ? 'block' : 'none';
+  clearTimeout(globalSearchDebounce);
+  if (val.trim().length < 2) { document.getElementById('globalSearchResults').classList.remove('show'); return; }
+  globalSearchDebounce = setTimeout(() => runGlobalSearch(val.trim()), 300);
+});
+document.getElementById('globalSearchClearBtn').addEventListener('click', () => {
+  document.getElementById('globalSearchInput').value = '';
+  document.getElementById('globalSearchClearBtn').style.display = 'none';
+  document.getElementById('globalSearchResults').classList.remove('show');
+  document.getElementById('globalSearchInput').focus();
+});
+document.getElementById('globalSearchGoBtn').addEventListener('click', () => {
+  const val = document.getElementById('globalSearchInput').value.trim();
+  if (val.length >= 2) runGlobalSearch(val);
+});
+document.getElementById('globalSearchInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { const val = e.target.value.trim(); if (val.length >= 2) runGlobalSearch(val); }
+});
+document.addEventListener('click', (e) => {
+  const wrap = document.querySelector('.global-search-wrap');
+  if (wrap && !wrap.contains(e.target)) document.getElementById('globalSearchResults').classList.remove('show');
+});
+
+async function runGlobalSearch(q) {
+  const resEl = document.getElementById('globalSearchResults');
+  resEl.classList.add('show');
+  resEl.innerHTML = '<div class="gsr-empty">Aranıyor...</div>';
+  try {
+    const res = await fetch('/api/search?q=' + encodeURIComponent(q));
+    const data = await res.json();
+    renderGlobalSearchResults(data);
+  } catch { resEl.innerHTML = '<div class="gsr-empty">Aranamadı, tekrar dene.</div>'; }
+}
+
+function renderGlobalSearchResults(data) {
+  const resEl = document.getElementById('globalSearchResults');
+  const total = (data.messages || []).length + (data.menu || []).length + (data.calendar || []).length + (data.tasks || []).length + (data.phones || []).length;
+  if (total === 0) { resEl.innerHTML = '<div class="gsr-empty">Sonuç bulunamadı.</div>'; return; }
+
+  let html = '';
+  if (data.messages.length) {
+    html += '<div class="gsr-group-title">📢 Duyurular</div>' + data.messages.map(m =>
+      `<div class="gsr-item" data-gsr-msg="${esc(m.id)}"><span class="gsr-icon">📢</span><div class="gsr-text"><div class="gsr-title">${esc(m.title)}</div><div class="gsr-sub">${esc(catNames[m.category] || 'Genel')} · ${formatShortDate(m.time)}</div></div></div>`
+    ).join('');
+  }
+  if (data.menu.length) {
+    html += '<div class="gsr-group-title">🍽️ Yemek Menüsü</div>' + data.menu.map(m =>
+      `<div class="gsr-item" data-gsr-menu="1"><span class="gsr-icon">🍽️</span><div class="gsr-text"><div class="gsr-title">${esc((m.dishes || []).filter(Boolean).join(' · '))}</div><div class="gsr-sub">${formatShortDate(m.date)}</div></div></div>`
+    ).join('');
+  }
+  if (data.calendar.length) {
+    html += '<div class="gsr-group-title">📅 Takvim</div>' + data.calendar.map(c =>
+      `<div class="gsr-item" data-gsr-cal="${esc(c.date)}"><span class="gsr-icon">📅</span><div class="gsr-text"><div class="gsr-title">${esc(c.text)}</div><div class="gsr-sub">${formatShortDate(c.date)}</div></div></div>`
+    ).join('');
+  }
+  if (data.tasks.length) {
+    html += '<div class="gsr-group-title">✅ İşler</div>' + data.tasks.map(t =>
+      `<div class="gsr-item" data-gsr-task="1"><span class="gsr-icon">✅</span><div class="gsr-text"><div class="gsr-title">${esc(t.text)}</div></div></div>`
+    ).join('');
+  }
+  if (data.phones.length) {
+    html += '<div class="gsr-group-title">📞 Telefonlar</div>' + data.phones.map(p =>
+      `<div class="gsr-item" data-gsr-phone="${esc(p.name)}"><span class="gsr-icon">📞</span><div class="gsr-text"><div class="gsr-title">${esc(p.name)}</div><div class="gsr-sub">${esc(p.number)}</div></div></div>`
+    ).join('');
+  }
+  resEl.innerHTML = html;
+
+  resEl.querySelectorAll('[data-gsr-msg]').forEach(el => el.addEventListener('click', () => {
+    resEl.classList.remove('show');
+    const t = document.querySelector('.tabs .tab-btn[data-tab="duyurular"]'); if (t) t.click();
+    openDuyuruDetay(el.dataset.gsrMsg);
+  }));
+  resEl.querySelectorAll('[data-gsr-menu]').forEach(el => el.addEventListener('click', () => {
+    resEl.classList.remove('show');
+    const t = document.querySelector('.tabs .tab-btn[data-tab="notlar"]'); if (t) t.click();
+    document.getElementById('yemekSubTabMenu').click();
+  }));
+  resEl.querySelectorAll('[data-gsr-cal]').forEach(el => el.addEventListener('click', () => {
+    resEl.classList.remove('show');
+    const t = document.querySelector('.tabs .tab-btn[data-tab="isler"]'); if (t) t.click();
+    document.getElementById('islerSubTabCalendar').click();
+    const dateKey = el.dataset.gsrCal;
+    const dt = new Date(dateKey + 'T00:00:00');
+    calCurrentDate = new Date(dt.getFullYear(), dt.getMonth(), 1);
+    switchCalView('month');
+    setTimeout(() => openCalDay(dateKey), 150);
+  }));
+  resEl.querySelectorAll('[data-gsr-task]').forEach(el => el.addEventListener('click', () => {
+    resEl.classList.remove('show');
+    const t = document.querySelector('.tabs .tab-btn[data-tab="isler"]'); if (t) t.click();
+    document.getElementById('islerSubTabTasks').click();
+  }));
+  resEl.querySelectorAll('[data-gsr-phone]').forEach(el => el.addEventListener('click', () => {
+    resEl.classList.remove('show');
+    const t = document.querySelector('.tabs .tab-btn[data-tab="isler"]'); if (t) t.click();
+    document.getElementById('islerSubTabPhones').click();
+    setTimeout(() => {
+      const inp = document.getElementById('phoneSearchInput');
+      inp.value = el.dataset.gsrPhone;
+      inp.dispatchEvent(new Event('input'));
+    }, 150);
+  }));
+}
+
 async function refreshCount() {
-  const numEl = document.getElementById('subCountNum');
+  const badgeEl = document.getElementById('subCountBadge');
   try {
     const res = await fetch('/api/subscriber-count');
     const data = await res.json();
-    numEl.style.animation = 'none';
-    numEl.offsetHeight; // reflow — animasyonu her güncellemede yeniden tetiklemek için
-    numEl.style.animation = '';
-    numEl.textContent = data.total;
-  } catch { numEl.textContent = '—'; }
+    badgeEl.style.animation = 'none';
+    badgeEl.offsetHeight; // reflow — animasyonu her güncellemede yeniden tetiklemek için
+    badgeEl.style.animation = '';
+    badgeEl.textContent = data.total;
+  } catch { badgeEl.textContent = '—'; }
 }
 
 function setBellStatusUI(active) {
