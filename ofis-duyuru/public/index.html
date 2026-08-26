@@ -1187,6 +1187,7 @@
       <div style="display:flex; align-items:center; justify-content:space-between; margin-top:8px;">
         <span id="galleryCounter" style="color:#ccc; font-size:12px;"></span>
         <div style="display:flex; gap:8px;">
+          <button type="button" id="galleryAutoplayBtn" style="background:none; border:1px solid rgba(255,255,255,0.3); color:#fff; border-radius:20px; padding:6px 12px; font-size:13px; cursor:pointer;" title="Otomatik ilerlet">▶️</button>
           <a id="galleryDownloadBtn" download style="background:none; border:1px solid rgba(255,255,255,0.3); color:#fff; border-radius:20px; padding:6px 12px; font-size:13px; cursor:pointer; text-decoration:none; display:flex; align-items:center;">⬇️</a>
           <button type="button" id="galleryLikeBtn" style="background:none; border:1px solid rgba(255,255,255,0.3); color:#fff; border-radius:20px; padding:6px 14px; font-size:13px; cursor:pointer;">🤍 <span id="galleryLikeCount">0</span></button>
         </div>
@@ -2415,6 +2416,7 @@ function galleryRender() {
   document.getElementById('galleryCounter').textContent = (galleryState.index + 1) + ' / ' + galleryState.images.length;
   document.getElementById('galleryPrevBtn').style.display = galleryState.images.length > 1 ? 'flex' : 'none';
   document.getElementById('galleryNextBtn').style.display = galleryState.images.length > 1 ? 'flex' : 'none';
+  document.getElementById('galleryAutoplayBtn').style.display = galleryState.images.length > 1 ? 'inline-block' : 'none';
   const myId = getDeviceId();
   const liked = (img.likedBy || []).includes(myId);
   document.getElementById('galleryLikeBtn').innerHTML = (liked ? '❤️' : '🤍') + ' <span id="galleryLikeCount">' + ((img.likedBy || []).length) + '</span>';
@@ -2430,28 +2432,43 @@ function galleryRender() {
   }
 }
 
-function galleryPrev() { galleryState.index = (galleryState.index - 1 + galleryState.images.length) % galleryState.images.length; galleryRender(); }
+function galleryPrev() { galleryStopAutoplay(); galleryState.index = (galleryState.index - 1 + galleryState.images.length) % galleryState.images.length; galleryRender(); }
 function galleryNext() { galleryState.index = (galleryState.index + 1) % galleryState.images.length; galleryRender(); }
 
+let galleryAutoplayTimer = null;
+function galleryStopAutoplay() {
+  if (galleryAutoplayTimer) { clearInterval(galleryAutoplayTimer); galleryAutoplayTimer = null; }
+  document.getElementById('galleryAutoplayBtn').textContent = '▶️';
+}
+function galleryStartAutoplay() {
+  if (galleryState.images.length <= 1) return;
+  galleryAutoplayTimer = setInterval(galleryNext, 2500);
+  document.getElementById('galleryAutoplayBtn').textContent = '⏸️';
+}
+document.getElementById('galleryAutoplayBtn').addEventListener('click', () => {
+  if (galleryAutoplayTimer) galleryStopAutoplay(); else galleryStartAutoplay();
+});
+
 function openGalleryLightbox(images, msgId, index) {
+  galleryStopAutoplay();
   galleryState = { images, msgId, index: index || 0 };
   galleryRender();
   document.getElementById('galleryLightbox').classList.add('show');
 }
 
-document.getElementById('galleryCloseBtn').addEventListener('click', () => document.getElementById('galleryLightbox').classList.remove('show'));
+document.getElementById('galleryCloseBtn').addEventListener('click', () => { galleryStopAutoplay(); document.getElementById('galleryLightbox').classList.remove('show'); });
 document.getElementById('galleryLightbox').addEventListener('click', (e) => {
-  if (e.target.id === 'galleryLightbox') document.getElementById('galleryLightbox').classList.remove('show');
+  if (e.target.id === 'galleryLightbox') { galleryStopAutoplay(); document.getElementById('galleryLightbox').classList.remove('show'); }
 });
 document.getElementById('galleryPrevBtn').addEventListener('click', galleryPrev);
-document.getElementById('galleryNextBtn').addEventListener('click', galleryNext);
+document.getElementById('galleryNextBtn').addEventListener('click', () => { galleryStopAutoplay(); galleryNext(); });
 
 // Klavye ile gezinme — sadece galeri açıkken (sağ/sol ok, Esc ile kapat).
 document.addEventListener('keydown', (e) => {
   if (!document.getElementById('galleryLightbox').classList.contains('show')) return;
   if (e.key === 'ArrowLeft') galleryPrev();
-  else if (e.key === 'ArrowRight') galleryNext();
-  else if (e.key === 'Escape') document.getElementById('galleryLightbox').classList.remove('show');
+  else if (e.key === 'ArrowRight') { galleryStopAutoplay(); galleryNext(); }
+  else if (e.key === 'Escape') { galleryStopAutoplay(); document.getElementById('galleryLightbox').classList.remove('show'); }
 });
 
 // Parmakla kaydırma (swipe) — telefonda resmi sağa/sola çekerek gezinme.
@@ -2467,7 +2484,7 @@ document.addEventListener('keydown', (e) => {
   imgWrap.addEventListener('touchend', (e) => {
     if (sx === null) return;
     const dx = e.changedTouches[0].clientX - sx;
-    if (didSwipe && Math.abs(dx) > 40 && galleryState.images.length > 1) { dx < 0 ? galleryNext() : galleryPrev(); }
+    if (didSwipe && Math.abs(dx) > 40 && galleryState.images.length > 1) { galleryStopAutoplay(); dx < 0 ? galleryNext() : galleryPrev(); }
     sx = null; sy = null;
   });
 })();
