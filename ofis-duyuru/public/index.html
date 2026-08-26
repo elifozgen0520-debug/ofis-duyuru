@@ -1136,6 +1136,7 @@
       <button type="button" class="active" id="islerSubTabCalendar">📅 Takvim</button>
       <button type="button" id="islerSubTabTasks">✅ İşler</button>
       <button type="button" id="islerSubTabPhones">📞 Telefonlar</button>
+      <button type="button" id="islerSubTabBloodBank">🩸 Kan Grupları</button>
     </div>
 
     <div id="islerSubPanelCalendar">
@@ -3184,13 +3185,19 @@ function openCalDay(dateKey) {
 document.getElementById('calDayCloseBtn').addEventListener('click', () => document.getElementById('calDayOverlay').classList.remove('show'));
 
 document.getElementById('calSearchBtn').addEventListener('click', () => {
-  const q = document.getElementById('calSearchInput').value.trim().toLocaleLowerCase('tr');
+  const qRaw = document.getElementById('calSearchInput').value.trim();
+  const q = qRaw.toLocaleLowerCase('tr');
   const resEl = document.getElementById('calSearchResults');
   if (!q) { resEl.style.display = 'none'; return; }
-  const matches = calAllItems.filter(i => i.text.toLocaleLowerCase('tr').includes(q));
+  const noteMatches = calAllItems.filter(i => i.text.toLocaleLowerCase('tr').includes(q))
+    .map(i => ({ date: i.date, text: i.text, category: i.category }));
+  // Resmi tatiller (Cumhuriyet Bayramı, Ramazan/Kurban Bayramı vb.) admin notu değil, tarayıcıda
+  // sabit tanımlı — onları da arama sonuçlarına ekliyoruz.
+  const holidayMatches = searchHolidaysLocal(qRaw).map(h => ({ date: h.date, text: h.text, category: null, holiday: true }));
+  const matches = [...holidayMatches, ...noteMatches];
   resEl.innerHTML = matches.length === 0 ? '<div class="list-empty">Sonuç bulunamadı.</div>' : matches.map(m => {
     const d = new Date(m.date + 'T00:00:00');
-    const cat = CAL_CATEGORIES[m.category] || CAL_CATEGORIES.genel;
+    const cat = m.holiday ? { label: '🎉 Resmi Tatil', color: '#D93838' } : (CAL_CATEGORIES[m.category] || CAL_CATEGORIES.genel);
     return '<div class="list-item" data-goto-date="' + m.date + '" style="cursor:pointer;"><div class="li-main"><div class="li-top"><span class="li-tag">' + d.getDate() + ' ' + TR_MONTHS[d.getMonth()] + ' ' + d.getFullYear() + '</span><span class="cal-cat-badge" style="background:' + cat.color + ';">' + cat.label + '</span></div><div class="li-body">' + esc(m.text) + '</div></div></div>';
   }).join('');
   resEl.querySelectorAll('[data-goto-date]').forEach(el => el.addEventListener('click', () => {
@@ -3231,6 +3238,11 @@ document.getElementById('islerSubTabPhones').addEventListener('click', () => {
   document.getElementById('islerSubPanelPhones').style.display = 'block';
   document.getElementById('islerSubPanelCalendar').style.display = 'none';
   document.getElementById('islerSubPanelTasks').style.display = 'none';
+});
+// "Kan Grupları" ayrı bir panel değil — zaten var olan (giriş kontrollü) Kan Bankası
+// popup'ını açıyor, altındaki aktif sekmeye dokunmuyor.
+document.getElementById('islerSubTabBloodBank').addEventListener('click', () => {
+  document.getElementById('bloodBankLink').click();
 });
 
 // --- MODALLAR ---
