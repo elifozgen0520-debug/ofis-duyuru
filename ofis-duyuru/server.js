@@ -745,10 +745,14 @@ app.delete('/api/devices/:deviceId', async (req, res) => {
 });
 
 app.post('/api/send', upload.array('attachments', 6), async (req, res) => {
-  const { password, category, title, body, alsoEmail, date } = req.body;
+  const { password, category, title, body, alsoEmail, date, videoUrl } = req.body;
   const result = checkPassword(password, req);
   if (passwordCheckResponse(res, result)) return;
   if (!title || !body) return res.status(400).json({ ok: false, error: 'Başlık ve mesaj zorunlu.' });
+  const cleanVideoUrl = (videoUrl || '').trim();
+  if (cleanVideoUrl && !/^https?:\/\//i.test(cleanVideoUrl)) {
+    return res.status(400).json({ ok: false, error: 'Video linki http:// veya https:// ile başlamalı.' });
+  }
 
   // Birden fazla dosya (galeri) desteği — ilki manşet/bildirim kapağı olarak kullanılır.
   let attachments = [];
@@ -803,7 +807,7 @@ app.post('/api/send', upload.array('attachments', 6), async (req, res) => {
   const finalTime = (date && !isNaN(Date.parse(date))) ? new Date(date).toISOString() : new Date().toISOString();
 
   const messages = await loadJson(MESSAGES_KEY);
-  messages.push({ id: messageId, category: category || 'genel', title, body, time: finalTime, attachment, attachments, reads: [] });
+  messages.push({ id: messageId, category: category || 'genel', title, body, time: finalTime, attachment, attachments, videoUrl: cleanVideoUrl || null, reads: [] });
   await saveJson(MESSAGES_KEY, messages.slice(-100));
 
   let emailResult = null;
@@ -887,10 +891,13 @@ app.delete('/api/messages/:id', async (req, res) => {
 
 // --- DUYURU DÜZENLEME (yeni bildirim GÖNDERMEZ, sadece metni günceller) ---
 app.put('/api/messages/:id', upload.array('newAttachments', 6), async (req, res) => {
-  const { password, title, body, category, date, removeUrls, coverUrl } = req.body;
+  const { password, title, body, category, date, removeUrls, coverUrl, videoUrl } = req.body;
   const result = checkPassword(password, req);
   if (passwordCheckResponse(res, result)) return;
   if (!title || !body) return res.status(400).json({ ok: false, error: 'Başlık ve mesaj zorunlu.' });
+  if (videoUrl && videoUrl.trim() && !/^https?:\/\//i.test(videoUrl.trim())) {
+    return res.status(400).json({ ok: false, error: 'Video linki http:// veya https:// ile başlamalı.' });
+  }
 
   const messages = await loadJson(MESSAGES_KEY);
   const msg = messages.find(m => m.id === req.params.id);
@@ -900,6 +907,7 @@ app.put('/api/messages/:id', upload.array('newAttachments', 6), async (req, res)
   msg.body = body;
   if (category) msg.category = category;
   if (date && !isNaN(Date.parse(date))) msg.time = new Date(date).toISOString();
+  if (videoUrl !== undefined) msg.videoUrl = videoUrl.trim() || null;
 
   // Mevcut galeriden kaldırılmak istenenleri çıkar.
   if (!Array.isArray(msg.attachments)) msg.attachments = msg.attachment ? [msg.attachment] : [];
