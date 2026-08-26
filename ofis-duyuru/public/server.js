@@ -339,6 +339,35 @@ app.get('/api/devices', async (req, res) => {
   res.json({ devices: Array.from(byDevice.values()).sort((a, b) => (b.subscribedAt || '').localeCompare(a.subscribedAt || '')) });
 });
 
+// --- ÜYELER (hesap bazlı, tekilleştirilmiş — Kişiye Özel Mesaj ve admin genel bakış için) ---
+app.get('/api/personnel/accounts', async (req, res) => {
+  const result = checkPassword(req.query.password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const accounts = await loadJson(SELF_ACCOUNTS_KEY);
+  const profiles = await loadJson(PROFILES_KEY, {});
+  const presence = await loadJson(PRESENCE_KEY, {});
+  const now = Date.now();
+  const list = accounts.map(a => {
+    const deviceIds = Object.entries(profiles).filter(([, p]) => p.accountEmail === a.email).map(([id]) => id);
+    let lastSeen = null;
+    deviceIds.forEach(id => { if (presence[id] && (!lastSeen || presence[id] > lastSeen)) lastSeen = presence[id]; });
+    let avatar = null;
+    deviceIds.forEach(id => { if (!avatar && profiles[id] && profiles[id].avatar) avatar = profiles[id].avatar; });
+    return {
+      email: a.email,
+      adSoyad: a.adSoyad,
+      telefon: a.telefon,
+      emailDogrulandi: !!a.emailDogrulandi,
+      olusturulma: a.olusturulma,
+      deviceCount: deviceIds.length,
+      online: lastSeen ? (now - lastSeen < 10 * 60 * 1000) : false,
+      lastSeen,
+      avatar,
+    };
+  }).sort((a, b) => (b.online - a.online) || (b.olusturulma || '').localeCompare(a.olusturulma || ''));
+  res.json({ accounts: list });
+});
+
 // --- TOPLU PERSONEL EKLEME (elle, uygulama kurmamış kişiler için — sadece e-posta ile ulaşılabilir) ---
 app.post('/api/personnel/bulk-add', async (req, res) => {
   const { password, entries } = req.body;
@@ -738,14 +767,25 @@ app.post('/api/send', upload.single('attachment'), async (req, res) => {
 
 // --- KİŞİYE ÖZEL (HEDEFLİ) BİLDİRİM GÖNDERME ---
 app.post('/api/send-to', upload.single('attachment'), async (req, res) => {
-  const { password, deviceId, title, body, category } = req.body;
+  const { password, deviceId, email, title, body, category } = req.body;
   const result = checkPassword(password, req);
   if (passwordCheckResponse(res, result)) return;
-  if (!deviceId) return res.status(400).json({ ok: false, error: 'Kişi seçilmedi.' });
+  if (!deviceId && !email) return res.status(400).json({ ok: false, error: 'Kişi seçilmedi.' });
   if (!title || !body) return res.status(400).json({ ok: false, error: 'Başlık ve mesaj zorunlu.' });
 
+  // Hesap (email) seçildiyse, o hesaba bağlı TÜM cihazlara gönderiyoruz (kişi hangi cihazı
+  // kullanıyorsa ulaşsın); tek bir cihaz seçildiyse (Cihazlar listesinden) eskisi gibi sadece ona.
+  let targetDeviceIds = [];
+  if (email) {
+    const profiles = await loadJson(PROFILES_KEY, {});
+    targetDeviceIds = Object.entries(profiles).filter(([, p]) => p.accountEmail === email).map(([id]) => id);
+    if (targetDeviceIds.length === 0) return res.status(404).json({ ok: false, error: 'Bu üyeye bağlı hiçbir cihaz bulunamadı.' });
+  } else {
+    targetDeviceIds = [deviceId];
+  }
+
   const subs = await loadJson(SUBS_KEY);
-  const targetSubs = subs.filter(s => s.deviceId === deviceId);
+  const targetSubs = subs.filter(s => targetDeviceIds.includes(s.deviceId));
   if (targetSubs.length === 0) return res.status(404).json({ ok: false, error: 'Bu kişiye ait aktif bildirim aboneliği bulunamadı.' });
 
   let attachment;
@@ -781,7 +821,7 @@ app.post('/api/send-to', upload.single('attachment'), async (req, res) => {
   }
 
   const direct = await loadJson(DIRECT_KEY);
-  direct.push({ id: messageId, deviceId, category: category || 'genel', title, body, time: new Date().toISOString(), attachment });
+  direct.push({ id: messageId, deviceId: targetDeviceIds[0], category: category || 'genel', title, body, time: new Date().toISOString(), attachment });
   await saveJson(DIRECT_KEY, direct.slice(-500));
 
   res.json({ ok: true, sent });
