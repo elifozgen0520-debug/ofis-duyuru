@@ -1115,6 +1115,7 @@
     <div id="islerSubPanelPhones" style="display:none;">
       <div class="list-section">
         <h3>Acil Durum Telefonları</h3>
+        <input type="text" id="phoneSearchInput" placeholder="🔍 İsme göre ara..." style="width:100%; padding:10px 14px; border-radius:20px; border:1px solid #ddd; font-size:14px; margin-bottom:12px; box-sizing:border-box;">
         <div id="phonesList" class="list-empty">Yükleniyor...</div>
       </div>
     </div>
@@ -2780,9 +2781,41 @@ document.getElementById('yemekSubTabRecords').addEventListener('click', () => {
   else { inlineMealsShowStep('inlineMealsStepRegister'); }
 });
 
-loadReadOnlyList('/api/phones', 'phonesList', 'Henüz telefon eklenmedi.', p => `
-  <div class="list-item"><div class="li-main"><div class="li-title">${esc(p.name)}</div><a class="li-phone" href="tel:${esc(p.number)}">${esc(p.number)}</a>${renderAttachment(p.attachment)}${activeAdminPassword ? `<div style="margin-top:6px;"><button class="btn-danger" onclick="deleteGeneric('phones','${p.id}')">Sil</button></div>`:''}</div></div>
-`);
+// --- ACİL DURUM TELEFONLARI (canlı arama destekli) ---
+let phonesAllItems = [];
+
+function renderPhoneAttachment(att) {
+  if (!att) return '';
+  if (att.type === 'image') return `<a href="${att.url}" target="_blank"><img src="${att.url}" style="max-width:100%;border-radius:4px;margin-top:8px;display:block;"></a>`;
+  return `<a href="${att.url}" target="_blank" style="display:inline-flex; align-items:center; gap:5px; margin-top:8px; padding:6px 12px; border-radius:20px; background:var(--clay); color:#fff; font-size:12px; font-weight:700; text-decoration:none;">📄 PDF</a>`;
+}
+
+function renderPhonesList(items) {
+  const listEl = document.getElementById('phonesList');
+  if (!items || items.length === 0) { listEl.className = 'list-empty'; listEl.textContent = 'Sonuç bulunamadı.'; return; }
+  listEl.className = '';
+  listEl.innerHTML = items.map(p => `
+    <div class="list-item"><div class="li-main"><div class="li-title">${esc(p.name)}</div><a class="li-phone" href="tel:${esc(p.number)}">${esc(p.number)}</a>${renderPhoneAttachment(p.attachment)}${activeAdminPassword ? `<div style="margin-top:6px;"><button class="btn-danger" onclick="deleteGeneric('phones','${p.id}')">Sil</button></div>`:''}</div></div>
+  `).join('');
+}
+
+async function loadPhonesList() {
+  const listEl = document.getElementById('phonesList');
+  try {
+    const res = await fetch('/api/phones');
+    const data = await res.json();
+    phonesAllItems = data.items || [];
+    renderPhonesList(phonesAllItems);
+  } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
+}
+
+document.getElementById('phoneSearchInput').addEventListener('input', (e) => {
+  const q = e.target.value.trim().toLocaleLowerCase('tr');
+  if (!q) { renderPhonesList(phonesAllItems); return; }
+  renderPhonesList(phonesAllItems.filter(p => (p.name || '').toLocaleLowerCase('tr').includes(q)));
+});
+
+loadPhonesList();
 
 loadReadOnlyList('/api/tasks', 'tasksList', 'Henüz görev eklenmedi.', t => `
   <div class="list-item ${t.done ? 'done' : ''}"><input type="checkbox" class="checkbox" data-toggle-id="${t.id}" ${t.done ? 'checked' : ''}><div class="li-main"><div class="li-title">${esc(t.text)}</div>${renderAttachment(t.attachment)}${activeAdminPassword ? `<div style="margin-top:6px;"><button class="btn-danger" onclick="deleteGeneric('tasks','${t.id}')">Sil</button></div>`:''}</div></div>
