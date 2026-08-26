@@ -1670,6 +1670,23 @@ app.get('/api/self-whoami', selfAuthMiddleware, async (req, res) => {
   res.json({ ok: true, email: req.selfEmail, adSoyad: acc ? acc.adSoyad : null });
 });
 
+// --- KENDİLİĞİNDEN ONARIM: cihaz-hesap bağlantısını (accountEmail) yeniden kurar ---
+// Bu bağlantı ilk kez self-login sırasında kuruluyor; ama bu özellik eklenmeden ÖNCE giriş
+// yapmış eski üyelerin cihazlarında bu alan hiç yazılmamış olabilir. Sayfa her açıldığında
+// (giriş yapılmışsa) sessizce çağrılıp eksikse tamamlanır — kullanıcının tekrar giriş
+// yapmasına gerek kalmaz.
+app.post('/api/self-relink', selfAuthMiddleware, async (req, res) => {
+  const deviceId = (req.body.deviceId || '').trim();
+  if (!deviceId) return res.status(400).json({ ok: false, error: 'Cihaz kimliği eksik.' });
+  const profiles = await loadJson(PROFILES_KEY, {});
+  if (!profiles[deviceId]) profiles[deviceId] = {};
+  if (profiles[deviceId].accountEmail !== req.selfEmail) {
+    profiles[deviceId].accountEmail = req.selfEmail;
+    await saveJson(PROFILES_KEY, profiles);
+  }
+  res.json({ ok: true });
+});
+
 // --- KENDİ YEMEKHANE KAYITLARIM (PHP/MySQL sistemine köprü üzerinden ulaşır) ---
 app.get('/api/my-meals', selfAuthMiddleware, async (req, res) => {
   const accounts = await loadJson(SELF_ACCOUNTS_KEY);
