@@ -2074,7 +2074,8 @@ document.getElementById('globalSearchClearBtn').addEventListener('click', () => 
   document.getElementById('globalSearchInput').value = '';
   document.getElementById('globalSearchClearBtn').style.display = 'none';
   document.getElementById('globalSearchResults').classList.remove('show');
-  document.getElementById('globalSearchInput').focus();
+  const anaTab = document.querySelector('.tabs .tab-btn[data-tab="duyurular"]');
+  if (anaTab) anaTab.click();
 });
 document.getElementById('globalSearchGoBtn').addEventListener('click', () => {
   const val = document.getElementById('globalSearchInput').value.trim();
@@ -2959,8 +2960,12 @@ document.getElementById('yemekSubTabRecords').addEventListener('click', () => {
   document.getElementById('yemekSubTabMenu').classList.remove('active');
   document.getElementById('yemekSubPanelRecords').style.display = 'block';
   document.getElementById('yemekSubPanelMenu').style.display = 'none';
-  if (mealsGetToken()) { inlineMealsShowStep('inlineMealsStepRecords'); inlineMealsLoadRecords(); }
-  else { inlineMealsShowStep('inlineMealsStepRegister'); }
+  if (mealsGetToken()) { inlineMealsShowStep('inlineMealsStepRecords'); inlineMealsLoadRecords(); return; }
+  // Giriş yapılmamış: kayıt formunu sayfa içinde sessizce göstermek yerine, net bir açıklamayla
+  // "Üye Girişi Yap / Üye Ol" popup'ını göster — form aşağıda kalıp kaybolmasın diye.
+  const yemekhaneMsg = '<b>Kendi yemekhane geçmişini ve borcunu</b> görebilmek için kişisel e-postanla ve kendi telefon numaranla kayıt ol.<br><br>ℹ️ Yalnızca <b>Gmail</b> veya <b>Hotmail</b> adresiyle kayıt olabilirsin.';
+  requireMealsLogin('Yemekhane', yemekhaneMsg);
+  inlineMealsShowStep('inlineMealsStepRegister');
 });
 
 // --- ACİL DURUM TELEFONLARI (canlı arama destekli) ---
@@ -3258,10 +3263,10 @@ document.getElementById('centerLogoBtn').addEventListener('click', (e) => {
 // Tek üyelik ilkesi: Profil / Yemekhane Kayıtlarım / Kan Bankası / Anket hepsi AYNI
 // e-posta+şifre hesabına bağlı. Giriş yapılmamışsa bu alanlardan hiçbiri doğrudan açılmaz,
 // bunun yerine net bir "Üye Girişi Yap / Üye Ol" popup'ı gösterilir.
-function requireMealsLogin(featureLabel) {
+function requireMealsLogin(featureLabel, customMsg) {
   if (mealsGetToken()) return true;
   document.getElementById('authRequiredTitle').textContent = (featureLabel || 'Bu özellik') + ' İçin Üyelik Gerekli';
-  document.getElementById('authRequiredMsg').textContent = (featureLabel || 'Bu özelliği kullanmak') + ' için üye girişi yapmalı ya da üye olmalısın.';
+  document.getElementById('authRequiredMsg').innerHTML = customMsg || ((featureLabel || 'Bu özelliği kullanmak') + ' için üye girişi yapmalı ya da üye olmalısın.');
   document.getElementById('authRequiredOverlay').classList.add('show');
   return false;
 }
@@ -4084,7 +4089,8 @@ function goToYemekhaneTab() {
 
 document.getElementById('mealsLink').addEventListener('click', (e) => {
   e.preventDefault();
-  if (!requireMealsLogin('Yemekhane')) return;
+  const yemekhaneMsg = '<b>Kendi yemekhane geçmişini ve borcunu</b> görebilmek için kişisel e-postanla ve kendi telefon numaranla kayıt ol.<br><br>ℹ️ Yalnızca <b>Gmail</b> veya <b>Hotmail</b> adresiyle kayıt olabilirsin.';
+  if (!requireMealsLogin('Yemekhane', yemekhaneMsg)) return;
   goToYemekhaneTab();
 });
 
