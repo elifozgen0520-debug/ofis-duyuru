@@ -24,7 +24,6 @@
   h2 { font-family: 'Fraunces', serif; font-size: 18px; margin: 0 0 4px; }
   .muted { color: var(--muted); font-size: 12.5px; }
 
-  /* Giriş ekranı */
   #loginScreen { display: flex; align-items: center; justify-content: center; min-height: 80vh; }
   .login-box {
     background: var(--paper); color: var(--ink); border-radius: 6px; padding: 32px 28px;
@@ -34,7 +33,6 @@
   .login-box h1 { font-size: 20px; margin-bottom: 4px; }
   .login-box p { font-size: 13px; color: #666; margin: 0 0 18px; }
 
-  /* Dashboard */
   #dashboard { display: none; }
   header {
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -132,7 +130,6 @@
   .toast-box .ttitle { font-family: 'Fraunces', serif; font-weight: 700; font-size: 17px; margin-bottom: 8px; }
   .toast-box .tmsg { font-size: 13.5px; color: #555; line-height: 1.5; margin-bottom: 18px; }
 
-  /* TAKVİM */
   .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
   .cal-nav button { background: var(--ink); color: var(--paper); padding: 8px 14px; font-size: 13px; }
   .cal-nav .cal-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; }
@@ -161,11 +158,48 @@
   .cal-search-box { display: flex; gap: 8px; margin-bottom: 16px; }
   .cal-search-box input { flex: 1; }
 
-  /* ANKET */
   .poll-option-row { display: flex; align-items: center; justify-content: space-between; font-size: 12px; margin: 6px 0 2px; }
   .poll-bar-track { background: #eee; border-radius: 20px; height: 7px; overflow: hidden; margin-bottom: 8px; }
   .poll-bar-fill { height: 100%; background: var(--sage); }
   .admin-box { background: #fff; border-radius: 6px; padding: 12px 14px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+
+  /* ÜYE / SOHBET EFEKT KARTLARI */
+  .member-card {
+    background: #fff; border-radius: 10px; padding: 12px 14px; margin-bottom: 9px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 12px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease; border-left: 4px solid #ddd;
+  }
+  .member-card:hover { transform: translateY(-2px) scale(1.005); box-shadow: 0 10px 22px rgba(0,0,0,0.16); }
+  .member-card.online { border-left-color: var(--sage); }
+  .member-card.offline { border-left-color: var(--muted); }
+  .member-avatar {
+    width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, var(--amber), var(--clay));
+    display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 15px;
+    flex-shrink: 0; position: relative; overflow: hidden;
+  }
+  .member-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .member-avatar .online-dot {
+    position: absolute; bottom: -1px; right: -1px; width: 11px; height: 11px; border-radius: 50%;
+    background: var(--sage); border: 2px solid #fff;
+  }
+  .member-info { flex: 1; min-width: 0; }
+  .member-name { font-family: 'Fraunces', serif; font-weight: 700; font-size: 14.5px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .verified-badge { font-size: 10px; background: #DCFCE7; color: #166534; padding: 1px 7px; border-radius: 10px; font-weight: 700; }
+  .unverified-badge { font-size: 10px; background: #FEF3C7; color: #92400E; padding: 1px 7px; border-radius: 10px; font-weight: 700; }
+  .member-sub { font-size: 11.5px; color: #888; margin-top: 2px; }
+  .device-pill { font-size: 10px; background: #EFF6FF; color: #1E40AF; padding: 1px 8px; border-radius: 10px; font-weight: 700; white-space: nowrap; }
+
+  .chat-card {
+    background: #fff; border-radius: 10px; padding: 12px 14px; margin-bottom: 8px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08); transition: transform 0.15s ease, box-shadow 0.15s ease;
+    border-left: 3px solid var(--gold); display: flex; gap: 10px; align-items: flex-start;
+  }
+  .chat-card:hover { transform: translateX(3px); box-shadow: 0 8px 18px rgba(0,0,0,0.14); }
+  .chat-avatar-mini {
+    width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--sage), #3E5C43);
+    color: #fff; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .member-search { margin-bottom: 14px; }
 </style>
 </head>
 <body>
@@ -202,6 +236,7 @@
       <div class="dash-card" data-view="notlar"><div class="icon">🍽️</div><div class="label">Yemekhane</div><div class="count" id="countNotlar"></div></div>
       <div class="dash-card" data-view="telefonlar"><div class="icon">☎️</div><div class="label">Telefonlar</div><div class="count" id="countTelefonlar"></div></div>
       <div class="dash-card" data-view="isler"><div class="icon">✅</div><div class="label">İşler</div><div class="count" id="countIsler"></div></div>
+      <div class="dash-card" data-view="uyeler"><div class="icon">🙋</div><div class="label">Üyeler</div><div class="count" id="countUyeler"></div></div>
       <div class="dash-card" data-view="cihazlar"><div class="icon">📱</div><div class="label">Cihazlar</div><div class="count" id="countCihazlar"></div></div>
       <div class="dash-card" data-view="gorusler"><div class="icon">💬</div><div class="label">Görüşler</div><div class="count" id="countGorusler"></div></div>
       <div class="dash-card" data-view="istatistik"><div class="icon">📊</div><div class="label">İstatistikler</div><div class="count" id="countIstatistik"></div></div>
@@ -295,6 +330,16 @@
     <div class="list-section"><h3>Aylık Yapılacak İşler</h3><div id="tasksList" class="list-empty">Yükleniyor...</div></div>
   </div>
 
+  <div class="view" id="view-uyeler">
+    <a class="back-link" data-back>← Panele Dön</a>
+    <div class="card">
+      <h2>🙋 Üyeler</h2>
+      <div class="sub">Bu, e-posta+şifre ile kayıt olmuş <b>gerçek üyelerin</b> tekilleştirilmiş listesi (aynı kişi birden fazla cihazdan girse bile tek satır). Cihaz bazlı ham liste için "Cihazlar" bölümüne bakabilirsin.</div>
+      <input type="text" id="memberSearch" class="member-search" placeholder="🔍 İsim, telefon veya e-posta ara...">
+      <div id="membersList" class="list-empty">Yükleniyor...</div>
+    </div>
+  </div>
+
   <div class="view" id="view-cihazlar">
     <a class="back-link" data-back>← Panele Dön</a>
     <div class="card">
@@ -333,15 +378,15 @@
     <a class="back-link" data-back>← Panele Dön</a>
     <div class="card">
       <h2>Kişiye Özel Mesaj Gönder</h2>
-      <div class="sub">Seçtiğin kişiye, sadece kendisine görünen özel bir push bildirimi gönder (örn. yemekhane borcu hatırlatması).</div>
-      <label>Kişi Seç</label>
+      <div class="sub">Seçtiğin üyeye, bağlı olduğu <b>tüm cihazlara</b> özel bir push bildirimi gönder (örn. yemekhane borcu hatırlatması). Liste, tekilleştirilmiş üye hesaplarından geliyor.</div>
+      <label>Üye Seç</label>
       <select id="pmDeviceSelect"><option value="">Yükleniyor...</option></select>
       <div id="pmDeviceInfo" style="display:none; font-size:12.5px; color:#666; margin:-8px 0 14px; padding:8px 10px; background:#f5f3ee; border-radius:4px;"></div>
       <label>Başlık</label>
       <input type="text" id="pmTitle" placeholder="Örn: Yemekhane Borcu Hatırlatması">
       <label>Mesaj</label>
       <textarea id="pmBody" placeholder="Mesajınızı yazın..."></textarea>
-      <div class="send-row"><button class="btn-primary" id="pmSendBtn">Sadece Bu Kişiye Gönder</button></div>
+      <div class="send-row"><button class="btn-primary" id="pmSendBtn">Sadece Bu Üyeye Gönder</button></div>
       <div class="feedback-msg" id="pmFeedback"></div>
     </div>
   </div>
@@ -468,7 +513,6 @@
 </div>
 
 <script>
-// ---------- Giriş ----------
 function getAdminPassword() { return sessionStorage.getItem('adminPassword') || ''; }
 
 async function tryLogin(password) {
@@ -480,7 +524,7 @@ async function showDashboard() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
   loadHistory(); loadMenu(); loadPhones(); loadTasks(); loadDevices(); loadFeedback();
-  loadStats(); loadPmDeviceList(); loadModGeneral(); loadModDirect(); loadManualPersonnel(); loadCalendar(); loadAdminPolls();
+  loadStats(); loadPmDeviceList(); loadModGeneral(); loadModDirect(); loadManualPersonnel(); loadCalendar(); loadAdminPolls(); loadMembers();
 }
 
 document.getElementById('loginBtn').addEventListener('click', async () => {
@@ -510,7 +554,6 @@ document.getElementById('logoutLink').addEventListener('click', () => {
   if (pw && await tryLogin(pw)) showDashboard();
 })();
 
-// ---------- Dashboard <-> view geçişleri ----------
 document.querySelectorAll('.dash-card').forEach(card => {
   card.addEventListener('click', () => {
     document.getElementById('view-dashboard').classList.remove('active');
@@ -525,12 +568,10 @@ document.querySelectorAll('[data-back]').forEach(link => {
   });
 });
 
-// ---------- Yardımcılar ----------
 const catNames = { acil: 'Acil', yemek: 'Yemek Listesi', vefat: 'Vefat', dogum: 'Doğum', genel: 'Genel' };
 function formatTime(iso) { return new Date(iso).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); }
 function esc(s) { return (s || '').replace(/</g, '&lt;'); }
 
-// ---------- GENEL SAYFALAMA MOTORU ----------
 const pgState = {};
 function pgGet(key) {
   if (!pgState[key]) pgState[key] = { page: 1, pageSize: parseInt(localStorage.getItem('admPg_' + key) || '10', 10) };
@@ -584,7 +625,6 @@ function renderAttachment(att) {
   return '<a href="' + att.url + '" target="_blank" style="display:inline-block;margin-top:8px;font-size:12.5px;color:var(--clay);font-weight:600;">📄 ' + esc(att.name || 'Dosyayı Aç') + '</a>';
 }
 
-// ---------- Duyuru ----------
 let selectedCategory = 'genel';
 document.getElementById('catSelect').addEventListener('change', (e) => { selectedCategory = e.target.value; });
 
@@ -708,7 +748,6 @@ async function toggleReads(id) {
   } catch { el.textContent = 'Yüklenemedi.'; }
 }
 
-// ---------- Genel liste yardımcı fonksiyonu ----------
 function buildEditFieldHtml(itemId, field, value) {
   const id = 'ef-' + itemId + '-' + field.key;
   if (field.type === 'textarea') {
@@ -829,7 +868,6 @@ function setupSimpleList(opts) {
   return { load };
 }
 
-// ---------- Yemekhane Menüsü ----------
 const DISH_LABELS = ['Çorba', 'Ana Yemek', 'Yardımcı Yemek', 'Tatlı / Ekstra'];
 const DISH_ICONS = ['🍲', '🍗', '🍚', '🍰'];
 const TR_DOW_NAMES = ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
@@ -1027,7 +1065,65 @@ const loadTasks = () => setupSimpleList({
   validateEdit: (f) => (!f.text) ? 'Görev boş olamaz.' : null,
 }).load;
 
-// ---------- Cihazlar ----------
+let membersAllItems = [];
+async function loadMembers() {
+  const el = document.getElementById('membersList');
+  el.className = 'list-empty'; el.textContent = 'Yükleniyor...';
+  try {
+    const res = await fetch('/api/personnel/accounts?password=' + encodeURIComponent(getAdminPassword()));
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Yüklenemedi');
+    membersAllItems = data.accounts || [];
+    document.getElementById('countUyeler').textContent = membersAllItems.length + ' üye';
+    renderMembersList(membersAllItems);
+  } catch (e) { el.className = 'list-empty'; el.textContent = e.message; }
+}
+
+function formatLastSeenAdmin(ts) {
+  if (!ts) return 'hiç görülmedi';
+  const d = new Date(ts);
+  const now = new Date();
+  const time = d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+  if (d.toDateString() === now.toDateString()) return time;
+  const yest = new Date(now); yest.setDate(now.getDate() - 1);
+  if (d.toDateString() === yest.toDateString()) return 'dün ' + time;
+  return d.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' }) + ' ' + time;
+}
+
+function renderMembersList(list) {
+  const el = document.getElementById('membersList');
+  if (!list || list.length === 0) { el.className = 'list-empty'; el.textContent = 'Henüz e-posta ile kayıt olmuş üye yok.'; return; }
+  el.className = '';
+  el.innerHTML = list.map(m => {
+    const initial = (m.adSoyad || '?').charAt(0).toUpperCase();
+    const statusText = m.online ? 'Şimdi çevrimiçi' : ('Son görülme: ' + formatLastSeenAdmin(m.lastSeen));
+    return '<div class="member-card ' + (m.online ? 'online' : 'offline') + '">' +
+        '<div class="member-avatar">' +
+          (m.avatar ? '<img src="' + esc(m.avatar) + '">' : initial) +
+          (m.online ? '<span class="online-dot"></span>' : '') +
+        '</div>' +
+        '<div class="member-info">' +
+          '<div class="member-name">' + esc(m.adSoyad) +
+            (m.emailDogrulandi ? '<span class="verified-badge">✓ Doğrulanmış</span>' : '<span class="unverified-badge">Doğrulanmamış</span>') +
+          '</div>' +
+          '<div class="member-sub">' + esc(m.email) + (m.telefon ? ' · ' + esc(m.telefon) : '') + '</div>' +
+          '<div class="member-sub">' + statusText + '</div>' +
+        '</div>' +
+        '<span class="device-pill">' + m.deviceCount + ' cihaz</span>' +
+      '</div>';
+  }).join('');
+}
+
+document.getElementById('memberSearch').addEventListener('input', (e) => {
+  const q = e.target.value.trim().toLocaleLowerCase('tr');
+  if (!q) { renderMembersList(membersAllItems); return; }
+  renderMembersList(membersAllItems.filter(m =>
+    (m.adSoyad || '').toLocaleLowerCase('tr').includes(q) ||
+    (m.email || '').toLocaleLowerCase('tr').includes(q) ||
+    (m.telefon || '').includes(q)
+  ));
+});
+
 let devicesAllItems = [];
 async function loadDevices() {
   const listEl = document.getElementById('devicesList');
@@ -1091,7 +1187,6 @@ function renderDevicesPage() {
   pgControls('devices', 'devicesPagination', devicesAllItems.length, renderDevicesPage);
 }
 
-// ---------- Görüşler ----------
 let feedbackAllItems = [];
 async function loadFeedback() {
   const listEl = document.getElementById('feedbackList');
@@ -1113,6 +1208,7 @@ function renderFeedbackPage() {
     '<div class="list-item" id="fbitem-' + f.id + '"><div class="li-main">' +
       '<div class="li-top"><span class="li-tag">' + esc(f.name || 'İsimsiz') + (f.editedAt ? ' · <i>düzenlendi</i>' : '') + '</span><span class="li-time">' + formatTime(f.time) + '</span></div>' +
       '<div class="li-body" id="fbbody-' + f.id + '">' + esc(f.text) + '</div>' +
+      ([f.phone, f.email].filter(Boolean).length ? '<div style="font-size:11px;color:#888;margin-top:4px;">' + [f.phone, f.email].filter(Boolean).map(esc).join(' · ') + '</div>' : '') +
       '<div id="fbedit-' + f.id + '" style="display:none;margin-top:10px;padding-top:10px;border-top:1px dashed #ddd;">' +
         '<input type="text" id="fbeditname-' + f.id + '" value="' + esc(f.name || '') + '" placeholder="İsim (opsiyonel)" style="margin-bottom:6px;">' +
         '<textarea id="fbeditbody-' + f.id + '" style="min-height:60px;">' + esc(f.text) + '</textarea>' +
@@ -1166,7 +1262,7 @@ async function deleteFeedback(id) {
     loadFeedback();
   } catch { alert('Silinemedi.'); }
 }
-// ---------- İstatistikler ----------
+
 async function loadStats() {
   const sumEl = document.getElementById('statsSummary');
   const perMsgEl = document.getElementById('statsPerMessage');
@@ -1209,52 +1305,48 @@ function statBox(value, label) {
     '<div style="font-size:10.5px;color:#888;margin-top:2px;">' + label + '</div></div>';
 }
 
-// ---------- Kişiye Özel Mesaj ----------
-let pmDevicesData = [];
+let pmAccountsData = [];
 async function loadPmDeviceList() {
   const sel = document.getElementById('pmDeviceSelect');
   try {
-    const res = await fetch('/api/devices');
+    const res = await fetch('/api/personnel/accounts?password=' + encodeURIComponent(getAdminPassword()));
     const data = await res.json();
-    pmDevicesData = data.devices || [];
-    if (pmDevicesData.length === 0) { sel.innerHTML = '<option value="">Kayıtlı kişi yok</option>'; return; }
-    sel.innerHTML = pmDevicesData.map(d => {
-      const label = d.name || d.suggestedName || ('Cihaz #' + d.deviceId.slice(-4));
-      return '<option value="' + esc(d.deviceId) + '">' + esc(label) + '</option>';
-    }).join('');
+    pmAccountsData = data.accounts || [];
+    if (pmAccountsData.length === 0) { sel.innerHTML = '<option value="">Kayıtlı üye yok</option>'; return; }
+    sel.innerHTML = pmAccountsData.map(a =>
+      '<option value="' + esc(a.email) + '">' + esc(a.adSoyad) + (a.deviceCount > 1 ? ' (' + a.deviceCount + ' cihaz)' : '') + '</option>'
+    ).join('');
     showPmDeviceInfo();
   } catch { sel.innerHTML = '<option value="">Yüklenemedi</option>'; }
 }
 
 function showPmDeviceInfo() {
-  const deviceId = document.getElementById('pmDeviceSelect').value;
+  const email = document.getElementById('pmDeviceSelect').value;
   const infoEl = document.getElementById('pmDeviceInfo');
-  const d = pmDevicesData.find(x => x.deviceId === deviceId);
-  if (!d) { infoEl.style.display = 'none'; return; }
-  const phone = d.suggestedPhone || null;
-  const email = d.email || null;
-  if (!phone && !email) { infoEl.style.display = 'none'; return; }
+  const a = pmAccountsData.find(x => x.email === email);
+  if (!a) { infoEl.style.display = 'none'; return; }
   infoEl.innerHTML = [
-    phone ? '📞 ' + esc(phone) : null,
-    email ? '✉️ ' + esc(email) : null,
+    a.telefon ? '📞 ' + esc(a.telefon) : null,
+    '✉️ ' + esc(a.email),
+    a.emailDogrulandi ? '✓ Doğrulanmış' : '⚠️ Doğrulanmamış',
   ].filter(Boolean).join(' &nbsp;·&nbsp; ');
   infoEl.style.display = 'block';
 }
 document.getElementById('pmDeviceSelect').addEventListener('change', showPmDeviceInfo);
 
 document.getElementById('pmSendBtn').addEventListener('click', async () => {
-  const deviceId = document.getElementById('pmDeviceSelect').value;
+  const email = document.getElementById('pmDeviceSelect').value;
   const title = document.getElementById('pmTitle').value.trim();
   const body = document.getElementById('pmBody').value.trim();
   const fb = document.getElementById('pmFeedback');
-  if (!deviceId) { fb.textContent = 'Kişi seçmelisin.'; fb.className = 'feedback-msg err'; return; }
+  if (!email) { fb.textContent = 'Üye seçmelisin.'; fb.className = 'feedback-msg err'; return; }
   if (!title || !body) { fb.textContent = 'Başlık ve mesaj gerekli.'; fb.className = 'feedback-msg err'; return; }
   const btn = document.getElementById('pmSendBtn');
   btn.disabled = true; fb.textContent = 'Gönderiliyor...'; fb.className = 'feedback-msg';
   try {
     const res = await fetch('/api/send-to', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: getAdminPassword(), deviceId, title, body, category: 'genel' })
+      body: JSON.stringify({ password: getAdminPassword(), email, title, body, category: 'genel' })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Gönderilemedi');
@@ -1264,7 +1356,6 @@ document.getElementById('pmSendBtn').addEventListener('click', async () => {
   finally { btn.disabled = false; }
 });
 
-// ---------- Sohbet Denetimi ----------
 document.getElementById('modTabGeneral').addEventListener('click', () => {
   document.getElementById('modTabGeneral').style.background = 'var(--ink)';
   document.getElementById('modTabDirect').style.background = '#bbb';
@@ -1294,12 +1385,17 @@ function renderModGeneralPage() {
   if (modGeneralAllItems.length === 0) { el.className = 'list-empty'; el.textContent = 'Henüz mesaj yok.'; pgControls('modGeneral', 'modGeneralPagination', 0, renderModGeneralPage); return; }
   el.className = '';
   const pageItems = pgSlice('modGeneral', modGeneralAllItems);
-  el.innerHTML = pageItems.map(m =>
-    '<div class="list-item"><div class="li-main">' +
-      '<div class="li-top"><span class="li-tag">' + esc(m.name || 'İsimsiz') + '</span><span class="li-time">' + formatTime(m.time) + '</span></div>' +
-      '<div class="li-body">' + esc(m.text) + '</div>' +
-    '</div><button class="btn-danger" data-del-chat-id="' + m.id + '">Sil</button></div>'
-  ).join('');
+  el.innerHTML = pageItems.map(m => {
+    const nm = m.name || 'İsimsiz';
+    return '<div class="chat-card">' +
+        '<div class="chat-avatar-mini">' + nm.charAt(0).toUpperCase() + '</div>' +
+        '<div style="flex:1; min-width:0;">' +
+          '<div class="li-top"><span class="li-tag">' + esc(nm) + '</span><span class="li-time">' + formatTime(m.time) + '</span></div>' +
+          '<div class="li-body">' + esc(m.text) + '</div>' +
+        '</div>' +
+        '<button class="btn-danger" data-del-chat-id="' + m.id + '">Sil</button>' +
+      '</div>';
+  }).join('');
   el.querySelectorAll('[data-del-chat-id]').forEach(b => b.addEventListener('click', () => deleteChatMsg('general', b.dataset.delChatId)));
   pgControls('modGeneral', 'modGeneralPagination', modGeneralAllItems.length, renderModGeneralPage);
 }
@@ -1319,12 +1415,17 @@ function renderModDirectPage() {
   if (modDirectAllItems.length === 0) { el.className = 'list-empty'; el.textContent = 'Henüz özel mesaj yok.'; pgControls('modDirect', 'modDirectPagination', 0, renderModDirectPage); return; }
   el.className = '';
   const pageItems = pgSlice('modDirect', modDirectAllItems);
-  el.innerHTML = pageItems.map(m =>
-    '<div class="list-item"><div class="li-main">' +
-      '<div class="li-top"><span class="li-tag">' + esc(m.fromLabel) + ' → ' + esc(m.toLabel) + '</span><span class="li-time">' + formatTime(m.time) + '</span></div>' +
-      '<div class="li-body">' + esc(m.text) + '</div>' +
-    '</div><button class="btn-danger" data-del-chat-id="' + m.id + '">Sil</button></div>'
-  ).join('');
+  el.innerHTML = pageItems.map(m => {
+    const fromNm = m.fromLabel || 'Bilinmeyen';
+    return '<div class="chat-card" style="border-left-color:var(--clay);">' +
+        '<div class="chat-avatar-mini" style="background:linear-gradient(135deg, var(--clay), var(--ink));">' + fromNm.charAt(0).toUpperCase() + '</div>' +
+        '<div style="flex:1; min-width:0;">' +
+          '<div class="li-top"><span class="li-tag">' + esc(fromNm) + ' → ' + esc(m.toLabel || 'Bilinmeyen') + '</span><span class="li-time">' + formatTime(m.time) + '</span></div>' +
+          '<div class="li-body">' + esc(m.text) + '</div>' +
+        '</div>' +
+        '<button class="btn-danger" data-del-chat-id="' + m.id + '">Sil</button>' +
+      '</div>';
+  }).join('');
   el.querySelectorAll('[data-del-chat-id]').forEach(b => b.addEventListener('click', () => deleteChatMsg('direct', b.dataset.delChatId)));
   pgControls('modDirect', 'modDirectPagination', modDirectAllItems.length, renderModDirectPage);
 }
@@ -1338,7 +1439,6 @@ async function deleteChatMsg(type, id) {
   } catch { alert('Silinemedi.'); }
 }
 
-// ---------- Personel Ekle (tek tek, form ile) ----------
 function showPopup(title, msg, icon) {
   document.getElementById('toastTitle').textContent = title;
   document.getElementById('toastMsg').textContent = msg;
@@ -1460,7 +1560,6 @@ async function deleteManualPersonnel(deviceId) {
   } catch { alert('Silinemedi.'); }
 }
 
-// ---------- ANKET ----------
 document.getElementById('doCreatePollBtn').addEventListener('click', async () => {
   const question = document.getElementById('pollQuestion').value.trim();
   const options = Array.from(document.querySelectorAll('.poll-option-input')).map(i => i.value.trim()).filter(Boolean);
@@ -1540,7 +1639,6 @@ async function deletePoll(id) {
   } catch { alert('Silinemedi.'); }
 }
 
-// ---------- TAKVİM ----------
 const TR_MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 
 const TR_HOLIDAYS_FIXED = [
