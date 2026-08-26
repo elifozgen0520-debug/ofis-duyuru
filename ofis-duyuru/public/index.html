@@ -1826,7 +1826,7 @@ document.getElementById('btnWizVerify').addEventListener('click', async () => {
     try {
       const loginRes = await fetch('/api/self-login', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: wizPendingEmail, sifre: wizPendingPassword })
+        body: JSON.stringify({ email: wizPendingEmail, sifre: wizPendingPassword, deviceId: getDeviceId() })
       });
       const loginData = await loginRes.json();
       if (loginRes.ok) mealsSetToken(loginData.token, true);
@@ -1863,7 +1863,7 @@ document.getElementById('btnWizLogin').addEventListener('click', async () => {
   try {
     const res = await fetch('/api/self-login', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, sifre })
+      body: JSON.stringify({ email, sifre, deviceId: getDeviceId() })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Giriş yapılamadı.');
@@ -3537,6 +3537,9 @@ async function updateMealsWelcomeBar() {
         topIcon.textContent = '👋';
         topText.innerHTML = 'Hoşgeldin, ' + esc(data.adSoyad) + ' <span title="Doğrulanmış hesap" style="color:#7ED8A0;">✓</span>';
         if (logoutBtn) logoutBtn.style.display = 'inline-flex';
+        // Kendiliğinden onarım: bu cihaz eski (accountEmail bağlantısı kurulmadan önceki) bir
+        // girişten kalma olabilir — sessizce yeniden bağlıyoruz, kullanıcı hiçbir şey fark etmez.
+        fetch('/api/self-relink', { method: 'POST', headers: chatAuthHeaders(), body: JSON.stringify({ deviceId: getDeviceId() }) }).catch(() => {});
         return;
       }
     } catch(e){}
@@ -3841,7 +3844,7 @@ document.getElementById('inlineMealsLoginBtn').addEventListener('click', async (
   try {
     const res = await fetch('/api/self-login', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, sifre })
+      body: JSON.stringify({ email, sifre, deviceId: getDeviceId() })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Giriş yapılamadı.');
