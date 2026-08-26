@@ -368,6 +368,45 @@ app.get('/api/personnel/accounts', async (req, res) => {
   res.json({ accounts: list });
 });
 
+// --- İZİNLİ TELEFONLAR (admin tarafından yönetilir) ---
+// Yeni üye kaydı sırasında, telefon numarası kurum köprüsünde (PHP personel tablosu) bulunamazsa
+// bu listeye de bakılır. PHP tarafında henüz görünmeyen yeni işe başlayanlar için kullanışlı.
+app.get('/api/allowed-phones', async (req, res) => {
+  const result = checkPassword(req.query.password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const list = (await loadJson(ALLOWED_PHONES_KEY)).slice().reverse();
+  res.json({ items: list });
+});
+
+app.post('/api/allowed-phones', async (req, res) => {
+  const { password, name, telefon } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const cleanName = (name || '').trim();
+  const cleanPhone = (telefon || '').trim();
+  if (!cleanName || cleanPhone.replace(/\D/g, '').length < 10) {
+    return res.status(400).json({ ok: false, error: 'İsim ve geçerli bir telefon numarası gerekli.' });
+  }
+  const list = await loadJson(ALLOWED_PHONES_KEY);
+  const son10 = cleanPhone.replace(/\D/g, '').slice(-10);
+  if (list.some(a => a.telefon.replace(/\D/g, '').slice(-10) === son10)) {
+    return res.status(400).json({ ok: false, error: 'Bu telefon numarası zaten listede.' });
+  }
+  const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name: cleanName, telefon: cleanPhone, addedAt: new Date().toISOString() };
+  list.push(item);
+  await saveJson(ALLOWED_PHONES_KEY, list);
+  res.json({ ok: true, item });
+});
+
+app.delete('/api/allowed-phones/:id', async (req, res) => {
+  const { password } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  const list = (await loadJson(ALLOWED_PHONES_KEY)).filter(a => a.id !== req.params.id);
+  await saveJson(ALLOWED_PHONES_KEY, list);
+  res.json({ ok: true });
+});
+
 // --- TOPLU PERSONEL EKLEME (elle, uygulama kurmamış kişiler için — sadece e-posta ile ulaşılabilir) ---
 app.post('/api/personnel/bulk-add', async (req, res) => {
   const { password, entries } = req.body;
@@ -515,9 +554,10 @@ app.post('/api/feedback', async (req, res) => {
   const name = (req.body.name || '').trim();
   const phone = (req.body.phone || '').trim();
   const email = (req.body.email || '').trim();
+  if (!name) return res.status(400).json({ ok: false, error: 'Adınızı ve soyadınızı girmelisiniz.' });
   if (!text) return res.status(400).json({ ok: false, error: 'Boş gönderilemez.' });
   const list = await loadJson(FEEDBACK_KEY);
-  const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), text, name: name || null, phone: phone || null, email: email || null, time: new Date().toISOString() };
+  const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), text, name, phone: phone || null, email: email || null, time: new Date().toISOString() };
   list.push(item);
   await saveJson(FEEDBACK_KEY, list.slice(-200));
   res.json({ ok: true });
@@ -704,18 +744,24 @@ app.delete('/api/devices/:deviceId', async (req, res) => {
   res.json({ ok: true });
 });
 
-app.post('/api/send', upload.single('attachment'), async (req, res) => {
-  const { password, category, title, body, alsoEmail } = req.body;
+app.post('/api/send', upload.array('attachments', 6), async (req, res) => {
+  const { password, category, title, body, alsoEmail, date } = req.body;
   const result = checkPassword(password, req);
   if (passwordCheckResponse(res, result)) return;
   if (!title || !body) return res.status(400).json({ ok: false, error: 'Başlık ve mesaj zorunlu.' });
 
-  let attachment;
+  // Birden fazla dosya (galeri) desteği — ilki manşet/bildirim kapağı olarak kullanılır.
+  let attachments = [];
   try {
-    attachment = await attachmentFromFile(req.file);
+    for (const file of (req.files || [])) {
+      const a = await attachmentFromFile(file);
+      if (a) attachments.push({ ...a, likedBy: [] });
+    }
   } catch (err) {
     return res.status(400).json({ ok: false, error: err.message || 'Dosya yüklenemedi.' });
   }
+  const attachment = attachments.find(a => a.type === 'image') || attachments[0] || null;
+
   const messageId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   const subs = await loadJson(SUBS_KEY);
 
@@ -753,8 +799,11 @@ app.post('/api/send', upload.single('attachment'), async (req, res) => {
 
   await saveJson(SUBS_KEY, stillValid);
 
+  // Admin isterse duyuruya geçmişe dönük ya da ileri bir tarih verebilir; boşsa şimdiki zaman kullanılır.
+  const finalTime = (date && !isNaN(Date.parse(date))) ? new Date(date).toISOString() : new Date().toISOString();
+
   const messages = await loadJson(MESSAGES_KEY);
-  messages.push({ id: messageId, category: category || 'genel', title, body, time: new Date().toISOString(), attachment, reads: [] });
+  messages.push({ id: messageId, category: category || 'genel', title, body, time: finalTime, attachment, attachments, reads: [] });
   await saveJson(MESSAGES_KEY, messages.slice(-100));
 
   let emailResult = null;
@@ -837,8 +886,8 @@ app.delete('/api/messages/:id', async (req, res) => {
 });
 
 // --- DUYURU DÜZENLEME (yeni bildirim GÖNDERMEZ, sadece metni günceller) ---
-app.put('/api/messages/:id', async (req, res) => {
-  const { password, title, body, category } = req.body;
+app.put('/api/messages/:id', upload.array('newAttachments', 6), async (req, res) => {
+  const { password, title, body, category, date, removeUrls } = req.body;
   const result = checkPassword(password, req);
   if (passwordCheckResponse(res, result)) return;
   if (!title || !body) return res.status(400).json({ ok: false, error: 'Başlık ve mesaj zorunlu.' });
@@ -850,10 +899,57 @@ app.put('/api/messages/:id', async (req, res) => {
   msg.title = title;
   msg.body = body;
   if (category) msg.category = category;
+  if (date && !isNaN(Date.parse(date))) msg.time = new Date(date).toISOString();
+
+  // Mevcut galeriden kaldırılmak istenenleri çıkar.
+  if (!Array.isArray(msg.attachments)) msg.attachments = msg.attachment ? [msg.attachment] : [];
+  if (removeUrls) {
+    try {
+      const toRemove = JSON.parse(removeUrls);
+      if (Array.isArray(toRemove) && toRemove.length) {
+        msg.attachments = msg.attachments.filter(a => !toRemove.includes(a.url));
+      }
+    } catch (e) {}
+  }
+
+  // Yeni yüklenen dosyaları galeriye ekle.
+  try {
+    for (const file of (req.files || [])) {
+      const a = await attachmentFromFile(file);
+      if (a) msg.attachments.push({ ...a, likedBy: [] });
+    }
+  } catch (err) {
+    return res.status(400).json({ ok: false, error: err.message || 'Dosya yüklenemedi.' });
+  }
+
+  // Manşet/bildirim kapağı olarak ilk görseli kullan (geriye dönük uyumluluk için `attachment` alanı).
+  msg.attachment = msg.attachments.find(a => a.type === 'image') || msg.attachments[0] || null;
+
   msg.editedAt = new Date().toISOString();
 
   await saveJson(MESSAGES_KEY, messages);
   res.json({ ok: true, message: msg });
+});
+
+// --- DUYURU GÖRSELİNE BEĞENİ (galeri fotoğrafları için) ---
+app.post('/api/messages/:id/attachments/:idx/like', async (req, res) => {
+  const { deviceId } = req.body;
+  if (!deviceId) return res.status(400).json({ ok: false, error: 'Cihaz kimliği eksik.' });
+  const idx = parseInt(req.params.idx, 10);
+  const messages = await loadJson(MESSAGES_KEY);
+  const msg = messages.find(m => m.id === req.params.id);
+  if (!msg || !Array.isArray(msg.attachments) || !msg.attachments[idx]) {
+    return res.status(404).json({ ok: false, error: 'Görsel bulunamadı.' });
+  }
+  const att = msg.attachments[idx];
+  if (!att.likedBy) att.likedBy = [];
+  const already = att.likedBy.includes(deviceId);
+  if (already) att.likedBy = att.likedBy.filter(d => d !== deviceId);
+  else att.likedBy.push(deviceId);
+  // Kapak görseli de galerideki ilk resimle aynı referansı paylaşıyor olabilir, senkron tutalım.
+  if (msg.attachment && msg.attachment.url === att.url) msg.attachment.likedBy = att.likedBy;
+  await saveJson(MESSAGES_KEY, messages);
+  res.json({ ok: true, liked: !already, likeCount: att.likedBy.length });
 });
 
 app.post('/api/messages/:id/read', async (req, res) => {
@@ -1450,6 +1546,7 @@ app.delete('/api/calendar/:id', async (req, res) => {
 const crypto = require('crypto');
 
 const SELF_ACCOUNTS_KEY = 'self-accounts';
+const ALLOWED_PHONES_KEY = 'allowed-phones';
 const SELF_OTP_KEY = 'self-otp-codes';
 const SELF_TOKENS_KEY = 'self-tokens';
 const SELF_ALLOWED_EMAIL_DOMAINS = ['gmail.com', 'hotmail.com'];
@@ -1515,24 +1612,31 @@ app.post('/api/self-register', async (req, res) => {
   if (sifre.length < 6) return res.status(400).json({ ok: false, error: 'Şifre en az 6 karakter olmalı.' });
 
   // --- KURUM DOĞRULAMASI: bu kurum içi bir uygulama, o yüzden yeni kayıt açan telefon numarası
-  // kurumun personel listesiyle (PHP tarafındaki köprü üzerinden) eşleşmek zorunda. Eşleşmezse
-  // kayıt reddedilir ve kişi sistem sorumlusuna yönlendirilir.
-  try {
-    const bridgeRes = await fetch(BRIDGE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Bridge-Key': BRIDGE_SECRET },
-      body: JSON.stringify({ telefon }),
-    });
-    const bridgeData = await bridgeRes.json();
-    if (!bridgeData.ok) {
-      return res.status(400).json({
-        ok: false,
-        error: 'Bu telefon numarası kurumumuzun personel kayıtlarıyla eşleşmiyor. Bu uygulama yalnızca kurum personeline özeldir — kaydınızın yapılabilmesi için lütfen sistem sorumlusuna (yönetici) telefon numaranızı bildirerek yazılı olarak ulaşın.',
+  // ya kurumun personel listesiyle (PHP tarafındaki köprü üzerinden) eşleşmeli, ya da admin
+  // panelinden elle eklenmiş "İzinli Telefonlar" listesinde olmalı (örn. PHP tarafında henüz
+  // görünmeyen yeni işe başlayanlar için). İkisi de eşleşmezse kayıt reddedilir.
+  const son10 = telefon.replace(/\D/g, '').slice(-10);
+  const allowedList = await loadJson(ALLOWED_PHONES_KEY);
+  const allowedMatch = allowedList.find(a => a.telefon.replace(/\D/g, '').slice(-10) === son10);
+
+  if (!allowedMatch) {
+    try {
+      const bridgeRes = await fetch(BRIDGE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Bridge-Key': BRIDGE_SECRET },
+        body: JSON.stringify({ telefon }),
       });
+      const bridgeData = await bridgeRes.json();
+      if (!bridgeData.ok) {
+        return res.status(400).json({
+          ok: false,
+          error: 'Bu telefon numarası kurumumuzun personel kayıtlarıyla eşleşmiyor. Bu uygulama yalnızca kurum personeline özeldir — kaydınızın yapılabilmesi için lütfen sistem sorumlusuna (yönetici) telefon numaranızı bildirerek yazılı olarak ulaşın.',
+        });
+      }
+    } catch (err) {
+      console.error('Kayıt sırasında kurum doğrulaması yapılamadı:', err.message);
+      return res.status(502).json({ ok: false, error: 'Kurum kayıtları şu an doğrulanamadı, lütfen daha sonra tekrar deneyin.' });
     }
-  } catch (err) {
-    console.error('Kayıt sırasında kurum doğrulaması yapılamadı:', err.message);
-    return res.status(502).json({ ok: false, error: 'Kurum kayıtları şu an doğrulanamadı, lütfen daha sonra tekrar deneyin.' });
   }
 
   const accounts = await loadJson(SELF_ACCOUNTS_KEY);
