@@ -2097,6 +2097,10 @@ async function runGlobalSearch(q) {
     const res = await fetch('/api/search?q=' + encodeURIComponent(q) + '&_=' + Date.now(), { cache: 'no-store' });
     if (!res.ok) { resEl.innerHTML = `<div class="gsr-empty">Arama sunucusuna ulaşılamadı (kod: ${res.status}). server.js'in en güncel sürümde olduğundan emin ol.</div>`; return; }
     const data = await res.json();
+    // Resmi tatiller (Cumhuriyet Bayramı, Ramazan/Kurban Bayramı vb.) sunucuda değil, tarayıcıda
+    // sabit tanımlı — onları da Takvim sonuçlarının başına ekliyoruz.
+    const holidayMatches = searchHolidaysLocal(q);
+    data.calendar = [...holidayMatches, ...(data.calendar || [])].slice(0, 8);
     renderGlobalSearchResults(data);
   } catch (err) { resEl.innerHTML = '<div class="gsr-empty">Aranamadı: ' + esc(err.message) + '</div>'; }
 }
@@ -2303,6 +2307,24 @@ function getHolidayName(dateKey) {
   const parts = dateKey.split('-').map(Number);
   const fixed = TR_HOLIDAYS_FIXED.find(h => h.m === parts[1] && h.d === parts[2]);
   return fixed ? fixed.name : null;
+}
+
+// Resmi tatiller admin tarafından eklenen takvim notları gibi Redis'te durmuyor, tarayıcıda
+// sabit tanımlı — bu yüzden genel arama bunları ayrıca (yerel olarak) tarıyor.
+function searchHolidaysLocal(qRaw) {
+  const q = (qRaw || '').trim().toLocaleLowerCase('tr');
+  if (!q) return [];
+  const year = new Date().getFullYear();
+  const results = [];
+  TR_HOLIDAYS_FIXED.forEach(h => {
+    if (h.name.toLocaleLowerCase('tr').includes(q)) {
+      results.push({ date: year + '-' + String(h.m).padStart(2, '0') + '-' + String(h.d).padStart(2, '0'), text: h.name, holiday: true });
+    }
+  });
+  Object.entries(TR_HOLIDAYS_RELIGIOUS).forEach(([date, name]) => {
+    if (name.toLocaleLowerCase('tr').includes(q)) results.push({ date, text: name, holiday: true });
+  });
+  return results.slice(0, 8);
 }
 
 const CAL_CATEGORIES = {
@@ -2955,17 +2977,24 @@ document.getElementById('yemekSubTabMenu').addEventListener('click', () => {
   document.getElementById('yemekSubPanelMenu').style.display = 'block';
   document.getElementById('yemekSubPanelRecords').style.display = 'none';
 });
-document.getElementById('yemekSubTabRecords').addEventListener('click', () => {
+// Bu, sadece paneli gösterir — üyelik kontrolü (gate) içermez. goToYemekhaneTab() gibi
+// zaten kontrolden geçmiş yerlerden çağrılır, bu yüzden popup'ı tekrar tetiklemez.
+function showYemekRecordsPanel() {
   document.getElementById('yemekSubTabRecords').classList.add('active');
   document.getElementById('yemekSubTabMenu').classList.remove('active');
   document.getElementById('yemekSubPanelRecords').style.display = 'block';
   document.getElementById('yemekSubPanelMenu').style.display = 'none';
-  if (mealsGetToken()) { inlineMealsShowStep('inlineMealsStepRecords'); inlineMealsLoadRecords(); return; }
+  if (mealsGetToken()) { inlineMealsShowStep('inlineMealsStepRecords'); inlineMealsLoadRecords(); }
+  else { inlineMealsShowStep('inlineMealsStepRegister'); }
+}
+
+document.getElementById('yemekSubTabRecords').addEventListener('click', () => {
+  showYemekRecordsPanel();
+  if (mealsGetToken()) return;
   // Giriş yapılmamış: kayıt formunu sayfa içinde sessizce göstermek yerine, net bir açıklamayla
   // "Üye Girişi Yap / Üye Ol" popup'ını göster — form aşağıda kalıp kaybolmasın diye.
   const yemekhaneMsg = '<b>Kendi yemekhane geçmişini ve borcunu</b> görebilmek için kişisel e-postanla ve kendi telefon numaranla kayıt ol.<br><br>ℹ️ Yalnızca <b>Gmail</b> veya <b>Hotmail</b> adresiyle kayıt olabilirsin.';
   requireMealsLogin('Yemekhane', yemekhaneMsg);
-  inlineMealsShowStep('inlineMealsStepRegister');
 });
 
 // --- ACİL DURUM TELEFONLARI (canlı arama destekli) ---
@@ -4070,7 +4099,7 @@ function goToYemekhaneTab() {
   const yemekTab = document.querySelector('.tabs .tab-btn[data-tab="notlar"]');
   if (yemekTab) yemekTab.classList.add('active');
   document.getElementById('panel-notlar').classList.add('active');
-  document.getElementById('yemekSubTabRecords').click();
+  showYemekRecordsPanel();
   if (!mealsGetToken()) {
     // Bu cihazdan zaten bilinen bilgiler varsa (isim/telefon/kan grubu/foto) kayıt formunu önceden dolduruyoruz.
     const n = localStorage.getItem('selfName'); if (n) document.getElementById('inlineMealsRegName').value = n;
