@@ -4,6 +4,7 @@ const sharp = require('sharp');
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
+const XLSX = require('xlsx');
 const { Redis } = require('@upstash/redis');
 const { Resend } = require('resend');
 
@@ -1457,6 +1458,67 @@ function makeListApi(name, key) {
 makeListApi('notes', 'notes');
 makeListApi('phones', 'phones');
 makeListApi('tasks', 'tasks');
+
+// --- TELEFONLAR: EXCEL ŞABLONU İNDİRME ---
+// Admin bu şablonu indirip İsim/Telefon sütunlarını doldurup geri yükleyebilir —
+// tek tek eklemek yerine tüm listeyi tek seferde içeri aktarabilir.
+app.get('/api/phones/template', (req, res) => {
+  const wb = XLSX.utils.book_new();
+  const wsData = [
+    ['İsim', 'Telefon'],
+    ['Örnek: İtfaiye', '110'],
+    ['Örnek: Polis İmdat', '155'],
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  ws['!cols'] = [{ wch: 32 }, { wch: 18 }];
+  XLSX.utils.book_append_sheet(wb, ws, 'Telefonlar');
+  const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader('Content-Disposition', 'attachment; filename="telefon-sablonu.xlsx"');
+  res.send(buf);
+});
+
+// --- TELEFONLAR: EXCEL'DEN TOPLU İÇE AKTARMA ---
+const excelUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 3 * 1024 * 1024 } });
+app.post('/api/phones/import', excelUpload.single('file'), async (req, res) => {
+  const { password } = req.body;
+  const result = checkPassword(password, req);
+  if (passwordCheckResponse(res, result)) return;
+  if (!req.file) return res.status(400).json({ ok: false, error: 'Dosya seçilmedi.' });
+
+  let rows;
+  try {
+    const wb = XLSX.read(req.file.buffer, { type: 'buffer' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    rows = XLSX.utils.sheet_to_json(ws, { header: 1, blankrows: false });
+  } catch (err) {
+    return res.status(400).json({ ok: false, error: 'Excel dosyası okunamadı. Verilen şablonu kullandığından emin ol.' });
+  }
+
+  // İlk satır "İsim / Telefon" başlığıysa atla.
+  const dataRows = rows.filter((r, i) => {
+    if (i === 0 && r[0] && String(r[0]).toLocaleLowerCase('tr').includes('isim')) return false;
+    return true;
+  });
+
+  const phones = await loadJson('phones');
+  const existingNumbers = new Set(phones.map(p => (p.number || '').replace(/\D/g, '')));
+  let added = 0, skippedDup = 0, skippedInvalid = 0;
+
+  for (const row of dataRows) {
+    const name = (row[0] || '').toString().trim();
+    const number = (row[1] || '').toString().trim();
+    if (!name || !number) { skippedInvalid++; continue; }
+    const normalized = number.replace(/\D/g, '');
+    if (!normalized || existingNumbers.has(normalized)) { skippedDup++; continue; }
+    phones.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6) + added, name, number, time: new Date().toISOString(), done: false, attachment: null });
+    existingNumbers.add(normalized);
+    added++;
+  }
+
+  await saveJson('phones', phones.slice(-200));
+  res.json({ ok: true, added, skippedDup, skippedInvalid });
+});
 
 // --- YEMEKHANE MENÜSÜ (günlük, 4 çeşit yemek) ---
 const MENU_KEY = 'cafeteria-menu';
