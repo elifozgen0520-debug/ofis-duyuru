@@ -484,9 +484,10 @@ app.get('/api/self-profile/:deviceId', async (req, res) => {
 app.post('/api/feedback', async (req, res) => {
   const text = (req.body.text || '').trim();
   const name = (req.body.name || '').trim();
+  const phone = (req.body.phone || '').trim();
   if (!text) return res.status(400).json({ ok: false, error: 'Boş gönderilemez.' });
   const list = await loadJson(FEEDBACK_KEY);
-  const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), text, name: name || null, time: new Date().toISOString() };
+  const item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), text, name: name || null, phone: phone || null, time: new Date().toISOString() };
   list.push(item);
   await saveJson(FEEDBACK_KEY, list.slice(-200));
   res.json({ ok: true });
@@ -502,9 +503,10 @@ app.post('/api/feedback', async (req, res) => {
       html: `<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;">
         <h2 style="color:#7A2331;">Yeni bir mesaj geldi</h2>
         <p><b>Gönderen:</b> ${name ? name.replace(/</g, '&lt;') : 'İsimsiz'}</p>
+        ${phone ? `<p><b>Telefon:</b> ${phone.replace(/</g, '&lt;')}</p>` : ''}
         <p><b>Zaman:</b> ${new Date(item.time).toLocaleString('tr-TR')}</p>
         <div style="background:#f7f5f0; border-radius:8px; padding:14px 16px; margin-top:10px; white-space:pre-wrap; color:#1F2430;">${text.replace(/</g, '&lt;')}</div>
-        <p style="color:#999; font-size:12px; margin-top:16px;">Bu mesaj Görüş &amp; İletişim formu üzerinden otomatik gönderilmiştir. Cevap yazmak için gönderene ait bir iletişim bilgisi paylaşılmadıysa yönetim panelinden bakabilirsiniz.</p>
+        <p style="color:#999; font-size:12px; margin-top:16px;">Bu mesaj Görüş &amp; İletişim formu üzerinden otomatik gönderilmiştir.${phone ? ' Yukarıdaki numaradan geri dönüş yapabilirsiniz.' : ' Gönderene ait bir iletişim bilgisi paylaşılmadıysa yönetim panelinden bakabilirsiniz.'}</p>
       </div>`,
     }).catch(err => console.error('İletişim formu e-postası gönderilemedi:', err.message));
   }
@@ -1504,6 +1506,44 @@ app.post('/api/self-login', async (req, res) => {
   res.json({ ok: true, token, adSoyad: acc.adSoyad, telefon: acc.telefon });
 });
 
+// --- ŞİFREMİ UNUTTUM: kayıtlı e-postaya 6 haneli kod gönderir (aynı OTP altyapısı, mevcut kodu geçersiz kılar) ---
+app.post('/api/self-forgot-password', async (req, res) => {
+  const email = (req.body.email || '').trim().toLowerCase();
+  const accounts = await loadJson(SELF_ACCOUNTS_KEY);
+  const acc = accounts.find(a => a.email === email && a.emailDogrulandi);
+  // Güvenlik: e-posta kayıtlı olsun ya da olmasın aynı cevabı dönüyoruz —
+  // böylece bir saldırgan hangi e-postaların sistemde kayıtlı olduğunu bu yoldan öğrenemez.
+  if (acc) await selfOtpGonder(email);
+  res.json({ ok: true });
+});
+
+app.post('/api/self-reset-password', async (req, res) => {
+  const email = (req.body.email || '').trim().toLowerCase();
+  const kod = (req.body.kod || '').trim();
+  const yeniSifre = req.body.yeniSifre || '';
+  if (yeniSifre.length < 6) return res.status(400).json({ ok: false, error: 'Yeni şifre en az 6 karakter olmalı.' });
+
+  const codes = await loadJson(SELF_OTP_KEY);
+  const kodKaydi = codes.slice().reverse().find(c => c.email === email && !c.kullanildi);
+  if (!kodKaydi) return res.status(400).json({ ok: false, error: 'Geçerli bir kod bulunamadı. Yeni kod isteyin.' });
+  if (kodKaydi.denemeSayisi >= 5) return res.status(400).json({ ok: false, error: 'Çok fazla yanlış deneme. Yeni kod isteyin.' });
+  if (Date.now() > kodKaydi.sonKullanma) return res.status(400).json({ ok: false, error: 'Kodun süresi dolmuş. Yeni kod isteyin.' });
+  if (kod !== kodKaydi.kod) {
+    kodKaydi.denemeSayisi = (kodKaydi.denemeSayisi || 0) + 1;
+    await saveJson(SELF_OTP_KEY, codes);
+    return res.status(400).json({ ok: false, error: 'Kod hatalı, tekrar deneyin.' });
+  }
+  kodKaydi.kullanildi = true;
+  await saveJson(SELF_OTP_KEY, codes);
+
+  const accounts = await loadJson(SELF_ACCOUNTS_KEY);
+  const acc = accounts.find(a => a.email === email);
+  if (!acc) return res.status(404).json({ ok: false, error: 'Hesap bulunamadı.' });
+  acc.sifreHash = hashPassword(yeniSifre);
+  await saveJson(SELF_ACCOUNTS_KEY, accounts);
+  res.json({ ok: true });
+});
+
 async function selfAuthMiddleware(req, res, next) {
   const authHeader = req.headers['authorization'] || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : (req.query.token || '');
@@ -1520,11 +1560,15 @@ app.get('/api/my-meals', selfAuthMiddleware, async (req, res) => {
   const acc = accounts.find(a => a.email === req.selfEmail);
   if (!acc) return res.status(404).json({ ok: false, error: 'Hesap bulunamadı.' });
 
+  // ?donem_id=17 gibi gönderilirse o dönemin kayıtları gelir; hiç gönderilmezse
+  // PHP tarafı bugünün tarihine göre "içinde bulunulan dönemi" otomatik seçer.
+  const donemId = req.query.donem_id || null;
+
   try {
     const bridgeRes = await fetch(BRIDGE_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Bridge-Key': BRIDGE_SECRET },
-      body: JSON.stringify({ telefon: acc.telefon }),
+      body: JSON.stringify({ telefon: acc.telefon, donem_id: donemId }),
     });
     const data = await bridgeRes.json();
     res.json(data);
