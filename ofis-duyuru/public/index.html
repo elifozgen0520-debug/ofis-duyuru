@@ -867,6 +867,9 @@
       <img src="/icon-192.png" alt="Kurum logosu" style="width:140px; height:140px; border-radius:50%; margin:0 auto 14px; display:block; box-shadow:0 10px 30px rgba(0,0,0,0.3);">
       <div class="ttitle" id="orgLogoTitle">Kurum Adı</div>
       <button type="button" class="btn-primary" id="orgLogoCloseBtn" style="width:100%; margin-top:14px;">Kapat</button>
+      <div style="font-size:10.5px; color:#999; margin-top:14px; line-height:1.5; border-top:1px dashed #ddd; padding-top:10px;">
+        Tasarım &amp; Kodlama<br>Milli Emlak ve İş Güvenliği Uzmanı, Webmaster<br><b>Salih ÖZGEN</b> — 2026
+      </div>
     </div>
   </div>
 
@@ -1132,6 +1135,22 @@
     </div>
   </div>
 
+  <!-- GÖRSEL GALERİSİ LIGHTBOX (duyuruya birden fazla resim eklenmişse) -->
+  <div class="toast-overlay" id="galleryLightbox" style="z-index:1900;">
+    <div class="toast-box" style="max-width:520px; padding:14px; background:#0B0F14;">
+      <button type="button" id="galleryCloseBtn" style="position:absolute; top:10px; right:14px; background:none; border:none; color:#fff; font-size:22px; cursor:pointer;">✕</button>
+      <div style="position:relative;">
+        <img id="galleryImg" src="" style="width:100%; max-height:70vh; object-fit:contain; border-radius:8px; display:block; background:#000;">
+        <button type="button" id="galleryPrevBtn" style="position:absolute; left:6px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:#fff; border:none; width:36px; height:36px; border-radius:50%; font-size:18px; cursor:pointer;">‹</button>
+        <button type="button" id="galleryNextBtn" style="position:absolute; right:6px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:#fff; border:none; width:36px; height:36px; border-radius:50%; font-size:18px; cursor:pointer;">›</button>
+      </div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-top:10px;">
+        <span id="galleryCounter" style="color:#ccc; font-size:12px;"></span>
+        <button type="button" id="galleryLikeBtn" style="background:none; border:1px solid rgba(255,255,255,0.3); color:#fff; border-radius:20px; padding:6px 14px; font-size:13px; cursor:pointer;">🤍 <span id="galleryLikeCount">0</span></button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-backdrop" id="feedbackBackdrop"></div>
 
   <!-- PROFİL MODALI -->
@@ -1188,8 +1207,9 @@
     <div class="sub" style="color:#444; line-height:1.5;">
       İletmek istediğiniz not veya talebiniz, Duyuru olarak yayımlanmasını istediğiniz duyuru varsa Yönetime yazabilirsiniz.
     </div>
-    <label>Adınız Soyadınız (Opsiyonel)</label>
-    <input type="text" id="feedbackName" placeholder="İsimsiz bırakabilirsiniz">
+    <label>Adınız Soyadınız *</label>
+    <input type="text" id="feedbackName" placeholder="Örn: Ahmet Yılmaz">
+    <div style="font-size:11px; color:#888; margin-top:-8px; margin-bottom:6px;">Sana doğru şekilde hitap edip cevap yazabilmemiz için isim gerekli.</div>
     <label>Telefon (Opsiyonel — size geri dönüş yapabilmemiz için)</label>
     <input type="tel" id="feedbackPhone" placeholder="Örn: 0555 xxx xx xx">
     <label>E-posta (Opsiyonel — size geri dönüş yapabilmemiz için)</label>
@@ -2308,6 +2328,57 @@ async function deleteOwnComment(msgId, commentId) {
   } catch (err) { showToast(err.message || 'Silinemedi.', 'err'); }
 }
 
+// ---------- GÖRSEL GALERİSİ LIGHTBOX (ileri/geri + beğeni) ----------
+let galleryState = { images: [], msgId: null, index: 0 };
+
+function galleryRender() {
+  const img = galleryState.images[galleryState.index];
+  if (!img) return;
+  document.getElementById('galleryImg').src = img.url;
+  document.getElementById('galleryCounter').textContent = (galleryState.index + 1) + ' / ' + galleryState.images.length;
+  document.getElementById('galleryPrevBtn').style.display = galleryState.images.length > 1 ? 'block' : 'none';
+  document.getElementById('galleryNextBtn').style.display = galleryState.images.length > 1 ? 'block' : 'none';
+  const myId = getDeviceId();
+  const liked = (img.likedBy || []).includes(myId);
+  document.getElementById('galleryLikeBtn').innerHTML = (liked ? '❤️' : '🤍') + ' <span id="galleryLikeCount">' + ((img.likedBy || []).length) + '</span>';
+}
+
+function openGalleryLightbox(images, msgId, index) {
+  galleryState = { images, msgId, index: index || 0 };
+  galleryRender();
+  document.getElementById('galleryLightbox').classList.add('show');
+}
+
+document.getElementById('galleryCloseBtn').addEventListener('click', () => document.getElementById('galleryLightbox').classList.remove('show'));
+document.getElementById('galleryLightbox').addEventListener('click', (e) => {
+  if (e.target.id === 'galleryLightbox') document.getElementById('galleryLightbox').classList.remove('show');
+});
+document.getElementById('galleryPrevBtn').addEventListener('click', () => {
+  galleryState.index = (galleryState.index - 1 + galleryState.images.length) % galleryState.images.length;
+  galleryRender();
+});
+document.getElementById('galleryNextBtn').addEventListener('click', () => {
+  galleryState.index = (galleryState.index + 1) % galleryState.images.length;
+  galleryRender();
+});
+document.getElementById('galleryLikeBtn').addEventListener('click', async () => {
+  const idx = galleryState.index;
+  try {
+    const res = await fetch(`/api/messages/${galleryState.msgId}/attachments/${idx}/like`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deviceId: getDeviceId() })
+    });
+    const data = await res.json();
+    if (!res.ok) return;
+    const myId = getDeviceId();
+    const img = galleryState.images[idx];
+    img.likedBy = img.likedBy || [];
+    if (data.liked && !img.likedBy.includes(myId)) img.likedBy.push(myId);
+    if (!data.liked) img.likedBy = img.likedBy.filter(d => d !== myId);
+    galleryRender();
+  } catch {}
+});
+
 async function openDuyuruDetay(id) {
   const m = historyItemsCache.find(x => x.id === id);
   if (!m) return;
@@ -2318,7 +2389,19 @@ async function openDuyuruDetay(id) {
   document.getElementById('duyuruDetayTitle').textContent = m.title;
   document.getElementById('duyuruDetayMeta').textContent = '📅 ' + formatTime(m.time) + (m.editedAt ? ' · düzenlendi' : '');
   document.getElementById('duyuruDetayBody').textContent = m.body;
-  document.getElementById('duyuruDetayAttach').innerHTML = renderAttachment(m.attachment);
+  const galleryImgs = (m.attachments && m.attachments.length ? m.attachments : (m.attachment ? [m.attachment] : [])).filter(a => a && a.type === 'image');
+  const nonImageAtt = (m.attachments || []).find(a => a && a.type !== 'image') || (m.attachment && m.attachment.type !== 'image' ? m.attachment : null);
+  if (galleryImgs.length > 0) {
+    document.getElementById('duyuruDetayAttach').innerHTML =
+      '<div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">' +
+        galleryImgs.map((a, i) => `<img src="${a.url}" data-gallery-open="${i}" style="width:72px; height:72px; object-fit:cover; border-radius:8px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.15);">`).join('') +
+      '</div>' + (nonImageAtt ? renderAttachment(nonImageAtt) : '');
+    document.getElementById('duyuruDetayAttach').querySelectorAll('[data-gallery-open]').forEach(img => {
+      img.addEventListener('click', () => openGalleryLightbox(galleryImgs, m.id, parseInt(img.dataset.galleryOpen, 10)));
+    });
+  } else {
+    document.getElementById('duyuruDetayAttach').innerHTML = renderAttachment(m.attachment);
+  }
 
   const readCount = (m.reads && m.reads.length) || 0;
   document.getElementById('duyuruDetayReadInfo').textContent = `👁 ${readCount} kişi okudu`;
@@ -2875,6 +2958,7 @@ document.getElementById('feedbackSendBtn').addEventListener('click', async () =>
   const phone = document.getElementById('feedbackPhone').value.trim();
   const email = document.getElementById('feedbackEmail').value.trim();
   const fb = document.getElementById('feedbackModalFeedback');
+  if (!name) { showToast('Sana doğru hitap edebilmemiz için adını yazmalısın.', 'err'); return; }
   if (!text) { showToast('Mesaj boş bırakılamaz.', 'err'); return; }
   try {
     const res = await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, name, phone, email }) });
