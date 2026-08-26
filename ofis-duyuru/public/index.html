@@ -1113,8 +1113,6 @@
     <div class="card-header"><h2>Profilim</h2><button class="card-close" data-close="profileModal" aria-label="Kapat">✕</button></div>
     <div class="sub">Adınızı girerek okundu kayıtlarında görünmesini sağlayabilirsiniz.</div>
 
-    <div id="profileAccountBox" style="border-radius:10px; padding:12px 14px; margin-bottom:16px; font-size:12.5px;"></div>
-
     <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
       <img id="profileAvatarPreview" src="" alt="" style="width:64px; height:64px; border-radius:50%; object-fit:cover; background:#eee; display:none; border:2px solid var(--line);">
       <div id="profileAvatarPlaceholder" style="width:64px; height:64px; border-radius:50%; background:#eee; display:flex; align-items:center; justify-content:center; font-size:26px; color:#aaa;">👤</div>
@@ -2717,7 +2715,6 @@ document.getElementById('profileLink').addEventListener('click', async (e) => {
   document.getElementById('profileName').value = localStorage.getItem('selfName') || '';
   document.getElementById('profilePhone').value = localStorage.getItem('selfPhone') || '';
   document.getElementById('profileBloodType').value = localStorage.getItem('selfBloodType') || '';
-  renderProfileAccountBox();
   try {
     const res = await fetch('/api/self-profile/' + getDeviceId() + '?_=' + Date.now(), { cache: 'no-store' });
     const data = await res.json();
@@ -2732,33 +2729,6 @@ document.getElementById('profileLink').addEventListener('click', async (e) => {
     }
   } catch {}
 });
-
-// Tek gerçek hesap (e-posta + şifre, yemekhane kaydı) durumunu burada gösteriyoruz —
-// böylece "Profilim" kendi başına ikinci bir kayıt formu gibi görünmüyor, gerçek hesaba yönlendiriyor.
-function renderProfileAccountBox() {
-  const box = document.getElementById('profileAccountBox');
-  const token = mealsGetToken();
-  if (token) {
-    box.style.background = '#f0fdf4'; box.style.border = '1px solid #dcfce7';
-    box.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-        <span>✓ Yemekhane hesabına bağlısın.</span>
-        <button type="button" id="profileLogoutBtn" style="background:none; border:1px solid #ccc; color:#888; font-size:11px; padding:5px 10px; border-radius:20px;">🚪 Çıkış</button>
-      </div>`;
-    document.getElementById('profileLogoutBtn').addEventListener('click', () => {
-      mealsSetToken(null);
-      showToast('Çıkış yapıldı.', 'ok');
-      renderProfileAccountBox();
-    });
-  } else {
-    box.style.background = '#eff6ff'; box.style.border = '1px solid #dbeafe';
-    box.innerHTML = `<div style="margin-bottom:8px; color:#1e40af;">🍽️ Yemekhane geçmişini ve borcunu görmek için (opsiyonel) e-posta ile kayıt olabilirsin.</div>
-      <button type="button" class="btn-primary" id="profileGoMealsBtn" style="width:100%; font-size:12.5px; padding:8px;">Yemekhane Kaydı / Giriş Yap</button>`;
-    document.getElementById('profileGoMealsBtn').addEventListener('click', () => {
-      closeModal('profileModal');
-      document.getElementById('mealsLink').click();
-    });
-  }
-}
 
 document.getElementById('profileAvatarBtn').addEventListener('click', () => {
   document.getElementById('profileAvatarInput').click();
