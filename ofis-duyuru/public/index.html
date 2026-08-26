@@ -487,10 +487,12 @@
   .wizard-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 1000;
     display: flex; align-items: center; justify-content: center; padding: 16px;
+    overflow-y: auto;
   }
   .wizard-card {
     background: var(--paper); color: var(--ink); max-width: 500px; width: 100%;
     border-radius: 20px; padding: 24px; box-shadow: 0 20px 40px rgba(4,20,38,0.5); border: 2px solid var(--amber);
+    max-height: calc(100vh - 32px); overflow-y: auto;
   }
   .wizard-step { display: none; }
   .wizard-step.active { display: block; }
@@ -557,15 +559,23 @@
     width: min(480px, calc(100vw - 32px)); max-height: 85vh; overflow-y: auto;
     z-index: 1700; margin-bottom: 0;
   }
-  @keyframes popup-in {
-    from { opacity: 0; transform: translate(-50%, -50%) scale(0.94); }
-    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  }
+  /* Açılışta rastgele seçilen 5 farklı efekt — her seferinde biraz farklı hissettirsin diye */
+  @keyframes popup-in-scale { from { opacity: 0; transform: translate(-50%, -50%) scale(0.88); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+  @keyframes popup-in-top { from { opacity: 0; transform: translate(-50%, -85%); } to { opacity: 1; transform: translate(-50%, -50%); } }
+  @keyframes popup-in-bottom { from { opacity: 0; transform: translate(-50%, -18%); } to { opacity: 1; transform: translate(-50%, -50%); } }
+  @keyframes popup-in-left { from { opacity: 0; transform: translate(-85%, -50%); } to { opacity: 1; transform: translate(-50%, -50%); } }
+  @keyframes popup-in-right { from { opacity: 0; transform: translate(-15%, -50%); } to { opacity: 1; transform: translate(-50%, -50%); } }
+  @keyframes popup-in-flip { from { opacity: 0; transform: translate(-50%, -50%) rotateX(30deg) scale(0.92); } to { opacity: 1; transform: translate(-50%, -50%) rotateX(0) scale(1); } }
   @keyframes popup-out {
     from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
     to { opacity: 0; transform: translate(-50%, -50%) scale(0.94); }
   }
-  #feedbackModal.anim-open, #profileModal.anim-open, #mealsModal.anim-open, #chatModal.anim-open, #pollModal.anim-open, #bloodBankModal.anim-open, #forgotPassModal.anim-open { animation: popup-in 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
+  #feedbackModal.anim-open-scale, #profileModal.anim-open-scale, #mealsModal.anim-open-scale, #chatModal.anim-open-scale, #pollModal.anim-open-scale, #bloodBankModal.anim-open-scale, #forgotPassModal.anim-open-scale { animation: popup-in-scale 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+  #feedbackModal.anim-open-top, #profileModal.anim-open-top, #mealsModal.anim-open-top, #chatModal.anim-open-top, #pollModal.anim-open-top, #bloodBankModal.anim-open-top, #forgotPassModal.anim-open-top { animation: popup-in-top 0.32s cubic-bezier(0.22, 1, 0.36, 1); }
+  #feedbackModal.anim-open-bottom, #profileModal.anim-open-bottom, #mealsModal.anim-open-bottom, #chatModal.anim-open-bottom, #pollModal.anim-open-bottom, #bloodBankModal.anim-open-bottom, #forgotPassModal.anim-open-bottom { animation: popup-in-bottom 0.32s cubic-bezier(0.22, 1, 0.36, 1); }
+  #feedbackModal.anim-open-left, #profileModal.anim-open-left, #mealsModal.anim-open-left, #chatModal.anim-open-left, #pollModal.anim-open-left, #bloodBankModal.anim-open-left, #forgotPassModal.anim-open-left { animation: popup-in-left 0.32s cubic-bezier(0.22, 1, 0.36, 1); }
+  #feedbackModal.anim-open-right, #profileModal.anim-open-right, #mealsModal.anim-open-right, #chatModal.anim-open-right, #pollModal.anim-open-right, #bloodBankModal.anim-open-right, #forgotPassModal.anim-open-right { animation: popup-in-right 0.32s cubic-bezier(0.22, 1, 0.36, 1); }
+  #feedbackModal.anim-open-flip, #profileModal.anim-open-flip, #mealsModal.anim-open-flip, #chatModal.anim-open-flip, #pollModal.anim-open-flip, #bloodBankModal.anim-open-flip, #forgotPassModal.anim-open-flip { animation: popup-in-flip 0.34s cubic-bezier(0.22, 1, 0.36, 1); }
   #feedbackModal.anim-close, #profileModal.anim-close, #mealsModal.anim-close, #chatModal.anim-close, #pollModal.anim-close, #bloodBankModal.anim-close, #forgotPassModal.anim-close { animation: popup-out 0.2s ease forwards; }
 </style>
 </head>
@@ -646,8 +656,17 @@
     <!-- ADIM 2: HESAP (kayıt + giriş + e-posta doğrulama tek arada) -->
     <div class="wizard-step" id="step2">
 
-      <!-- 2a: Kayıt formu (varsayılan görünüm) -->
-      <div id="step2-form">
+      <!-- 2-seçim: Önce sorulan basit soru — zaten üye misin, yeni mi kayıt olacaksın? -->
+      <div id="step2-choice">
+        <div style="font-size:36px; text-align:center; margin-bottom:8px;">👋</div>
+        <h2 style="text-align:center; margin:0 0 8px;">Adım 2: Devam Et</h2>
+        <p style="font-size:13px; color:#666; text-align:center; margin-bottom:20px;">Bu telefonda daha önce üye oldun mu?</p>
+        <button type="button" class="btn-primary" id="btnChoiceLogin" style="width:100%; margin-bottom:10px;">🔑 Zaten Üyeyim, Giriş Yapayım</button>
+        <button type="button" class="btn-primary" id="btnChoiceRegister" style="width:100%; background:var(--sage,#6B8F71);">📝 Yeni Üye Olayım</button>
+      </div>
+
+      <!-- 2a: Kayıt formu -->
+      <div id="step2-form" style="display:none;">
         <div style="display:flex; align-items:center; gap:14px; justify-content:center; margin-bottom:14px;">
           <img id="wizAvatarPreview" src="" alt="" style="width:56px; height:56px; border-radius:50%; object-fit:cover; background:#eee; display:none; border:2px solid var(--line);">
           <div id="wizAvatarPlaceholder" style="width:56px; height:56px; border-radius:50%; background:#eee; display:flex; align-items:center; justify-content:center; font-size:24px; color:#aaa;">👤</div>
@@ -838,6 +857,7 @@
         <button type="button" class="theme-dot" data-theme-val="bordo" style="background:linear-gradient(135deg,#2A1418,#B5384A);" title="Bordo"></button>
       </div>
       <span class="pin-count" id="subCount"><span id="subCountNum">—</span></span>
+      <button type="button" id="headerLogoutBtn" title="Çıkış Yap" style="display:none; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.3); color:#fff; width:26px; height:26px; border-radius:50%; padding:0; font-size:12px; cursor:pointer;">🚪</button>
     </div>
   </header>
 
@@ -1403,6 +1423,17 @@
 <script>
 // --- OTOMATİK SES KİLİDİ AÇICI ---
 let audioUnlocked = false;
+function clearMediaSessionCard() {
+  // Android/Chrome, herhangi bir <audio> çalınca otomatik olarak kalıcı bir "medya çalıyor"
+  // bildirim kartı gösteriyor. Sesi kısa süre çaldırıp durdurduktan hemen sonra medya oturumunu
+  // temizleyerek bu kartın ekranda asılı kalmasını (kafa karıştırmasını) engelliyoruz.
+  if ('mediaSession' in navigator) {
+    try {
+      navigator.mediaSession.metadata = null;
+      navigator.mediaSession.playbackState = 'none';
+    } catch (e) {}
+  }
+}
 function unlockAudioEngine() {
   if (audioUnlocked) return;
   try {
@@ -1411,6 +1442,7 @@ function unlockAudioEngine() {
     dummy.play().then(() => {
       dummy.pause();
       audioUnlocked = true;
+      clearMediaSessionCard();
     }).catch(e => {});
   } catch(e) {}
 }
@@ -1469,6 +1501,13 @@ document.getElementById('orgLogoCloseBtn').addEventListener('click', () => {
 });
 document.getElementById('orgLogoOverlay').addEventListener('click', (e) => {
   if (e.target.id === 'orgLogoOverlay') document.getElementById('orgLogoOverlay').classList.remove('show');
+});
+
+document.getElementById('headerLogoutBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (!confirm('Çıkış yapmak istediğine emin misin?')) return;
+  mealsSetToken(null);
+  showToast('Çıkış yapıldı.', 'ok');
 });
 
 // ---------- ŞİFREMİ UNUTTUM (her iki giriş formundan da açılır) ----------
@@ -1611,7 +1650,7 @@ function showWizardStep(stepNum) {
   }
   document.getElementById('step' + stepNum).classList.add('active');
   document.getElementById('dot' + stepNum).classList.add('active');
-  if (stepNum === 2) wizShowStep2Panel('step2-form');
+  if (stepNum === 2) wizShowStep2Panel('step2-choice');
 }
 
 function checkFirstRunWizard() {
@@ -1665,10 +1704,13 @@ document.getElementById('btnPwaInstall').addEventListener('click', async () => {
 document.getElementById('btnNext1').addEventListener('click', () => showWizardStep(2));
 
 function wizShowStep2Panel(panel) {
-  ['step2-form', 'step2-otp', 'step2-login'].forEach(id => {
+  ['step2-choice', 'step2-form', 'step2-otp', 'step2-login'].forEach(id => {
     document.getElementById(id).style.display = (id === panel) ? 'block' : 'none';
   });
 }
+
+document.getElementById('btnChoiceLogin').addEventListener('click', () => wizShowStep2Panel('step2-login'));
+document.getElementById('btnChoiceRegister').addEventListener('click', () => wizShowStep2Panel('step2-form'));
 
 document.getElementById('wizEmail').addEventListener('input', (e) => {
   const has = e.target.value.trim().length > 0;
@@ -1944,6 +1986,7 @@ function playNotifSound() {
 
     audio.addEventListener('ended', () => {
       if (count < 3) playOnce();
+      else clearMediaSessionCard();
     });
 
     playOnce();
@@ -2663,12 +2706,14 @@ document.getElementById('islerSubTabPhones').addEventListener('click', () => {
 });
 
 // --- MODALLAR ---
+const POPUP_ANIM_VARIANTS = ['anim-open-scale', 'anim-open-top', 'anim-open-bottom', 'anim-open-left', 'anim-open-right', 'anim-open-flip'];
+
 function openModal(modalId) {
   ['profileModal', 'feedbackModal', 'adminModal', 'chatModal', 'mealsModal', 'pollModal', 'bloodBankModal', 'forgotPassModal'].forEach(id => {
     if (id !== modalId) {
       const el = document.getElementById(id);
       if (el) {
-        el.classList.remove('anim-open');
+        el.classList.remove(...POPUP_ANIM_VARIANTS);
         el.style.display = 'none';
       }
     }
@@ -2676,15 +2721,17 @@ function openModal(modalId) {
   const m = document.getElementById(modalId);
   if (!m) return;
   m.style.display = (modalId === 'chatModal') ? 'flex' : 'block';
-  m.classList.remove('anim-close');
-  m.classList.add('anim-open');
+  m.classList.remove('anim-close', ...POPUP_ANIM_VARIANTS);
+  // Her açılışta rastgele bir giriş efekti seçiyoruz — hep aynı görünmesin diye.
+  const secilenEfekt = POPUP_ANIM_VARIANTS[Math.floor(Math.random() * POPUP_ANIM_VARIANTS.length)];
+  m.classList.add(secilenEfekt);
   document.getElementById('feedbackBackdrop').classList.add('show');
 }
 
 function closeModal(modalId) {
   const m = document.getElementById(modalId);
   if (!m || m.style.display === 'none') return;
-  m.classList.remove('anim-open');
+  m.classList.remove(...POPUP_ANIM_VARIANTS);
   m.classList.add('anim-close');
   document.getElementById('feedbackBackdrop').classList.remove('show');
   setTimeout(() => {
@@ -2714,9 +2761,20 @@ document.getElementById('centerLogoBtn').addEventListener('click', (e) => {
   openModal('feedbackModal');
 });
 
+// Tek üyelik ilkesi: Profil / Yemekhane Kayıtlarım / Kan Bankası / Anket hepsi AYNI
+// e-posta+şifre hesabına bağlı. Giriş yapılmamışsa bu alanlardan hiçbiri doğrudan açılmaz,
+// bunun yerine kullanıcı üye giriş/kayıt ekranına yönlendirilir.
+function requireMealsLogin(featureLabel) {
+  if (mealsGetToken()) return true;
+  showToast((featureLabel || 'Bu özellik') + ' için önce üye girişi yapmalı ya da üye olmalısın.', 'err');
+  document.getElementById('mealsLink').click();
+  return false;
+}
+
 // PROFİL
 document.getElementById('profileLink').addEventListener('click', async (e) => {
   e.preventDefault();
+  if (!requireMealsLogin('Profil')) return;
   toggleModal('profileModal');
   document.getElementById('profileName').value = localStorage.getItem('selfName') || '';
   document.getElementById('profilePhone').value = localStorage.getItem('selfPhone') || '';
@@ -3415,6 +3473,7 @@ let mealsPendingEmail = '';
 async function updateMealsWelcomeBar() {
   const topText = document.getElementById('topWelcomeText');
   const topIcon = document.getElementById('topWelcomeIcon');
+  const logoutBtn = document.getElementById('headerLogoutBtn');
   const token = mealsGetToken();
   if (token) {
     try {
@@ -3423,12 +3482,14 @@ async function updateMealsWelcomeBar() {
       if (data.ok && data.adSoyad) {
         topIcon.textContent = '👋';
         topText.innerHTML = 'Hoşgeldin, ' + esc(data.adSoyad) + ' <span title="Doğrulanmış hesap" style="color:#7ED8A0;">✓</span>';
+        if (logoutBtn) logoutBtn.style.display = 'inline-flex';
         return;
       }
     } catch(e){}
   }
   // Çıkış yapılmış (ya da hiç giriş yapılmamış): eski profil ismini DEĞİL, jenerik "Hesabım" göster —
   // yoksa "çıkış yaptım ama ismim hâlâ görünüyor" gibi kafa karıştıran bir izlenim bırakıyor.
+  if (logoutBtn) logoutBtn.style.display = 'none';
   topIcon.textContent = '👤';
   topText.textContent = 'Hesabım';
 }
@@ -3487,6 +3548,7 @@ document.getElementById('mealsLink').addEventListener('click', (e) => {
 // ---------- ANKET (kullanıcı: listeleme + oy kullanma, cihaz başına 1 oy) ----------
 document.getElementById('pollLink').addEventListener('click', (e) => {
   e.preventDefault();
+  if (!requireMealsLogin('Anket')) return;
   openModal('pollModal');
   loadPolls();
 });
@@ -3494,6 +3556,7 @@ document.getElementById('pollLink').addEventListener('click', (e) => {
 // ---------- KAN BANKASI ----------
 document.getElementById('bloodBankLink').addEventListener('click', (e) => {
   e.preventDefault();
+  if (!requireMealsLogin('Kan Bankası')) return;
   openModal('bloodBankModal');
   loadBloodBank();
 });
