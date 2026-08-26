@@ -48,12 +48,14 @@
 
   .wrap { max-width: 640px; margin: 0 auto; }
 
-  header {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 12px; margin-bottom: 22px; flex-wrap: wrap;
-    padding: 18px 20px; border-radius: 18px;
+  .header-card {
+    padding: 18px 20px; border-radius: 18px; margin-bottom: 22px;
     background: linear-gradient(120deg, var(--navy-mid) 0%, var(--blue-bright) 100%);
     box-shadow: 0 16px 34px rgba(4,20,38,0.45);
+  }
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
   }
   h1 { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: clamp(20px, 6vw, 26px); margin: 0; letter-spacing: -0.01em; }
   .pin-count { font-size: 12px; color: rgba(255,255,255,0.82); }
@@ -73,7 +75,7 @@
   }
 
   /* GENEL ARAMA ÇUBUĞU */
-  .global-search-wrap { position: relative; margin: 14px 0 18px; }
+  .global-search-wrap { position: relative; margin-top: 14px; }
   .global-search-box {
     display: flex; align-items: center; gap: 0; background: #fff; border-radius: 30px;
     border: 2px solid var(--amber, #E0972C); box-shadow: 0 6px 18px rgba(0,0,0,0.15);
@@ -916,50 +918,52 @@
 </div>
 
 <div class="wrap">
-  <header>
-    <div style="display:flex; align-items:center; gap:10px;">
-      <img src="/icon-192.png" alt="Kurum logosu — büyütmek için tıklayın" class="sway-logo" id="orgLogoBtn" style="width:34px; height:34px; border-radius:50%; cursor:pointer;">
-      <div>
-        <div style="display:flex; align-items:center; gap:8px;">
-          <h1>Duyurular</h1>
-          <!-- DİNAMİK BİLDİRİM ZİL İKONU + ABONE SAYISI ROZETİ -->
-          <div class="bell-status-compact inactive" id="bellStatus" title="Bildirimler Kapalı (Açmak için tıklayın)">
-            🔔
-            <span class="bell-badge" id="subCountBadge">—</span>
+  <div class="header-card">
+    <header>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <img src="/icon-192.png" alt="Kurum logosu — büyütmek için tıklayın" class="sway-logo" id="orgLogoBtn" style="width:34px; height:34px; border-radius:50%; cursor:pointer;">
+        <div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <h1>Duyurular</h1>
+            <!-- DİNAMİK BİLDİRİM ZİL İKONU + ABONE SAYISI ROZETİ -->
+            <div class="bell-status-compact inactive" id="bellStatus" title="Bildirimler Kapalı (Açmak için tıklayın)">
+              🔔
+              <span class="bell-badge" id="subCountBadge">—</span>
+            </div>
           </div>
-        </div>
-        <!-- HESABIM / HOŞ GELDİN AÇILIR MENÜSÜ -->
-        <div id="topWelcomeBar" class="top-welcome-badge">
-          <span id="topWelcomeIcon">👤</span> <span id="topWelcomeText">Hesabım</span>
-          <div class="account-menu" id="accountMenu">
-            <button type="button" id="accMenuProfile">👤 Profil</button>
-            <button type="button" id="accMenuMeals">🍽️ Yemekhane Kayıtlarım &amp; Borç</button>
-            <button type="button" id="accMenuBloodBank">🩸 Kan Bankası</button>
-            <button type="button" id="accMenuPoll">📊 Anket</button>
+          <!-- HESABIM / HOŞ GELDİN AÇILIR MENÜSÜ -->
+          <div id="topWelcomeBar" class="top-welcome-badge">
+            <span id="topWelcomeIcon">👤</span> <span id="topWelcomeText">Hesabım</span>
+            <div class="account-menu" id="accountMenu">
+              <button type="button" id="accMenuProfile">👤 Profil</button>
+              <button type="button" id="accMenuMeals">🍽️ Yemekhane Kayıtlarım &amp; Borç</button>
+              <button type="button" id="accMenuBloodBank">🩸 Kan Bankası</button>
+              <button type="button" id="accMenuPoll">📊 Anket</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <div style="display:flex; align-items:center; gap:12px;">
-      <!-- HIZLI TEMA SEÇİCİ: küçük renk yuvarlakları, tıklayınca hemen uygulanır. Detaylı seçim Profil'de. -->
-      <div class="theme-swatches" id="themeSwatches" title="Tema değiştir">
-        <button type="button" class="theme-dot" data-theme-val="klasik" style="background:linear-gradient(135deg,#0B2A4C,#1E88D0);" title="Damla (varsayılan)"></button>
-        <button type="button" class="theme-dot" data-theme-val="lacivert" style="background:linear-gradient(135deg,#0F1F33,#3E8FD0);" title="Lacivert"></button>
-        <button type="button" class="theme-dot" data-theme-val="zeytin" style="background:linear-gradient(135deg,#1E2A1C,#7C9A4A);" title="Zeytin"></button>
-        <button type="button" class="theme-dot" data-theme-val="bordo" style="background:linear-gradient(135deg,#2A1418,#B5384A);" title="Bordo"></button>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <!-- HIZLI TEMA SEÇİCİ: küçük renk yuvarlakları, tıklayınca hemen uygulanır. Detaylı seçim Profil'de. -->
+        <div class="theme-swatches" id="themeSwatches" title="Tema değiştir">
+          <button type="button" class="theme-dot" data-theme-val="klasik" style="background:linear-gradient(135deg,#0B2A4C,#1E88D0);" title="Damla (varsayılan)"></button>
+          <button type="button" class="theme-dot" data-theme-val="lacivert" style="background:linear-gradient(135deg,#0F1F33,#3E8FD0);" title="Lacivert"></button>
+          <button type="button" class="theme-dot" data-theme-val="zeytin" style="background:linear-gradient(135deg,#1E2A1C,#7C9A4A);" title="Zeytin"></button>
+          <button type="button" class="theme-dot" data-theme-val="bordo" style="background:linear-gradient(135deg,#2A1418,#B5384A);" title="Bordo"></button>
+        </div>
+        <button type="button" id="headerLogoutBtn" title="Çıkış Yap" style="display:none; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.3); color:#fff; width:26px; height:26px; border-radius:50%; padding:0; font-size:12px; cursor:pointer;">🚪</button>
       </div>
-      <button type="button" id="headerLogoutBtn" title="Çıkış Yap" style="display:none; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.3); color:#fff; width:26px; height:26px; border-radius:50%; padding:0; font-size:12px; cursor:pointer;">🚪</button>
-    </div>
-  </header>
+    </header>
 
-  <!-- GENEL ARAMA — duyuru, yemek, takvim, iş, telefon: hepsine tek kutudan bakar -->
-  <div class="global-search-wrap">
-    <div class="global-search-box">
-      <input type="text" id="globalSearchInput" placeholder="Duyuru, yemek, takvim, iş, telefon ara...">
-      <button type="button" id="globalSearchClearBtn" style="display:none;">✕</button>
-      <button type="button" id="globalSearchGoBtn">🔍</button>
+    <!-- GENEL ARAMA — duyuru, yemek, takvim, iş, telefon: hepsine tek kutudan bakar (artık başlık kartının İÇİNDE) -->
+    <div class="global-search-wrap">
+      <div class="global-search-box">
+        <input type="text" id="globalSearchInput" placeholder="Duyuru, yemek, takvim, iş, telefon ara...">
+        <button type="button" id="globalSearchClearBtn" style="display:none;">✕</button>
+        <button type="button" id="globalSearchGoBtn">🔍</button>
+      </div>
+      <div class="global-search-results" id="globalSearchResults"></div>
     </div>
-    <div class="global-search-results" id="globalSearchResults"></div>
   </div>
 
   <!-- KURUM LOGOSU POPUP -->
@@ -2089,10 +2093,11 @@ async function runGlobalSearch(q) {
   resEl.classList.add('show');
   resEl.innerHTML = '<div class="gsr-empty">Aranıyor...</div>';
   try {
-    const res = await fetch('/api/search?q=' + encodeURIComponent(q));
+    const res = await fetch('/api/search?q=' + encodeURIComponent(q) + '&_=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) { resEl.innerHTML = `<div class="gsr-empty">Arama sunucusuna ulaşılamadı (kod: ${res.status}). server.js'in en güncel sürümde olduğundan emin ol.</div>`; return; }
     const data = await res.json();
     renderGlobalSearchResults(data);
-  } catch { resEl.innerHTML = '<div class="gsr-empty">Aranamadı, tekrar dene.</div>'; }
+  } catch (err) { resEl.innerHTML = '<div class="gsr-empty">Aranamadı: ' + esc(err.message) + '</div>'; }
 }
 
 function renderGlobalSearchResults(data) {
