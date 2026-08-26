@@ -406,25 +406,38 @@
   .dd-meta { font-size: 11.5px; color: #999; margin-bottom: 14px; }
   .dd-body { font-size: 14px; line-height: 1.6; color: #333; margin-bottom: 8px; white-space: pre-wrap; }
 
-  /* MANŞET (KAPAK) RESMİ — galeri varsa en üstte büyük gösterilir, diğerleri altta küçük şerit */
-  .gallery-cover {
-    width: 100%; max-height: 260px; object-fit: cover; border-radius: 12px; cursor: pointer;
-    margin-top: 10px; display: block; box-shadow: 0 6px 18px rgba(0,0,0,0.22);
-    border: 2px solid var(--amber, #E0972C);
+  /* MANŞET (KAPAK) RESMİ — galeri varsa en üstte, kırpılmadan tam sığacak şekilde gösterilir */
+  .gallery-cover-wrap {
+    width: 100%; max-height: 280px; border-radius: 12px; cursor: pointer;
+    margin-top: 10px; box-shadow: 0 6px 18px rgba(0,0,0,0.22);
+    border: 2px solid var(--amber, #E0972C); background: #f5f3ee;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
     transition: transform 0.18s ease, box-shadow 0.18s ease;
   }
-  .gallery-cover:hover { transform: scale(1.01); box-shadow: 0 10px 26px rgba(0,0,0,0.3); }
+  .gallery-cover-wrap:hover { transform: scale(1.01); box-shadow: 0 10px 26px rgba(0,0,0,0.3); }
+  .gallery-cover { width: 100%; max-height: 280px; object-fit: contain; display: block; }
 
-  /* GALERİ KÜÇÜK RESİMLERİ — dikkat çeksin diye hafif parlama + hover büyüme */
+  /* GALERİ KÜÇÜK RESİMLERİ — tek satır, taşarsa < > ile kaydırılır (alta kaymaz) */
   .gallery-hint { display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--clay,#B5674A); font-weight:700; margin-top:10px; margin-bottom:6px; }
-  .gallery-strip { display:flex; gap:8px; flex-wrap:wrap; }
+  .gallery-strip-row { display:flex; align-items:center; gap:4px; }
+  .gallery-strip {
+    display:flex; gap:8px; flex-wrap:nowrap; overflow-x:auto; scroll-behavior:smooth;
+    scrollbar-width:none; flex:1; padding-bottom:2px;
+  }
+  .gallery-strip::-webkit-scrollbar { display:none; }
+  .gallery-nav-btn {
+    flex-shrink:0; width:26px; height:26px; border-radius:50%; border:1.5px solid var(--amber,#E0972C);
+    background:#fff; color:var(--amber,#E0972C); font-size:15px; font-weight:700; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; padding:0;
+  }
+  .gallery-nav-btn:hover { background:var(--amber,#E0972C); color:#fff; }
   .gallery-thumb {
-    width:72px; height:72px; object-fit:cover; border-radius:10px; cursor:pointer;
+    flex-shrink:0; width:64px; height:64px; object-fit:cover; border-radius:10px; cursor:pointer;
     box-shadow:0 3px 10px rgba(0,0,0,0.18); border:2px solid rgba(224,151,44,0.5);
     transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
     animation: gallery-thumb-glow 2.4s ease-in-out infinite;
   }
-  .gallery-thumb:hover { transform: scale(1.1) rotate(-1deg); box-shadow:0 8px 18px rgba(0,0,0,0.3); border-color: var(--amber,#E0972C); animation: none; }
+  .gallery-thumb:hover { transform: scale(1.1); box-shadow:0 8px 18px rgba(0,0,0,0.3); border-color: var(--amber,#E0972C); animation: none; }
   @keyframes gallery-thumb-glow {
     0%, 100% { box-shadow:0 3px 10px rgba(0,0,0,0.18); }
     50% { box-shadow:0 3px 14px rgba(224,151,44,0.55); }
@@ -2418,17 +2431,27 @@ async function openDuyuruDetay(id) {
   if (galleryImgs.length > 0) {
     const cover = galleryImgs[0];
     const others = galleryImgs.slice(1);
-    let html = `<img src="${cover.url}" data-gallery-open="0" class="gallery-cover" alt="Manşet görseli">`;
+    let html = `<div class="gallery-cover-wrap" data-gallery-open="0"><img src="${cover.url}" class="gallery-cover" alt="Manşet görseli"></div>`;
     if (others.length > 0) {
       html += `<div class="gallery-hint">🖼️ +${others.length} görsel daha — büyütmek için dokun</div>`;
-      html += '<div class="gallery-strip">' +
-        others.map((a, i) => `<img src="${a.url}" data-gallery-open="${i + 1}" class="gallery-thumb" style="animation-delay:${i * 0.15}s;">`).join('') +
+      html += '<div class="gallery-strip-row">' +
+        '<button type="button" class="gallery-nav-btn" data-strip-scroll="-1">‹</button>' +
+        '<div class="gallery-strip" id="galleryStripEl">' +
+          others.map((a, i) => `<img src="${a.url}" data-gallery-open="${i + 1}" class="gallery-thumb" style="animation-delay:${i * 0.15}s;">`).join('') +
+        '</div>' +
+        '<button type="button" class="gallery-nav-btn" data-strip-scroll="1">›</button>' +
       '</div>';
     }
     html += (nonImageAtt ? renderAttachment(nonImageAtt) : '');
     document.getElementById('duyuruDetayAttach').innerHTML = html;
     document.getElementById('duyuruDetayAttach').querySelectorAll('[data-gallery-open]').forEach(img => {
       img.addEventListener('click', () => openGalleryLightbox(galleryImgs, m.id, parseInt(img.dataset.galleryOpen, 10)));
+    });
+    document.getElementById('duyuruDetayAttach').querySelectorAll('[data-strip-scroll]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const strip = document.getElementById('galleryStripEl');
+        if (strip) strip.scrollBy({ left: parseInt(btn.dataset.stripScroll, 10) * 160, behavior: 'smooth' });
+      });
     });
   } else {
     document.getElementById('duyuruDetayAttach').innerHTML = renderAttachment(m.attachment);
