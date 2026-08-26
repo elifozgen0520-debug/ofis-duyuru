@@ -1212,7 +1212,7 @@
     <div id="chatUnlocked" style="display:none;">
       <div class="tabs" style="margin-bottom:12px;">
         <button class="tab-btn active" id="chatTabGeneral">Genel Sohbet</button>
-        <button class="tab-btn" id="chatTabDirect">Online Üyeler</button>
+        <button class="tab-btn" id="chatTabDirect">👥 Üyeler</button>
       </div>
 
       <div id="chatPanelGeneral" class="chat-panel">
@@ -1235,6 +1235,7 @@
       </div>
 
       <div id="chatPanelDirect" class="chat-panel" style="display:none;">
+        <input type="text" id="chatContactSearch" placeholder="🔍 Üye ara (isme göre)..." style="margin-bottom:10px;">
         <div id="chatContactList" class="list-empty">Yükleniyor...</div>
         <div id="chatDirectConversation" style="display:none;" class="chat-panel">
           <button type="button" id="chatBackToContacts" style="background:none;border:none;color:var(--clay);font-size:12px;cursor:pointer;padding:0 0 8px;">← Kişi Listesine Dön</button>
@@ -2901,13 +2902,10 @@ let chatDirectPoll = null;
 let presencePoll = null;
 let currentChatContact = null;
 
-function hasCompleteProfile() {
-  return !!(localStorage.getItem('selfName') && localStorage.getItem('selfPhone'));
-}
-
 function escChat(s) { return (s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 function escChatAttr(s) { return escChat(s).replace(/"/g, '&quot;'); }
 function chatTime(iso) { return new Date(iso).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }); }
+function chatAuthHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + mealsGetToken() }; }
 
 let chatGeneralEditingId = null;
 let chatDirectEditingId = null;
@@ -2976,7 +2974,7 @@ async function saveEditChatMsg(scope, id) {
   if (!text) return;
   try {
     const url = scope === 'general' ? '/api/chat/general/' + id : '/api/chat/direct/' + id;
-    const res = await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), text }) });
+    const res = await fetch(url, { method: 'PUT', headers: chatAuthHeaders(), body: JSON.stringify({ text }) });
     const data = await res.json();
     if (!res.ok) { alert(data.error || 'Güncellenemedi'); return; }
   } catch { alert('Güncellenemedi.'); }
@@ -2987,7 +2985,7 @@ async function deleteOwnChatMsg(scope, id) {
   if (!confirm('Bu mesajı silmek istediğine emin misin?')) return;
   try {
     const url = scope === 'general' ? '/api/chat/general/' + id : '/api/chat/direct/' + id;
-    const res = await fetch(url, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId() }) });
+    const res = await fetch(url, { method: 'DELETE', headers: chatAuthHeaders(), body: JSON.stringify({}) });
     if (!res.ok) { const d = await res.json(); alert(d.error || 'Silinemedi'); return; }
   } catch { alert('Silinemedi.'); }
   if (scope === 'general') chatGeneralEditingId = null; else chatDirectEditingId = null;
@@ -2996,36 +2994,47 @@ async function deleteOwnChatMsg(scope, id) {
 
 async function markGeneralRead(ids) {
   if (!ids.length) return;
-  try { await fetch('/api/chat/general/read-bulk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), ids }) }); } catch {}
+  try { await fetch('/api/chat/general/read-bulk', { method: 'POST', headers: chatAuthHeaders(), body: JSON.stringify({ ids }) }); } catch {}
 }
 async function markDirectRead(ids) {
   if (!ids.length) return;
-  try { await fetch('/api/chat/direct/read-bulk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), ids }) }); } catch {}
+  try { await fetch('/api/chat/direct/read-bulk', { method: 'POST', headers: chatAuthHeaders(), body: JSON.stringify({ ids }) }); } catch {}
 }
 
 async function sendPresenceHeartbeat() {
-  if (!hasCompleteProfile()) return;
+  if (!mealsGetToken()) return;
   try { await fetch('/api/presence', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId() }) }); } catch {}
 }
 
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
     if (presencePoll) { clearInterval(presencePoll); presencePoll = null; }
-  } else if (document.visibilityState === 'visible' && hasCompleteProfile()) {
+  } else if (document.visibilityState === 'visible' && mealsGetToken()) {
     sendPresenceHeartbeat();
     if (presencePoll) clearInterval(presencePoll);
     presencePoll = setInterval(sendPresenceHeartbeat, 45000);
   }
 });
 
+let myChatEmail = null;
+async function resolveMyChatEmail() {
+  if (myChatEmail) return myChatEmail;
+  try {
+    const res = await fetch('/api/self-whoami', { headers: { 'Authorization': 'Bearer ' + mealsGetToken() } });
+    const data = await res.json();
+    if (data.ok) myChatEmail = data.email || null;
+  } catch {}
+  return myChatEmail;
+}
+
 async function loadGeneralChat() {
   try {
     const res = await fetch('/api/chat/general');
     const data = await res.json();
     const messages = data.messages || [];
-    const myId = getDeviceId();
-    renderChatMessages(document.getElementById('chatGeneralMessages'), messages, m => m.deviceId === myId, 'general', chatGeneralEditingId);
-    const unreadIds = messages.filter(m => m.deviceId !== myId && !(m.reads || []).includes(myId)).map(m => m.id);
+    const myEmail = await resolveMyChatEmail();
+    renderChatMessages(document.getElementById('chatGeneralMessages'), messages, m => m.email === myEmail, 'general', chatGeneralEditingId);
+    const unreadIds = messages.filter(m => m.email !== myEmail && !(m.reads || []).includes(myEmail)).map(m => m.id);
     markGeneralRead(unreadIds);
   } catch {}
 }
@@ -3036,7 +3045,7 @@ async function sendGeneralChat() {
   if (!text) return;
   input.value = '';
   try {
-    const res = await fetch('/api/chat/general', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: getDeviceId(), text }) });
+    const res = await fetch('/api/chat/general', { method: 'POST', headers: chatAuthHeaders(), body: JSON.stringify({ text, deviceId: getDeviceId() }) });
     const data = await res.json();
     if (!res.ok) { alert(data.error || 'Gönderilemedi'); return; }
     loadGeneralChat();
@@ -3054,36 +3063,50 @@ function formatLastSeen(ts) {
   return d.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' }) + ' ' + time;
 }
 
+let chatContactsCache = [];
+
 async function loadContacts() {
   const el = document.getElementById('chatContactList');
   try {
-    const res = await fetch('/api/chat/contacts?deviceId=' + encodeURIComponent(getDeviceId()));
+    const res = await fetch('/api/chat/contacts', { headers: { 'Authorization': 'Bearer ' + mealsGetToken() } });
     const data = await res.json();
-    if (!data.contacts || data.contacts.length === 0) {
-      el.className = 'list-empty'; el.textContent = 'Henüz profilini tamamlamış başka kullanıcı yok.'; return;
-    }
-    el.className = '';
-    el.innerHTML = data.contacts.map(c => {
-      const statusHtml = c.online
-        ? 'Çevrimiçi'
-        : (c.lastSeen ? `<i>Son görülme: ${formatLastSeen(c.lastSeen)}</i>` : 'Çevrimdışı');
-      return `
-      <div class="contact-row" onclick="openDirectChat('${c.deviceId}', '${escChat(c.name).replace(/'/g, "\\'")}')">
-        <div class="contact-avatar">${c.avatar ? `<img src="${c.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : (c.name || '?').charAt(0).toUpperCase()}
-          ${c.online ? '<span class="contact-online-dot"></span>' : ''}
-        </div>
-        <div>
-          <div class="contact-name">${escChat(c.name)}</div>
-          <div class="contact-status">${statusHtml}</div>
-        </div>
-      </div>
-    `;
-    }).join('');
+    chatContactsCache = data.contacts || [];
+    renderContactList(chatContactsCache);
   } catch { el.className = 'list-empty'; el.textContent = 'Yüklenemedi.'; }
 }
 
-function openDirectChat(deviceId, name) {
-  currentChatContact = { deviceId, name };
+function renderContactList(list) {
+  const el = document.getElementById('chatContactList');
+  if (!list || list.length === 0) {
+    el.className = 'list-empty'; el.textContent = 'Henüz üye olmuş başka kullanıcı yok.'; return;
+  }
+  el.className = '';
+  el.innerHTML = list.map(c => {
+    const statusHtml = c.online
+      ? 'Çevrimiçi'
+      : (c.lastSeen ? `<i>Son görülme: ${formatLastSeen(c.lastSeen)}</i>` : 'Çevrimdışı');
+    return `
+    <div class="contact-row" onclick="openDirectChat('${escChatAttr(c.email).replace(/'/g, "\\'")}', '${escChat(c.name).replace(/'/g, "\\'")}')">
+      <div class="contact-avatar">${c.avatar ? `<img src="${c.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : (c.name || '?').charAt(0).toUpperCase()}
+        ${c.online ? '<span class="contact-online-dot"></span>' : ''}
+      </div>
+      <div>
+        <div class="contact-name">${escChat(c.name)}</div>
+        <div class="contact-status">${statusHtml}</div>
+      </div>
+    </div>
+  `;
+  }).join('');
+}
+
+document.getElementById('chatContactSearch').addEventListener('input', (e) => {
+  const q = e.target.value.trim().toLocaleLowerCase('tr');
+  if (!q) { renderContactList(chatContactsCache); return; }
+  renderContactList(chatContactsCache.filter(c => (c.name || '').toLocaleLowerCase('tr').includes(q)));
+});
+
+function openDirectChat(email, name) {
+  currentChatContact = { email, name };
   document.getElementById('chatContactList').style.display = 'none';
   document.getElementById('chatDirectConversation').style.display = 'block';
   document.getElementById('chatDirectTitle').textContent = name;
@@ -3103,12 +3126,12 @@ document.getElementById('chatBackToContacts').addEventListener('click', () => {
 async function loadDirectChat() {
   if (!currentChatContact) return;
   try {
-    const res = await fetch(`/api/chat/direct?deviceId=${encodeURIComponent(getDeviceId())}&withId=${encodeURIComponent(currentChatContact.deviceId)}`);
+    const res = await fetch(`/api/chat/direct?withEmail=${encodeURIComponent(currentChatContact.email)}`, { headers: { 'Authorization': 'Bearer ' + mealsGetToken() } });
     const data = await res.json();
     const messages = data.messages || [];
-    const myId = getDeviceId();
-    renderChatMessages(document.getElementById('chatDirectMessages'), messages, m => m.fromDeviceId === myId, 'direct', chatDirectEditingId);
-    const unreadIds = messages.filter(m => m.toDeviceId === myId && !m.read).map(m => m.id);
+    const myEmail = await resolveMyChatEmail();
+    renderChatMessages(document.getElementById('chatDirectMessages'), messages, m => m.fromEmail === myEmail, 'direct', chatDirectEditingId);
+    const unreadIds = messages.filter(m => m.toEmail === myEmail && !m.read).map(m => m.id);
     markDirectRead(unreadIds);
   } catch {}
 }
@@ -3121,8 +3144,8 @@ async function sendDirectChat() {
   input.value = '';
   try {
     const res = await fetch('/api/chat/direct', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ deviceId: getDeviceId(), toDeviceId: currentChatContact.deviceId, text })
+      method: 'POST', headers: chatAuthHeaders(),
+      body: JSON.stringify({ toEmail: currentChatContact.email, text, deviceId: getDeviceId() })
     });
     const data = await res.json();
     if (!res.ok) { alert(data.error || 'Gönderilemedi'); return; }
@@ -3496,6 +3519,7 @@ function mealsGetToken() { return localStorage.getItem('mealsToken') || sessionS
 function mealsSetToken(t, remember) {
   localStorage.removeItem('mealsToken'); sessionStorage.removeItem('mealsToken');
   if (t) { (remember === false ? sessionStorage : localStorage).setItem('mealsToken', t); }
+  myChatEmail = null; // hesap değişmiş olabilir, önbelleklenmiş e-postayı sıfırla
   updateMealsWelcomeBar();
 }
 let mealsPendingEmail = '';
