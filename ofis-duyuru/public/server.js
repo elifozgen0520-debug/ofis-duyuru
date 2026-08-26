@@ -4,7 +4,6 @@ const sharp = require('sharp');
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
-const XLSX = require('xlsx');
 const { Redis } = require('@upstash/redis');
 const { Resend } = require('resend');
 
@@ -1459,28 +1458,53 @@ makeListApi('notes', 'notes');
 makeListApi('phones', 'phones');
 makeListApi('tasks', 'tasks');
 
-// --- TELEFONLAR: EXCEL ŞABLONU İNDİRME ---
+// --- TELEFONLAR: CSV ŞABLONU İNDİRME ---
 // Admin bu şablonu indirip İsim/Telefon sütunlarını doldurup geri yükleyebilir —
-// tek tek eklemek yerine tüm listeyi tek seferde içeri aktarabilir.
+// tek tek eklemek yerine tüm listeyi tek seferde içeri aktarabilir. CSV, Excel'de de
+// (Dosyayı Aç ile) sorunsuz açılıp düzenlenebilir, ekstra bir paket gerektirmez.
 app.get('/api/phones/template', (req, res) => {
-  const wb = XLSX.utils.book_new();
-  const wsData = [
+  // Türkçe Excel'de CSV varsayılan ayracı noktalı virgüldür (virgül ondalık ayracı olduğu için).
+  // Başa eklenen \uFEFF (BOM), Excel'in Türkçe karakterleri (İ, ş, ğ) doğru göstermesini sağlar.
+  const rows = [
     ['İsim', 'Telefon'],
     ['Örnek: İtfaiye', '110'],
     ['Örnek: Polis İmdat', '155'],
   ];
-  const ws = XLSX.utils.aoa_to_sheet(wsData);
-  ws['!cols'] = [{ wch: 32 }, { wch: 18 }];
-  XLSX.utils.book_append_sheet(wb, ws, 'Telefonlar');
-  const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
-  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-  res.setHeader('Content-Disposition', 'attachment; filename="telefon-sablonu.xlsx"');
-  res.send(buf);
+  const csv = '\uFEFF' + rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(';')).join('\r\n');
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', 'attachment; filename="telefon-sablonu.csv"');
+  res.send(csv);
 });
 
-// --- TELEFONLAR: EXCEL'DEN TOPLU İÇE AKTARMA ---
-const excelUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 3 * 1024 * 1024 } });
-app.post('/api/phones/import', excelUpload.single('file'), async (req, res) => {
+// Basit bir CSV ayrıştırıcı — tırnaklı alanları, hem ";" hem "," ayracını destekler
+// (Türkçe Excel ";" kullanır, çoğu başka sistem "," kullanır — dosyanın ilk satırına bakıp otomatik seçiyoruz).
+function parseCsv(text) {
+  const clean = text.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n');
+  const firstLine = clean.split('\n')[0] || '';
+  const delimiter = (firstLine.match(/;/g) || []).length >= (firstLine.match(/,/g) || []).length ? ';' : ',';
+
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for (let i = 0; i < clean.length; i++) {
+    const c = clean[i];
+    if (inQuotes) {
+      if (c === '"' && clean[i + 1] === '"') { field += '"'; i++; }
+      else if (c === '"') { inQuotes = false; }
+      else { field += c; }
+    } else {
+      if (c === '"') inQuotes = true;
+      else if (c === delimiter) { row.push(field); field = ''; }
+      else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+      else { field += c; }
+    }
+  }
+  if (field.length || row.length) { row.push(field); rows.push(row); }
+  return rows.filter(r => r.some(c => c.trim() !== ''));
+}
+
+// --- TELEFONLAR: CSV'DEN TOPLU İÇE AKTARMA ---
+const csvUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 2 * 1024 * 1024 } });
+app.post('/api/phones/import', csvUpload.single('file'), async (req, res) => {
   const { password } = req.body;
   const result = checkPassword(password, req);
   if (passwordCheckResponse(res, result)) return;
@@ -1488,11 +1512,9 @@ app.post('/api/phones/import', excelUpload.single('file'), async (req, res) => {
 
   let rows;
   try {
-    const wb = XLSX.read(req.file.buffer, { type: 'buffer' });
-    const ws = wb.Sheets[wb.SheetNames[0]];
-    rows = XLSX.utils.sheet_to_json(ws, { header: 1, blankrows: false });
+    rows = parseCsv(req.file.buffer.toString('utf8'));
   } catch (err) {
-    return res.status(400).json({ ok: false, error: 'Excel dosyası okunamadı. Verilen şablonu kullandığından emin ol.' });
+    return res.status(400).json({ ok: false, error: 'CSV dosyası okunamadı. Verilen şablonu kullandığından emin ol.' });
   }
 
   // İlk satır "İsim / Telefon" başlığıysa atla.
