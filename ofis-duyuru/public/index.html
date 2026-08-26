@@ -3165,20 +3165,16 @@ document.getElementById('chatGoProfileBtn').addEventListener('click', () => {
 
 document.getElementById('chatLink').addEventListener('click', (e) => {
   e.preventDefault();
+  if (!requireMealsLogin('Sohbet')) return;
   openModal('chatModal');
-  if (hasCompleteProfile()) {
-    document.getElementById('chatLockedNotice').style.display = 'none';
-    document.getElementById('chatUnlocked').style.display = 'flex';
-    sendPresenceHeartbeat();
-    if (presencePoll) clearInterval(presencePoll);
-    presencePoll = setInterval(sendPresenceHeartbeat, 45000);
-    loadGeneralChat();
-    if (chatGeneralPoll) clearInterval(chatGeneralPoll);
-    chatGeneralPoll = setInterval(loadGeneralChat, 4000);
-  } else {
-    document.getElementById('chatLockedNotice').style.display = 'block';
-    document.getElementById('chatUnlocked').style.display = 'none';
-  }
+  document.getElementById('chatLockedNotice').style.display = 'none';
+  document.getElementById('chatUnlocked').style.display = 'flex';
+  sendPresenceHeartbeat();
+  if (presencePoll) clearInterval(presencePoll);
+  presencePoll = setInterval(sendPresenceHeartbeat, 45000);
+  loadGeneralChat();
+  if (chatGeneralPoll) clearInterval(chatGeneralPoll);
+  chatGeneralPoll = setInterval(loadGeneralChat, 4000);
 });
 
 document.querySelectorAll('.card-close').forEach(btn => {
