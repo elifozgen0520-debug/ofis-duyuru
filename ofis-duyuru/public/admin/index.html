@@ -237,6 +237,7 @@
       <div class="dash-card" data-view="telefonlar"><div class="icon">☎️</div><div class="label">Telefonlar</div><div class="count" id="countTelefonlar"></div></div>
       <div class="dash-card" data-view="isler"><div class="icon">✅</div><div class="label">İşler</div><div class="count" id="countIsler"></div></div>
       <div class="dash-card" data-view="uyeler"><div class="icon">🙋</div><div class="label">Üyeler</div><div class="count" id="countUyeler"></div></div>
+      <div class="dash-card" data-view="izinlitelefon"><div class="icon">📞</div><div class="label">İzinli Telefonlar</div><div class="count" id="countIzinliTel"></div></div>
       <div class="dash-card" data-view="cihazlar"><div class="icon">📱</div><div class="label">Cihazlar</div><div class="count" id="countCihazlar"></div></div>
       <div class="dash-card" data-view="gorusler"><div class="icon">💬</div><div class="label">Görüşler</div><div class="count" id="countGorusler"></div></div>
       <div class="dash-card" data-view="istatistik"><div class="icon">📊</div><div class="label">İstatistikler</div><div class="count" id="countIstatistik"></div></div>
@@ -265,8 +266,10 @@
       <input type="text" id="title" placeholder="Örn: Bugünün Menüsü">
       <label>Mesaj</label>
       <textarea id="body" placeholder="Mesajınızı yazın..."></textarea>
-      <label>Görsel / PDF Ekle (opsiyonel — görsel eklersen anasayfa manşetinde otomatik kapak resmi olarak kullanılır)</label>
-      <input type="file" id="attachment" accept="image/jpeg,image/png,application/pdf">
+      <label>Tarih (opsiyonel — boş bırakırsan şu an kullanılır; geçmiş/ileri bir tarih de seçebilirsin)</label>
+      <input type="datetime-local" id="msgDate">
+      <label>Görsel / PDF Ekle (opsiyonel — en fazla 6 dosya, ilk görsel anasayfa manşetinde otomatik kapak resmi olarak kullanılır)</label>
+      <input type="file" id="attachment" accept="image/jpeg,image/png,application/pdf" multiple>
 
       <label style="display:flex; align-items:center; gap:8px; margin-top:16px; cursor:pointer; text-transform:none; letter-spacing:normal; font-weight:400; font-size:13px; color:#555;">
         <input type="checkbox" id="alsoEmailCheck">
@@ -337,6 +340,24 @@
       <div class="sub">Bu, e-posta+şifre ile kayıt olmuş <b>gerçek üyelerin</b> tekilleştirilmiş listesi (aynı kişi birden fazla cihazdan girse bile tek satır). Cihaz bazlı ham liste için "Cihazlar" bölümüne bakabilirsin.</div>
       <input type="text" id="memberSearch" class="member-search" placeholder="🔍 İsim, telefon veya e-posta ara...">
       <div id="membersList" class="list-empty">Yükleniyor...</div>
+    </div>
+  </div>
+
+  <div class="view" id="view-izinlitelefon">
+    <a class="back-link" data-back>← Panele Dön</a>
+    <div class="card">
+      <h2>📞 İzinli Telefonlar</h2>
+      <div class="sub">Yeni üye kaydı sırasında telefon numarası kurum köprüsünde (PHP personel listesi) bulunamazsa, buraya eklenmiş numaralara da bakılır. PHP tarafında henüz görünmeyen yeni işe başlayanlar için kullan.</div>
+      <div class="two-col">
+        <div><label>Adı Soyadı</label><input type="text" id="allowedPhoneName" placeholder="Örn: Ahmet Yılmaz"></div>
+        <div><label>Telefon</label><input type="tel" id="allowedPhoneNumber" placeholder="Örn: 0555 111 22 33"></div>
+      </div>
+      <div class="send-row"><button class="btn-primary" id="allowedPhoneAddBtn">Ekle</button></div>
+      <div class="feedback-msg" id="allowedPhoneFeedback"></div>
+    </div>
+    <div class="list-section">
+      <h3>Eklenmiş İzinli Telefonlar</h3>
+      <div id="allowedPhoneList" class="list-empty">Yükleniyor...</div>
     </div>
   </div>
 
@@ -524,7 +545,7 @@ async function showDashboard() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
   loadHistory(); loadMenu(); loadPhones(); loadTasks(); loadDevices(); loadFeedback();
-  loadStats(); loadPmDeviceList(); loadModGeneral(); loadModDirect(); loadManualPersonnel(); loadCalendar(); loadAdminPolls(); loadMembers();
+  loadStats(); loadPmDeviceList(); loadModGeneral(); loadModDirect(); loadManualPersonnel(); loadCalendar(); loadAdminPolls(); loadMembers(); loadAllowedPhones();
 }
 
 document.getElementById('loginBtn').addEventListener('click', async () => {
@@ -632,6 +653,7 @@ document.getElementById('sendBtn').addEventListener('click', async () => {
   const title = document.getElementById('title').value.trim();
   const body = document.getElementById('body').value.trim();
   const fileInput = document.getElementById('attachment');
+  const dateVal = document.getElementById('msgDate').value;
   const alsoEmail = document.getElementById('alsoEmailCheck').checked;
   const fb = document.getElementById('feedback');
   if (!title || !body) { fb.textContent = 'Başlık ve mesaj gerekli.'; fb.className = 'feedback-msg err'; return; }
@@ -644,7 +666,8 @@ document.getElementById('sendBtn').addEventListener('click', async () => {
     formData.append('title', title);
     formData.append('body', body);
     formData.append('alsoEmail', alsoEmail ? 'true' : 'false');
-    if (fileInput.files[0]) formData.append('attachment', fileInput.files[0]);
+    if (dateVal) formData.append('date', new Date(dateVal).toISOString());
+    Array.from(fileInput.files).slice(0, 6).forEach(f => formData.append('attachments', f));
     const res = await fetch('/api/send', { method: 'POST', body: formData });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Gönderilemedi');
@@ -654,11 +677,28 @@ document.getElementById('sendBtn').addEventListener('click', async () => {
       else msg += ' + ' + data.email.sent + '/' + data.email.attempted + ' e-posta gönderildi.';
     }
     fb.textContent = msg; fb.className = 'feedback-msg ok';
-    document.getElementById('title').value = ''; document.getElementById('body').value = ''; fileInput.value = '';
+    document.getElementById('title').value = ''; document.getElementById('body').value = ''; document.getElementById('msgDate').value = ''; fileInput.value = '';
     loadHistory();
   } catch (err) { fb.textContent = err.message; fb.className = 'feedback-msg err'; }
   finally { btn.disabled = false; }
 });
+
+function toLocalDatetimeValue(iso) {
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+
+function renderEditThumb(att) {
+  if (att.type !== 'image') {
+    return '<a href="' + esc(att.url) + '" target="_blank" style="font-size:11px; padding:6px 8px; background:#f5f3ee; border-radius:6px; display:inline-block;">📄 ' + esc(att.name || 'Dosya') + '</a>';
+  }
+  return '<div class="edit-thumb" data-edit-thumb data-url="' + esc(att.url) + '" title="Kaldırmak için tıkla" ' +
+      'style="position:relative; width:52px; height:52px; border-radius:6px; overflow:hidden; cursor:pointer; border:2px solid transparent;">' +
+    '<img src="' + esc(att.url) + '" style="width:100%; height:100%; object-fit:cover; display:block;">' +
+    '<div class="edit-thumb-x" style="position:absolute; inset:0; background:rgba(181,103,74,0.8); color:#fff; display:none; align-items:center; justify-content:center; font-weight:700; font-size:18px;">✕</div>' +
+  '</div>';
+}
 
 async function loadHistory() {
   const listEl = document.getElementById('historyList');
@@ -668,13 +708,15 @@ async function loadHistory() {
     document.getElementById('countDuyuru').textContent = (data.messages || []).length + ' duyuru';
     if (!data.messages || data.messages.length === 0) { listEl.className = 'list-empty'; listEl.textContent = 'Henüz duyuru gönderilmedi.'; return; }
     listEl.className = '';
-    listEl.innerHTML = data.messages.map(m =>
-      '<div class="list-item ' + (m.category || 'genel') + '" id="msgitem-' + m.id + '">' +
+    listEl.innerHTML = data.messages.map(m => {
+      const galleryImgs = (m.attachments || []).filter(a => a.type === 'image');
+      return '<div class="list-item ' + (m.category || 'genel') + '" id="msgitem-' + m.id + '">' +
         '<div class="li-main">' +
           '<div class="li-top"><span class="li-tag">' + (catNames[m.category] || 'Genel') + (m.editedAt ? ' · <i>düzenlendi</i>' : '') + '</span><span class="li-time">' + formatTime(m.time) + '</span></div>' +
           '<div class="li-title" id="mtitle-' + m.id + '">' + esc(m.title) + '</div>' +
           '<div class="li-body" id="mbody-' + m.id + '">' + esc(m.body) + '</div>' +
           renderAttachment(m.attachment) +
+          (galleryImgs.length > 1 ? '<div style="font-size:11px; color:#999; margin-top:4px;">🖼️ Galeride ' + galleryImgs.length + ' görsel var</div>' : '') +
           '<div class="reads-link" data-reads-id="' + m.id + '">👁 ' + ((m.reads && m.reads.length) || 0) + ' kişi okudu — kimler?</div>' +
           '<div class="reads-detail" id="reads-' + m.id + '"></div>' +
           '<div id="editbox-' + m.id + '" style="display:none;margin-top:10px;padding-top:10px;border-top:1px dashed #ddd;">' +
@@ -683,6 +725,15 @@ async function loadHistory() {
             '</select>' +
             '<input type="text" id="edittitle-' + m.id + '" value="' + esc(m.title) + '" style="margin-bottom:6px;">' +
             '<textarea id="editbody-' + m.id + '" style="min-height:60px;">' + esc(m.body) + '</textarea>' +
+            '<label style="margin-top:8px;">Tarih</label>' +
+            '<input type="datetime-local" id="editdate-' + m.id + '" value="' + toLocalDatetimeValue(m.time) + '" style="margin-bottom:8px;">' +
+            (galleryImgs.length ?
+              '<label>Mevcut Görseller (kaldırmak için tıkla)</label>' +
+              '<div id="editimgs-' + m.id + '" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">' +
+                galleryImgs.map(renderEditThumb).join('') +
+              '</div>' : '') +
+            '<label>Yeni Görsel/PDF Ekle (opsiyonel, en fazla 6)</label>' +
+            '<input type="file" id="editnewfiles-' + m.id + '" accept="image/jpeg,image/png,application/pdf" multiple style="margin-bottom:8px;">' +
             '<div style="display:flex;gap:6px;margin-top:8px;">' +
               '<button class="btn-primary" style="font-size:12px;padding:6px 12px;" data-save-edit="' + m.id + '">Güncelle</button>' +
               '<button class="btn-danger" style="font-size:12px;" data-cancel-edit="' + m.id + '">Vazgeç</button>' +
@@ -694,8 +745,8 @@ async function loadHistory() {
           '<button class="btn-primary" style="font-size:12px;padding:5px 10px;" data-edit-msg-id="' + m.id + '">Düzenle</button>' +
           '<button class="btn-danger" data-del-msg-id="' + m.id + '">Sil</button>' +
         '</div>' +
-      '</div>'
-    ).join('');
+      '</div>';
+    }).join('');
     listEl.querySelectorAll('[data-del-msg-id]').forEach(b => b.addEventListener('click', () => deleteMessage(b.dataset.delMsgId)));
     listEl.querySelectorAll('[data-reads-id]').forEach(el => el.addEventListener('click', () => toggleReads(el.dataset.readsId)));
     listEl.querySelectorAll('[data-edit-msg-id]').forEach(b => b.addEventListener('click', () => {
@@ -705,6 +756,13 @@ async function loadHistory() {
       document.getElementById('editbox-' + b.dataset.cancelEdit).style.display = 'none';
     }));
     listEl.querySelectorAll('[data-save-edit]').forEach(b => b.addEventListener('click', () => saveMessageEdit(b.dataset.saveEdit)));
+    listEl.querySelectorAll('[data-edit-thumb]').forEach(thumb => thumb.addEventListener('click', () => {
+      thumb.classList.toggle('marked');
+      const marked = thumb.classList.contains('marked');
+      thumb.style.borderColor = marked ? 'var(--clay)' : 'transparent';
+      thumb.style.opacity = marked ? '0.6' : '1';
+      thumb.querySelector('.edit-thumb-x').style.display = marked ? 'flex' : 'none';
+    }));
   } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
 }
 
@@ -712,13 +770,29 @@ async function saveMessageEdit(id) {
   const title = document.getElementById('edittitle-' + id).value.trim();
   const body = document.getElementById('editbody-' + id).value.trim();
   const category = document.getElementById('editcat-' + id).value;
+  const dateVal = document.getElementById('editdate-' + id).value;
   const fb = document.getElementById('editfb-' + id);
   if (!title || !body) { fb.textContent = 'Başlık ve mesaj boş olamaz.'; fb.className = 'feedback-msg err'; return; }
+
+  const removeUrls = [];
+  const thumbsWrap = document.getElementById('editimgs-' + id);
+  if (thumbsWrap) {
+    thumbsWrap.querySelectorAll('[data-edit-thumb].marked').forEach(t => removeUrls.push(t.dataset.url));
+  }
+
   try {
-    const res = await fetch('/api/messages/' + id, {
-      method: 'PUT', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: getAdminPassword(), title, body, category })
-    });
+    const formData = new FormData();
+    formData.append('password', getAdminPassword());
+    formData.append('title', title);
+    formData.append('body', body);
+    formData.append('category', category);
+    if (dateVal) formData.append('date', new Date(dateVal).toISOString());
+    if (removeUrls.length) formData.append('removeUrls', JSON.stringify(removeUrls));
+    const fileInput = document.getElementById('editnewfiles-' + id);
+    if (fileInput && fileInput.files.length) {
+      Array.from(fileInput.files).slice(0, 6).forEach(f => formData.append('newAttachments', f));
+    }
+    const res = await fetch('/api/messages/' + id, { method: 'PUT', body: formData });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Güncellenemedi');
     fb.textContent = 'Güncellendi.'; fb.className = 'feedback-msg ok';
@@ -1066,6 +1140,56 @@ const loadTasks = () => setupSimpleList({
 }).load;
 
 let membersAllItems = [];
+// ---------- İZİNLİ TELEFONLAR ----------
+document.getElementById('allowedPhoneAddBtn').addEventListener('click', async () => {
+  const name = document.getElementById('allowedPhoneName').value.trim();
+  const telefon = document.getElementById('allowedPhoneNumber').value.trim();
+  const fb = document.getElementById('allowedPhoneFeedback');
+  if (!name || !telefon) { fb.textContent = 'İsim ve telefon gerekli.'; fb.className = 'feedback-msg err'; return; }
+  const btn = document.getElementById('allowedPhoneAddBtn');
+  btn.disabled = true; fb.textContent = 'Ekleniyor...'; fb.className = 'feedback-msg';
+  try {
+    const res = await fetch('/api/allowed-phones', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: getAdminPassword(), name, telefon })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Eklenemedi');
+    fb.textContent = 'Eklendi.'; fb.className = 'feedback-msg ok';
+    document.getElementById('allowedPhoneName').value = '';
+    document.getElementById('allowedPhoneNumber').value = '';
+    loadAllowedPhones();
+  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
+  finally { btn.disabled = false; }
+});
+
+async function loadAllowedPhones() {
+  const el = document.getElementById('allowedPhoneList');
+  el.className = 'list-empty'; el.textContent = 'Yükleniyor...';
+  try {
+    const res = await fetch('/api/allowed-phones?password=' + encodeURIComponent(getAdminPassword()));
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Yüklenemedi');
+    const items = data.items || [];
+    document.getElementById('countIzinliTel').textContent = items.length + ' kayıt';
+    if (items.length === 0) { el.className = 'list-empty'; el.textContent = 'Henüz eklenmiş telefon yok.'; return; }
+    el.className = '';
+    el.innerHTML = items.map(a =>
+      '<div class="list-item"><div class="li-main">' +
+        '<div class="li-title">' + esc(a.name) + '</div>' +
+        '<a class="li-phone" href="tel:' + esc(a.telefon) + '">' + esc(a.telefon) + '</a>' +
+      '</div><button class="btn-danger" data-del-allowed="' + a.id + '">Sil</button></div>'
+    ).join('');
+    el.querySelectorAll('[data-del-allowed]').forEach(b => b.addEventListener('click', async () => {
+      if (!confirm('Bu telefonu izinli listeden kaldırmak istediğine emin misin?')) return;
+      try {
+        await fetch('/api/allowed-phones/' + b.dataset.delAllowed, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: getAdminPassword() }) });
+        loadAllowedPhones();
+      } catch { alert('Silinemedi.'); }
+    }));
+  } catch (e) { el.className = 'list-empty'; el.textContent = e.message; }
+}
+
 async function loadMembers() {
   const el = document.getElementById('membersList');
   el.className = 'list-empty'; el.textContent = 'Yükleniyor...';
