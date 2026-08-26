@@ -908,27 +908,37 @@ app.get('/api/presence', async (req, res) => {
   const presence = await loadJson(PRESENCE_KEY, {});
   const now = Date.now();
   const online = Object.entries(presence)
-    .filter(([, ts]) => now - ts < 90 * 1000)
+    .filter(([, ts]) => now - ts < 10 * 60 * 1000)
     .map(([deviceId]) => deviceId);
   res.json({ online });
 });
 
 // --- SOHBET İÇİN KİŞİ LİSTESİ (profilini tamamlamış herkes) ---
-app.get('/api/chat/contacts', async (req, res) => {
-  const { deviceId } = req.query;
+// --- SOHBET KİŞİ LİSTESİ (hesap bazlı — aynı kişi birden fazla cihazdan girmiş olsa da TEK satır) ---
+app.get('/api/chat/contacts', selfAuthMiddleware, async (req, res) => {
+  const accounts = await loadJson(SELF_ACCOUNTS_KEY);
   const profiles = await loadJson(PROFILES_KEY, {});
   const presence = await loadJson(PRESENCE_KEY, {});
   const now = Date.now();
-  const contacts = Object.entries(profiles)
-    .filter(([id, p]) => id !== deviceId && p.name && p.phone)
-    .map(([id, p]) => ({
-      deviceId: id,
-      name: p.name,
-      avatar: p.avatar || null,
-      online: presence[id] ? (now - presence[id] < 90 * 1000) : false,
-      lastSeen: presence[id] || null,
-    }))
+
+  const contacts = accounts
+    .filter(a => a.emailDogrulandi && a.email !== req.selfEmail)
+    .map(a => {
+      const deviceIds = Object.entries(profiles).filter(([, p]) => p.accountEmail === a.email).map(([id]) => id);
+      let lastSeen = null;
+      deviceIds.forEach(id => { if (presence[id] && (!lastSeen || presence[id] > lastSeen)) lastSeen = presence[id]; });
+      let avatar = null;
+      deviceIds.forEach(id => { if (!avatar && profiles[id] && profiles[id].avatar) avatar = profiles[id].avatar; });
+      return {
+        email: a.email,
+        name: a.adSoyad,
+        avatar,
+        online: lastSeen ? (now - lastSeen < 10 * 60 * 1000) : false,
+        lastSeen,
+      };
+    })
     .sort((a, b) => (b.online - a.online) || a.name.localeCompare(b.name, 'tr'));
+
   res.json({ contacts });
 });
 
@@ -938,19 +948,22 @@ app.get('/api/chat/general', async (req, res) => {
   res.json({ messages });
 });
 
-app.post('/api/chat/general', async (req, res) => {
-  const { deviceId, text } = req.body;
-  const check = await requireCompleteProfile(deviceId);
-  if (!check.ok) return res.status(403).json({ ok: false, error: check.error });
+app.post('/api/chat/general', selfAuthMiddleware, async (req, res) => {
+  const { text, deviceId } = req.body;
   const clean = (text || '').trim().slice(0, 1000);
   if (!clean) return res.status(400).json({ ok: false, error: 'Mesaj boş olamaz.' });
+
+  const accounts = await loadJson(SELF_ACCOUNTS_KEY);
+  const acc = accounts.find(a => a.email === req.selfEmail);
+  const profiles = await loadJson(PROFILES_KEY, {});
+  const avatar = (deviceId && profiles[deviceId] && profiles[deviceId].avatar) || null;
 
   const messages = await loadJson(CHAT_GENERAL_KEY);
   const msg = {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-    deviceId,
-    name: check.profile.name,
-    avatar: check.profile.avatar || null,
+    email: req.selfEmail,
+    name: acc ? acc.adSoyad : 'Kullanıcı',
+    avatar,
     text: clean,
     time: new Date().toISOString(),
   };
@@ -959,52 +972,59 @@ app.post('/api/chat/general', async (req, res) => {
   res.json({ ok: true, message: msg });
 });
 
-// --- BİREBİR ÖZEL SOHBET ---
+// --- BİREBİR ÖZEL SOHBET (hesap bazlı — hangi cihazdan bağlanırsa bağlansın aynı sohbet) ---
 function conversationKey(a, b) { return [a, b].sort().join('__'); }
 
-app.get('/api/chat/direct', async (req, res) => {
-  const { deviceId, withId } = req.query;
-  if (!deviceId || !withId) return res.status(400).json({ ok: false, error: 'Eksik parametre.' });
+app.get('/api/chat/direct', selfAuthMiddleware, async (req, res) => {
+  const withEmail = (req.query.withEmail || '').trim().toLowerCase();
+  if (!withEmail) return res.status(400).json({ ok: false, error: 'Eksik parametre.' });
   const all = await loadJson(CHAT_DIRECT_KEY);
-  const key = conversationKey(deviceId, withId);
+  const key = conversationKey(req.selfEmail, withEmail);
   const messages = all.filter(m => m.key === key).slice(-200);
   res.json({ messages });
 });
 
-app.post('/api/chat/direct', async (req, res) => {
-  const { deviceId, toDeviceId, text } = req.body;
-  const check = await requireCompleteProfile(deviceId);
-  if (!check.ok) return res.status(403).json({ ok: false, error: check.error });
-  const toCheck = await requireCompleteProfile(toDeviceId);
-  if (!toCheck.ok) return res.status(403).json({ ok: false, error: 'Karşı taraf henüz profilini tamamlamamış.' });
+app.post('/api/chat/direct', selfAuthMiddleware, async (req, res) => {
+  const toEmail = (req.body.toEmail || '').trim().toLowerCase();
+  const { text, deviceId } = req.body;
+  if (!toEmail) return res.status(400).json({ ok: false, error: 'Alıcı belirtilmedi.' });
   const clean = (text || '').trim().slice(0, 1000);
   if (!clean) return res.status(400).json({ ok: false, error: 'Mesaj boş olamaz.' });
+
+  const accounts = await loadJson(SELF_ACCOUNTS_KEY);
+  const myAcc = accounts.find(a => a.email === req.selfEmail);
+  const toAcc = accounts.find(a => a.email === toEmail && a.emailDogrulandi);
+  if (!toAcc) return res.status(404).json({ ok: false, error: 'Karşı taraf bulunamadı.' });
 
   const all = await loadJson(CHAT_DIRECT_KEY);
   const msg = {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-    key: conversationKey(deviceId, toDeviceId),
-    fromDeviceId: deviceId,
-    toDeviceId,
-    fromName: check.profile.name,
+    key: conversationKey(req.selfEmail, toEmail),
+    fromEmail: req.selfEmail,
+    toEmail,
+    fromName: myAcc ? myAcc.adSoyad : 'Kullanıcı',
     text: clean,
     time: new Date().toISOString(),
   };
   all.push(msg);
   await saveJson(CHAT_DIRECT_KEY, all.slice(-2000));
 
-  // Karşı tarafa push bildirimi de gönder (aktif abonelikleri varsa)
-  const subs = (await loadJson(SUBS_KEY)).filter(s => s.deviceId === toDeviceId);
-  if (subs.length) {
-    const payload = JSON.stringify({
-      id: msg.id,
-      title: `💬 ${check.profile.name}`,
-      body: clean,
-      category: 'genel',
-      urgent: false,
-      personal: true,
-    });
-    subs.forEach(sub => { webpush.sendNotification(sub, payload, { TTL: 86400 }).catch(() => {}); });
+  // Karşı tarafın BAĞLI OLDUĞU TÜM cihazlara push bildirimi gönder — hangi cihazı kullanıyorsa ulaşsın.
+  const profiles = await loadJson(PROFILES_KEY, {});
+  const toDeviceIds = Object.entries(profiles).filter(([, p]) => p.accountEmail === toEmail).map(([id]) => id);
+  if (toDeviceIds.length) {
+    const subs = (await loadJson(SUBS_KEY)).filter(s => toDeviceIds.includes(s.deviceId));
+    if (subs.length) {
+      const payload = JSON.stringify({
+        id: msg.id,
+        title: `💬 ${msg.fromName}`,
+        body: clean,
+        category: 'genel',
+        urgent: false,
+        personal: true,
+      });
+      subs.forEach(sub => { webpush.sendNotification(sub, payload, { TTL: 86400 }).catch(() => {}); });
+    }
   }
 
   res.json({ ok: true, message: msg });
@@ -1018,14 +1038,13 @@ app.get('/api/chat/general/all', async (req, res) => {
 });
 
 // --- KENDİ MESAJINI DÜZENLEME (Genel Oda) ---
-app.put('/api/chat/general/:id', async (req, res) => {
-  const { deviceId, text } = req.body;
-  const clean = (text || '').trim().slice(0, 1000);
+app.put('/api/chat/general/:id', selfAuthMiddleware, async (req, res) => {
+  const clean = (req.body.text || '').trim().slice(0, 1000);
   if (!clean) return res.status(400).json({ ok: false, error: 'Mesaj boş olamaz.' });
   const messages = await loadJson(CHAT_GENERAL_KEY);
   const msg = messages.find(m => m.id === req.params.id);
   if (!msg) return res.status(404).json({ ok: false, error: 'Mesaj bulunamadı.' });
-  if (!deviceId || msg.deviceId !== deviceId) return res.status(403).json({ ok: false, error: 'Sadece kendi mesajınızı düzenleyebilirsiniz.' });
+  if (msg.email !== req.selfEmail) return res.status(403).json({ ok: false, error: 'Sadece kendi mesajınızı düzenleyebilirsiniz.' });
   msg.text = clean;
   msg.editedAt = new Date().toISOString();
   await saveJson(CHAT_GENERAL_KEY, messages);
@@ -1033,27 +1052,37 @@ app.put('/api/chat/general/:id', async (req, res) => {
 });
 
 // --- OKUNDU İŞARETLEME (Genel Oda, toplu) ---
-app.post('/api/chat/general/read-bulk', async (req, res) => {
-  const { deviceId, ids } = req.body;
-  if (!deviceId || !Array.isArray(ids) || ids.length === 0) return res.status(400).json({ ok: false });
+app.post('/api/chat/general/read-bulk', selfAuthMiddleware, async (req, res) => {
+  const { ids } = req.body;
+  if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ ok: false });
   const messages = await loadJson(CHAT_GENERAL_KEY);
   let changed = false;
   messages.forEach(m => {
-    if (ids.includes(m.id) && m.deviceId !== deviceId) {
+    if (ids.includes(m.id) && m.email !== req.selfEmail) {
       if (!m.reads) m.reads = [];
-      if (!m.reads.includes(deviceId)) { m.reads.push(deviceId); changed = true; }
+      if (!m.reads.includes(req.selfEmail)) { m.reads.push(req.selfEmail); changed = true; }
     }
   });
   if (changed) await saveJson(CHAT_GENERAL_KEY, messages);
   res.json({ ok: true });
 });
 
+// Silme: hem mesaj sahibi (Bearer token ile) hem de yönetici (şifreyle) silebilir.
+async function resolveSelfEmailFromHeader(req) {
+  const authHeader = req.headers['authorization'] || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+  if (!token) return null;
+  const tokens = await loadJson(SELF_TOKENS_KEY, {});
+  return (tokens[token] && tokens[token].email) || null;
+}
+
 app.delete('/api/chat/general/:id', async (req, res) => {
-  const { password, deviceId } = req.body;
+  const { password } = req.body;
+  const selfEmail = await resolveSelfEmailFromHeader(req);
   const messages = await loadJson(CHAT_GENERAL_KEY);
   const msg = messages.find(m => m.id === req.params.id);
   if (!msg) return res.status(404).json({ ok: false, error: 'Mesaj bulunamadı.' });
-  const isOwner = deviceId && msg.deviceId === deviceId;
+  const isOwner = selfEmail && msg.email === selfEmail;
   if (!isOwner) {
     const result = checkPassword(password, req);
     if (passwordCheckResponse(res, result)) return;
@@ -1066,24 +1095,25 @@ app.delete('/api/chat/general/:id', async (req, res) => {
 app.get('/api/chat/direct/all', async (req, res) => {
   const result = checkPassword(req.query.password, req);
   if (passwordCheckResponse(res, result)) return;
-  const profiles = await loadJson(PROFILES_KEY, {});
+  const accounts = await loadJson(SELF_ACCOUNTS_KEY);
+  const nameByEmail = {};
+  accounts.forEach(a => { nameByEmail[a.email] = a.adSoyad; });
   const all = (await loadJson(CHAT_DIRECT_KEY)).slice(-300).reverse().map(m => ({
     ...m,
-    fromLabel: (profiles[m.fromDeviceId] && profiles[m.fromDeviceId].name) || m.fromName || 'Bilinmeyen',
-    toLabel: (profiles[m.toDeviceId] && profiles[m.toDeviceId].name) || 'Bilinmeyen',
+    fromLabel: nameByEmail[m.fromEmail] || m.fromName || 'Bilinmeyen',
+    toLabel: nameByEmail[m.toEmail] || 'Bilinmeyen',
   }));
   res.json({ messages: all });
 });
 
 // --- KENDİ MESAJINI DÜZENLEME (Özel Sohbet) ---
-app.put('/api/chat/direct/:id', async (req, res) => {
-  const { deviceId, text } = req.body;
-  const clean = (text || '').trim().slice(0, 1000);
+app.put('/api/chat/direct/:id', selfAuthMiddleware, async (req, res) => {
+  const clean = (req.body.text || '').trim().slice(0, 1000);
   if (!clean) return res.status(400).json({ ok: false, error: 'Mesaj boş olamaz.' });
   const all = await loadJson(CHAT_DIRECT_KEY);
   const msg = all.find(m => m.id === req.params.id);
   if (!msg) return res.status(404).json({ ok: false, error: 'Mesaj bulunamadı.' });
-  if (!deviceId || msg.fromDeviceId !== deviceId) return res.status(403).json({ ok: false, error: 'Sadece kendi mesajınızı düzenleyebilirsiniz.' });
+  if (msg.fromEmail !== req.selfEmail) return res.status(403).json({ ok: false, error: 'Sadece kendi mesajınızı düzenleyebilirsiniz.' });
   msg.text = clean;
   msg.editedAt = new Date().toISOString();
   await saveJson(CHAT_DIRECT_KEY, all);
@@ -1091,13 +1121,13 @@ app.put('/api/chat/direct/:id', async (req, res) => {
 });
 
 // --- OKUNDU İŞARETLEME (Özel Sohbet, toplu) ---
-app.post('/api/chat/direct/read-bulk', async (req, res) => {
-  const { deviceId, ids } = req.body;
-  if (!deviceId || !Array.isArray(ids) || ids.length === 0) return res.status(400).json({ ok: false });
+app.post('/api/chat/direct/read-bulk', selfAuthMiddleware, async (req, res) => {
+  const { ids } = req.body;
+  if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ ok: false });
   const all = await loadJson(CHAT_DIRECT_KEY);
   let changed = false;
   all.forEach(m => {
-    if (ids.includes(m.id) && m.toDeviceId === deviceId && !m.read) {
+    if (ids.includes(m.id) && m.toEmail === req.selfEmail && !m.read) {
       m.read = true;
       m.readAt = new Date().toISOString();
       changed = true;
@@ -1108,11 +1138,12 @@ app.post('/api/chat/direct/read-bulk', async (req, res) => {
 });
 
 app.delete('/api/chat/direct/:id', async (req, res) => {
-  const { password, deviceId } = req.body;
+  const { password } = req.body;
+  const selfEmail = await resolveSelfEmailFromHeader(req);
   const all = await loadJson(CHAT_DIRECT_KEY);
   const msg = all.find(m => m.id === req.params.id);
   if (!msg) return res.status(404).json({ ok: false, error: 'Mesaj bulunamadı.' });
-  const isOwner = deviceId && msg.fromDeviceId === deviceId;
+  const isOwner = selfEmail && msg.fromEmail === selfEmail;
   if (!isOwner) {
     const result = checkPassword(password, req);
     if (passwordCheckResponse(res, result)) return;
@@ -1520,6 +1551,7 @@ app.post('/api/self-resend', async (req, res) => {
 app.post('/api/self-login', async (req, res) => {
   const email = (req.body.email || '').trim().toLowerCase();
   const sifre = req.body.sifre || '';
+  const deviceId = (req.body.deviceId || '').trim();
   const accounts = await loadJson(SELF_ACCOUNTS_KEY);
   const acc = accounts.find(a => a.email === email);
   if (!acc || !acc.emailDogrulandi || !verifyPassword(sifre, acc.sifreHash)) {
@@ -1529,6 +1561,16 @@ app.post('/api/self-login', async (req, res) => {
   const tokens = await loadJson(SELF_TOKENS_KEY, {});
   tokens[token] = { email, olusturulma: Date.now() };
   await saveJson(SELF_TOKENS_KEY, tokens);
+
+  // Bu cihazı hesaba bağlıyoruz — kişi telefonundan da tarayıcısından da giriş yapsa,
+  // sohbet/üye listesinde TEK kişi olarak görünsün diye (çoklu satır sorunu buradan çözülüyor).
+  if (deviceId) {
+    const profiles = await loadJson(PROFILES_KEY, {});
+    if (!profiles[deviceId]) profiles[deviceId] = {};
+    profiles[deviceId].accountEmail = email;
+    await saveJson(PROFILES_KEY, profiles);
+  }
+
   res.json({ ok: true, token, adSoyad: acc.adSoyad, telefon: acc.telefon });
 });
 
@@ -1579,6 +1621,14 @@ async function selfAuthMiddleware(req, res, next) {
   req.selfEmail = entry.email;
   next();
 }
+
+// Hafif "ben kimim" uç noktası — sohbet gibi yerlerde sadece giriş yapan kişinin e-postasını
+// öğrenmek için PHP köprüsüne (yemek kayıtları) gitmeye gerek kalmasın diye.
+app.get('/api/self-whoami', selfAuthMiddleware, async (req, res) => {
+  const accounts = await loadJson(SELF_ACCOUNTS_KEY);
+  const acc = accounts.find(a => a.email === req.selfEmail);
+  res.json({ ok: true, email: req.selfEmail, adSoyad: acc ? acc.adSoyad : null });
+});
 
 // --- KENDİ YEMEKHANE KAYITLARIM (PHP/MySQL sistemine köprü üzerinden ulaşır) ---
 app.get('/api/my-meals', selfAuthMiddleware, async (req, res) => {
