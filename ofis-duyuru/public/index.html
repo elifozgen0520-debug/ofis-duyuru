@@ -309,7 +309,8 @@
   .list-item {
     background: var(--paper); color: var(--ink); border-radius: 14px;
     padding: 13px 15px; margin-bottom: 9px; box-shadow: 0 4px 12px rgba(4,20,38,0.14);
-    border-left: 4px solid var(--ink); display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
+    border-left: 4px solid var(--ink); border-top: 1px solid rgba(11,42,76,0.06); border-right: 1px solid rgba(11,42,76,0.06); border-bottom: 1px solid rgba(11,42,76,0.06);
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
   }
   .list-item.acil { border-left-color: var(--amber); }
   .list-item.yemek { border-left-color: var(--sage); }
@@ -1176,14 +1177,19 @@
   <div class="toast-overlay" id="galleryLightbox" style="z-index:3500;">
     <div class="toast-box" style="max-width:520px; padding:14px; background:#0B0F14;">
       <button type="button" id="galleryCloseBtn" style="position:absolute; top:10px; right:14px; background:rgba(255,255,255,0.12); border:none; color:#fff; font-size:18px; width:32px; height:32px; border-radius:50%; cursor:pointer; z-index:2;">✕</button>
-      <div style="position:relative;">
-        <img id="galleryImg" src="" style="width:100%; max-height:70vh; object-fit:contain; border-radius:8px; display:block; background:#000;">
+      <div style="position:relative; background:#000; border-radius:8px; overflow:hidden; min-height:200px;">
+        <div id="galleryLoadingSpin" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.5); font-size:13px;">Yükleniyor...</div>
+        <img id="galleryImg" src="" style="width:100%; max-height:70vh; object-fit:contain; display:block; opacity:0; transition:opacity 0.25s ease;">
         <button type="button" id="galleryPrevBtn" style="position:absolute; left:8px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.15); backdrop-filter:blur(4px); color:#fff; border:1px solid rgba(255,255,255,0.25); width:40px; height:40px; border-radius:50%; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center;">‹</button>
         <button type="button" id="galleryNextBtn" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.15); backdrop-filter:blur(4px); color:#fff; border:1px solid rgba(255,255,255,0.25); width:40px; height:40px; border-radius:50%; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center;">›</button>
       </div>
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-top:10px;">
+      <div id="galleryDots" style="display:flex; justify-content:center; gap:6px; margin-top:10px;"></div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-top:8px;">
         <span id="galleryCounter" style="color:#ccc; font-size:12px;"></span>
-        <button type="button" id="galleryLikeBtn" style="background:none; border:1px solid rgba(255,255,255,0.3); color:#fff; border-radius:20px; padding:6px 14px; font-size:13px; cursor:pointer;">🤍 <span id="galleryLikeCount">0</span></button>
+        <div style="display:flex; gap:8px;">
+          <a id="galleryDownloadBtn" download style="background:none; border:1px solid rgba(255,255,255,0.3); color:#fff; border-radius:20px; padding:6px 12px; font-size:13px; cursor:pointer; text-decoration:none; display:flex; align-items:center;">⬇️</a>
+          <button type="button" id="galleryLikeBtn" style="background:none; border:1px solid rgba(255,255,255,0.3); color:#fff; border-radius:20px; padding:6px 14px; font-size:13px; cursor:pointer;">🤍 <span id="galleryLikeCount">0</span></button>
+        </div>
       </div>
     </div>
   </div>
@@ -2164,7 +2170,10 @@ async function loadHistory() {
             <div class="li-title" style="cursor:pointer;" data-detay-id="${m.id}">${esc(m.title)}</div>
             <div class="li-body">${esc(m.body)}</div>
             <div class="attach-wrap" id="attach-${m.id}">${renderAttachment(m.attachment)}</div>
-            <span class="li-detay-link" data-detay-id="${m.id}">🔎 Detay / Yorum Yap / Paylaş</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+              <span class="li-detay-link" data-detay-id="${m.id}">🔎 Detay / Yorum Yap / Paylaş</span>
+              <span style="font-style:italic; font-size:11px; color:var(--muted); flex-shrink:0;" data-detay-id="${m.id}">devamını gör →</span>
+            </div>
             ${activeAdminPassword ? `<div style="margin-top:8px;"><span class="reads-badge" onclick="showReads('${m.id}')">👁 Okundu Bilgisi</span> <button class="btn-danger" onclick="deleteMessage('${m.id}')">Sil</button></div>` : ''}
           </div>
         </div>
@@ -2207,6 +2216,7 @@ loadHistory();
 let mansetItems = [];
 let mansetIdx = 0;
 let mansetTimer = null;
+let mansetJustSwiped = false;
 
 function mansetColors(cat) {
   const map = {
@@ -2259,7 +2269,7 @@ function renderManset() {
     </div>
     ${mansetItems.length > 1 ? `<div class="manset-dots">${mansetItems.map((_, i) => `<button type="button" class="manset-dot ${i === mansetIdx ? 'active' : ''}" data-dot-idx="${i}" aria-label="Duyuru ${i + 1}"></button>`).join('')}</div>` : ''}
   `;
-  document.getElementById('mansetCard').addEventListener('click', () => openDuyuruDetay(m.id));
+  document.getElementById('mansetCard').addEventListener('click', () => { if (!mansetJustSwiped) openDuyuruDetay(m.id); });
   const prevBtn = document.getElementById('mansetPrevBtn');
   const nextBtn = document.getElementById('mansetNextBtn');
   if (prevBtn) prevBtn.addEventListener('click', () => { mansetIdx = (mansetIdx - 1 + mansetItems.length) % mansetItems.length; renderManset(); });
@@ -2267,6 +2277,32 @@ function renderManset() {
   wrap.querySelectorAll('[data-dot-idx]').forEach(d => {
     d.addEventListener('click', () => { mansetIdx = parseInt(d.dataset.dotIdx, 10); renderManset(); });
   });
+
+  // Elle kaydırma (swipe) — parmakla sağa/sola çekince önceki/sonraki duyuruya geçsin.
+  if (mansetItems.length > 1) {
+    const cardEl = document.getElementById('mansetCard');
+    let touchStartX = null, touchStartY = null, swiped = false;
+    cardEl.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; swiped = false;
+    }, { passive: true });
+    cardEl.addEventListener('touchmove', (e) => {
+      if (touchStartX === null) return;
+      const dx = e.touches[0].clientX - touchStartX;
+      const dy = e.touches[0].clientY - touchStartY;
+      if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) swiped = true;
+    }, { passive: true });
+    cardEl.addEventListener('touchend', (e) => {
+      if (touchStartX === null) return;
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      if (swiped && Math.abs(dx) > 40) {
+        mansetJustSwiped = true;
+        if (dx < 0) { mansetIdx = (mansetIdx + 1) % mansetItems.length; } else { mansetIdx = (mansetIdx - 1 + mansetItems.length) % mansetItems.length; }
+        renderManset();
+        setTimeout(() => { mansetJustSwiped = false; }, 300);
+      }
+      touchStartX = null; touchStartY = null;
+    });
+  }
 }
 
 loadManset();
@@ -2371,14 +2407,32 @@ let galleryState = { images: [], msgId: null, index: 0 };
 function galleryRender() {
   const img = galleryState.images[galleryState.index];
   if (!img) return;
-  document.getElementById('galleryImg').src = img.url;
+  const imgEl = document.getElementById('galleryImg');
+  imgEl.style.opacity = '0';
+  document.getElementById('galleryLoadingSpin').style.display = 'flex';
+  imgEl.onload = () => { document.getElementById('galleryLoadingSpin').style.display = 'none'; imgEl.style.opacity = '1'; };
+  imgEl.src = img.url;
+  document.getElementById('galleryDownloadBtn').href = img.url;
   document.getElementById('galleryCounter').textContent = (galleryState.index + 1) + ' / ' + galleryState.images.length;
-  document.getElementById('galleryPrevBtn').style.display = galleryState.images.length > 1 ? 'block' : 'none';
-  document.getElementById('galleryNextBtn').style.display = galleryState.images.length > 1 ? 'block' : 'none';
+  document.getElementById('galleryPrevBtn').style.display = galleryState.images.length > 1 ? 'flex' : 'none';
+  document.getElementById('galleryNextBtn').style.display = galleryState.images.length > 1 ? 'flex' : 'none';
   const myId = getDeviceId();
   const liked = (img.likedBy || []).includes(myId);
   document.getElementById('galleryLikeBtn').innerHTML = (liked ? '❤️' : '🤍') + ' <span id="galleryLikeCount">' + ((img.likedBy || []).length) + '</span>';
+
+  // Nokta göstergesi — birden fazla resim varsa hangisinde olduğumuzu gösterir.
+  const dotsEl = document.getElementById('galleryDots');
+  if (galleryState.images.length > 1) {
+    dotsEl.innerHTML = galleryState.images.map((_, i) =>
+      `<span style="width:6px; height:6px; border-radius:50%; background:${i === galleryState.index ? '#fff' : 'rgba(255,255,255,0.3)'}; transition:background 0.2s ease;"></span>`
+    ).join('');
+  } else {
+    dotsEl.innerHTML = '';
+  }
 }
+
+function galleryPrev() { galleryState.index = (galleryState.index - 1 + galleryState.images.length) % galleryState.images.length; galleryRender(); }
+function galleryNext() { galleryState.index = (galleryState.index + 1) % galleryState.images.length; galleryRender(); }
 
 function openGalleryLightbox(images, msgId, index) {
   galleryState = { images, msgId, index: index || 0 };
@@ -2390,14 +2444,35 @@ document.getElementById('galleryCloseBtn').addEventListener('click', () => docum
 document.getElementById('galleryLightbox').addEventListener('click', (e) => {
   if (e.target.id === 'galleryLightbox') document.getElementById('galleryLightbox').classList.remove('show');
 });
-document.getElementById('galleryPrevBtn').addEventListener('click', () => {
-  galleryState.index = (galleryState.index - 1 + galleryState.images.length) % galleryState.images.length;
-  galleryRender();
+document.getElementById('galleryPrevBtn').addEventListener('click', galleryPrev);
+document.getElementById('galleryNextBtn').addEventListener('click', galleryNext);
+
+// Klavye ile gezinme — sadece galeri açıkken (sağ/sol ok, Esc ile kapat).
+document.addEventListener('keydown', (e) => {
+  if (!document.getElementById('galleryLightbox').classList.contains('show')) return;
+  if (e.key === 'ArrowLeft') galleryPrev();
+  else if (e.key === 'ArrowRight') galleryNext();
+  else if (e.key === 'Escape') document.getElementById('galleryLightbox').classList.remove('show');
 });
-document.getElementById('galleryNextBtn').addEventListener('click', () => {
-  galleryState.index = (galleryState.index + 1) % galleryState.images.length;
-  galleryRender();
-});
+
+// Parmakla kaydırma (swipe) — telefonda resmi sağa/sola çekerek gezinme.
+(function () {
+  const imgWrap = document.getElementById('galleryImg').parentElement;
+  let sx = null, sy = null, didSwipe = false;
+  imgWrap.addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; didSwipe = false; }, { passive: true });
+  imgWrap.addEventListener('touchmove', (e) => {
+    if (sx === null) return;
+    const dx = e.touches[0].clientX - sx, dy = e.touches[0].clientY - sy;
+    if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) didSwipe = true;
+  }, { passive: true });
+  imgWrap.addEventListener('touchend', (e) => {
+    if (sx === null) return;
+    const dx = e.changedTouches[0].clientX - sx;
+    if (didSwipe && Math.abs(dx) > 40 && galleryState.images.length > 1) { dx < 0 ? galleryNext() : galleryPrev(); }
+    sx = null; sy = null;
+  });
+})();
+
 document.getElementById('galleryLikeBtn').addEventListener('click', async () => {
   const idx = galleryState.index;
   try {
