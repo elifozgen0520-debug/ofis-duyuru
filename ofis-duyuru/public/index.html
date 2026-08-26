@@ -405,6 +405,21 @@
   .dd-title { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 19px; margin: 0 0 6px; color: var(--ink); }
   .dd-meta { font-size: 11.5px; color: #999; margin-bottom: 14px; }
   .dd-body { font-size: 14px; line-height: 1.6; color: #333; margin-bottom: 8px; white-space: pre-wrap; }
+
+  /* GALERİ KÜÇÜK RESİMLERİ — dikkat çeksin diye hafif parlama + hover büyüme */
+  .gallery-hint { display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--clay,#B5674A); font-weight:700; margin-top:10px; margin-bottom:6px; }
+  .gallery-strip { display:flex; gap:8px; flex-wrap:wrap; }
+  .gallery-thumb {
+    width:72px; height:72px; object-fit:cover; border-radius:10px; cursor:pointer;
+    box-shadow:0 3px 10px rgba(0,0,0,0.18); border:2px solid rgba(224,151,44,0.5);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    animation: gallery-thumb-glow 2.4s ease-in-out infinite;
+  }
+  .gallery-thumb:hover { transform: scale(1.1) rotate(-1deg); box-shadow:0 8px 18px rgba(0,0,0,0.3); border-color: var(--amber,#E0972C); animation: none; }
+  @keyframes gallery-thumb-glow {
+    0%, 100% { box-shadow:0 3px 10px rgba(0,0,0,0.18); }
+    50% { box-shadow:0 3px 14px rgba(224,151,44,0.55); }
+  }
   .dd-read-info { font-size: 12px; color: #888; margin: 12px 0 4px; }
   .dd-actions { display: flex; gap: 8px; margin-top: 16px; }
   .dd-actions button { flex: 1; }
@@ -1136,13 +1151,13 @@
   </div>
 
   <!-- GÖRSEL GALERİSİ LIGHTBOX (duyuruya birden fazla resim eklenmişse) -->
-  <div class="toast-overlay" id="galleryLightbox" style="z-index:1900;">
+  <div class="toast-overlay" id="galleryLightbox" style="z-index:3500;">
     <div class="toast-box" style="max-width:520px; padding:14px; background:#0B0F14;">
-      <button type="button" id="galleryCloseBtn" style="position:absolute; top:10px; right:14px; background:none; border:none; color:#fff; font-size:22px; cursor:pointer;">✕</button>
+      <button type="button" id="galleryCloseBtn" style="position:absolute; top:10px; right:14px; background:rgba(255,255,255,0.12); border:none; color:#fff; font-size:18px; width:32px; height:32px; border-radius:50%; cursor:pointer; z-index:2;">✕</button>
       <div style="position:relative;">
         <img id="galleryImg" src="" style="width:100%; max-height:70vh; object-fit:contain; border-radius:8px; display:block; background:#000;">
-        <button type="button" id="galleryPrevBtn" style="position:absolute; left:6px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:#fff; border:none; width:36px; height:36px; border-radius:50%; font-size:18px; cursor:pointer;">‹</button>
-        <button type="button" id="galleryNextBtn" style="position:absolute; right:6px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:#fff; border:none; width:36px; height:36px; border-radius:50%; font-size:18px; cursor:pointer;">›</button>
+        <button type="button" id="galleryPrevBtn" style="position:absolute; left:8px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.15); backdrop-filter:blur(4px); color:#fff; border:1px solid rgba(255,255,255,0.25); width:40px; height:40px; border-radius:50%; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center;">‹</button>
+        <button type="button" id="galleryNextBtn" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.15); backdrop-filter:blur(4px); color:#fff; border:1px solid rgba(255,255,255,0.25); width:40px; height:40px; border-radius:50%; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center;">›</button>
       </div>
       <div style="display:flex; align-items:center; justify-content:space-between; margin-top:10px;">
         <span id="galleryCounter" style="color:#ccc; font-size:12px;"></span>
@@ -2393,8 +2408,9 @@ async function openDuyuruDetay(id) {
   const nonImageAtt = (m.attachments || []).find(a => a && a.type !== 'image') || (m.attachment && m.attachment.type !== 'image' ? m.attachment : null);
   if (galleryImgs.length > 0) {
     document.getElementById('duyuruDetayAttach').innerHTML =
-      '<div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">' +
-        galleryImgs.map((a, i) => `<img src="${a.url}" data-gallery-open="${i}" style="width:72px; height:72px; object-fit:cover; border-radius:8px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.15);">`).join('') +
+      (galleryImgs.length > 1 ? `<div class="gallery-hint">🖼️ ${galleryImgs.length} Görsel — büyütmek için dokun</div>` : '') +
+      '<div class="gallery-strip">' +
+        galleryImgs.map((a, i) => `<img src="${a.url}" data-gallery-open="${i}" class="gallery-thumb" style="animation-delay:${i * 0.15}s;">`).join('') +
       '</div>' + (nonImageAtt ? renderAttachment(nonImageAtt) : '');
     document.getElementById('duyuruDetayAttach').querySelectorAll('[data-gallery-open]').forEach(img => {
       img.addEventListener('click', () => openGalleryLightbox(galleryImgs, m.id, parseInt(img.dataset.galleryOpen, 10)));
