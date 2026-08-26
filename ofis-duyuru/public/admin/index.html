@@ -318,6 +318,15 @@
       <div class="send-row"><button class="btn-primary" id="phoneSendBtn">Ekle</button></div>
       <div class="feedback-msg" id="phoneFeedback"></div>
     </div>
+    <div class="card">
+      <h2>📊 Excel'den Toplu Ekle</h2>
+      <div class="sub">Tek tek eklemek yerine, şablonu indirip İsim/Telefon sütunlarını doldur, sonra geri yükle. Aynı telefon numarası zaten listede varsa tekrar eklenmez.</div>
+      <a href="/api/phones/template" style="display:inline-block; text-decoration:none;"><button type="button" class="btn-primary" style="width:100%; background:var(--sage);">📥 Şablonu İndir (.xlsx)</button></a>
+      <label style="margin-top:16px;">Doldurulmuş Excel Dosyasını Seç</label>
+      <input type="file" id="phoneImportFile" accept=".xlsx,.xls">
+      <div class="send-row"><button class="btn-primary" id="phoneImportBtn">İçe Aktar</button></div>
+      <div class="feedback-msg" id="phoneImportFeedback"></div>
+    </div>
     <div class="list-section"><h3>Acil Durum Telefonları</h3><div id="phonesList" class="list-empty">Yükleniyor...</div></div>
   </div>
 
@@ -1155,6 +1164,29 @@ const loadPhones = () => setupSimpleList({
   editFields: [{ key: 'name', label: 'İsim' }, { key: 'number', label: 'Numara' }],
   validateEdit: (f) => (!f.name || !f.number) ? 'İsim ve numara gerekli.' : null,
 }).load;
+
+document.getElementById('phoneImportBtn').addEventListener('click', async () => {
+  const fileInput = document.getElementById('phoneImportFile');
+  const fb = document.getElementById('phoneImportFeedback');
+  if (!fileInput.files[0]) { fb.textContent = 'Önce bir Excel dosyası seç.'; fb.className = 'feedback-msg err'; return; }
+  const btn = document.getElementById('phoneImportBtn');
+  btn.disabled = true; fb.textContent = 'İçe aktarılıyor...'; fb.className = 'feedback-msg';
+  try {
+    const formData = new FormData();
+    formData.append('password', getAdminPassword());
+    formData.append('file', fileInput.files[0]);
+    const res = await fetch('/api/phones/import', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'İçe aktarılamadı.');
+    let msg = data.added + ' telefon eklendi.';
+    if (data.skippedDup) msg += ' ' + data.skippedDup + ' tanesi zaten kayıtlı olduğu için atlandı.';
+    if (data.skippedInvalid) msg += ' ' + data.skippedInvalid + ' satır eksik/geçersiz olduğu için atlandı.';
+    fb.textContent = msg; fb.className = 'feedback-msg ok';
+    fileInput.value = '';
+    loadPhones();
+  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
+  finally { btn.disabled = false; }
+});
 
 const loadTasks = () => setupSimpleList({
   endpoint: '/api/tasks', sendBtnId: 'taskSendBtn', feedbackId: 'taskFeedback', listId: 'tasksList', attachmentId: 'taskAttachment', countId: 'countIsler',
