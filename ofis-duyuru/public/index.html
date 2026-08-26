@@ -2812,7 +2812,11 @@ async function loadPhonesList() {
 document.getElementById('phoneSearchInput').addEventListener('input', (e) => {
   const q = e.target.value.trim().toLocaleLowerCase('tr');
   if (!q) { renderPhonesList(phonesAllItems); return; }
-  renderPhonesList(phonesAllItems.filter(p => (p.name || '').toLocaleLowerCase('tr').includes(q)));
+  const qDigits = q.replace(/\D/g, '');
+  renderPhonesList(phonesAllItems.filter(p =>
+    (p.name || '').toLocaleLowerCase('tr').includes(q) ||
+    (qDigits && (p.number || '').replace(/\D/g, '').includes(qDigits))
+  ));
 });
 
 loadPhonesList();
