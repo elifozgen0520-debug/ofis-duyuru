@@ -2170,9 +2170,8 @@ async function loadHistory() {
             <div class="li-title" style="cursor:pointer;" data-detay-id="${m.id}">${esc(m.title)}</div>
             <div class="li-body">${esc(m.body)}</div>
             <div class="attach-wrap" id="attach-${m.id}">${renderAttachment(m.attachment)}</div>
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-              <span class="li-detay-link" data-detay-id="${m.id}">🔎 Detay / Yorum Yap / Paylaş</span>
-              <span style="font-style:italic; font-size:11px; color:var(--muted); flex-shrink:0;" data-detay-id="${m.id}">devamını gör →</span>
+            <div style="border-top:1px solid rgba(11,42,76,0.08); margin-top:10px; padding-top:8px;">
+              <span class="li-detay-link" style="font-style:italic;" data-detay-id="${m.id}">🔎 Detay / Yorum Yap / Paylaş</span>
             </div>
             ${activeAdminPassword ? `<div style="margin-top:8px;"><span class="reads-badge" onclick="showReads('${m.id}')">👁 Okundu Bilgisi</span> <button class="btn-danger" onclick="deleteMessage('${m.id}')">Sil</button></div>` : ''}
           </div>
