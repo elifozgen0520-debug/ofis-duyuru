@@ -817,9 +817,15 @@
           <!-- DİNAMİK BİLDİRİM ZİL İKONU (AKTİF/KAPALI DURUMU & ANİMASYONU) -->
           <div class="bell-status-compact inactive" id="bellStatus" title="Bildirimler Kapalı (Açmak için tıklayın)">🔔</div>
         </div>
-        <!-- HOŞ GELDİN ROZETİ (sade, tıklanabilir değil — sadece durum göstergesi) -->
+        <!-- HESABIM / HOŞ GELDİN AÇILIR MENÜSÜ -->
         <div id="topWelcomeBar" class="top-welcome-badge">
           <span id="topWelcomeIcon">👤</span> <span id="topWelcomeText">Hesabım</span>
+          <div class="account-menu" id="accountMenu">
+            <button type="button" id="accMenuProfile">👤 Profil</button>
+            <button type="button" id="accMenuMeals">🍽️ Yemekhane Kayıtlarım &amp; Borç</button>
+            <button type="button" id="accMenuBloodBank">🩸 Kan Bankası</button>
+            <button type="button" id="accMenuPoll">📊 Anket</button>
+          </div>
         </div>
       </div>
     </div>
@@ -3421,9 +3427,38 @@ async function updateMealsWelcomeBar() {
       }
     } catch(e){}
   }
+  // Çıkış yapılmış (ya da hiç giriş yapılmamış): eski profil ismini DEĞİL, jenerik "Hesabım" göster —
+  // yoksa "çıkış yaptım ama ismim hâlâ görünüyor" gibi kafa karıştıran bir izlenim bırakıyor.
   topIcon.textContent = '👤';
-  topText.textContent = localStorage.getItem('selfName') || 'Hesabım';
+  topText.textContent = 'Hesabım';
 }
+
+document.getElementById('topWelcomeBar').addEventListener('click', (e) => {
+  e.stopPropagation();
+  document.getElementById('accountMenu').classList.toggle('show');
+});
+document.addEventListener('click', () => document.getElementById('accountMenu').classList.remove('show'));
+
+document.getElementById('accMenuProfile').addEventListener('click', (e) => {
+  e.stopPropagation();
+  document.getElementById('accountMenu').classList.remove('show');
+  document.getElementById('profileLink').click();
+});
+document.getElementById('accMenuMeals').addEventListener('click', (e) => {
+  e.stopPropagation();
+  document.getElementById('accountMenu').classList.remove('show');
+  document.getElementById('mealsLink').click();
+});
+document.getElementById('accMenuBloodBank').addEventListener('click', (e) => {
+  e.stopPropagation();
+  document.getElementById('accountMenu').classList.remove('show');
+  document.getElementById('bloodBankLink').click();
+});
+document.getElementById('accMenuPoll').addEventListener('click', (e) => {
+  e.stopPropagation();
+  document.getElementById('accountMenu').classList.remove('show');
+  document.getElementById('pollLink').click();
+});
 
 document.getElementById('mealsLink').addEventListener('click', (e) => {
   e.preventDefault();
