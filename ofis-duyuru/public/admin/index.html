@@ -319,11 +319,11 @@
       <div class="feedback-msg" id="phoneFeedback"></div>
     </div>
     <div class="card">
-      <h2>📊 Excel'den Toplu Ekle</h2>
-      <div class="sub">Tek tek eklemek yerine, şablonu indirip İsim/Telefon sütunlarını doldur, sonra geri yükle. Aynı telefon numarası zaten listede varsa tekrar eklenmez.</div>
-      <a href="/api/phones/template" style="display:inline-block; text-decoration:none;"><button type="button" class="btn-primary" style="width:100%; background:var(--sage);">📥 Şablonu İndir (.xlsx)</button></a>
-      <label style="margin-top:16px;">Doldurulmuş Excel Dosyasını Seç</label>
-      <input type="file" id="phoneImportFile" accept=".xlsx,.xls">
+      <h2>📊 CSV'den Toplu Ekle</h2>
+      <div class="sub">Tek tek eklemek yerine, şablonu indirip İsim/Telefon sütunlarını doldur, sonra geri yükle. Şablonu Excel'de açıp doldurabilir, "CSV UTF-8" olarak kaydedebilirsin. Aynı telefon numarası zaten listede varsa tekrar eklenmez.</div>
+      <a href="/api/phones/template" style="display:inline-block; text-decoration:none;"><button type="button" class="btn-primary" style="width:100%; background:var(--sage);">📥 Şablonu İndir (.csv)</button></a>
+      <label style="margin-top:16px;">Doldurulmuş CSV Dosyasını Seç</label>
+      <input type="file" id="phoneImportFile" accept=".csv,text/csv">
       <div class="send-row"><button class="btn-primary" id="phoneImportBtn">İçe Aktar</button></div>
       <div class="feedback-msg" id="phoneImportFeedback"></div>
     </div>
@@ -1168,7 +1168,7 @@ const loadPhones = () => setupSimpleList({
 document.getElementById('phoneImportBtn').addEventListener('click', async () => {
   const fileInput = document.getElementById('phoneImportFile');
   const fb = document.getElementById('phoneImportFeedback');
-  if (!fileInput.files[0]) { fb.textContent = 'Önce bir Excel dosyası seç.'; fb.className = 'feedback-msg err'; return; }
+  if (!fileInput.files[0]) { fb.textContent = 'Önce bir CSV dosyası seç.'; fb.className = 'feedback-msg err'; return; }
   const btn = document.getElementById('phoneImportBtn');
   btn.disabled = true; fb.textContent = 'İçe aktarılıyor...'; fb.className = 'feedback-msg';
   try {
