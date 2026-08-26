@@ -31,12 +31,8 @@
   body[data-theme="lacivert"] { --amber: #3E8FD0; --gold: #5AA8E0; --ink: #0F1F33; }
   body[data-theme="zeytin"] { --amber: #7C9A4A; --gold: #A3C15E; --ink: #1E2A1C; }
   body[data-theme="bordo"] { --amber: #B5384A; --gold: #D46B7A; --ink: #2A1418; }
-  /* BANKA TEMASI: canlı lacivert→camgöbeği gradyan + turuncu vurgular */
-  body[data-theme="banka"] {
-    --ink: #0A2F5C; --amber: #FF7A1A; --gold: #FF9A47; --sage: #16A34A; --clay: #E11D48;
-    --navy-deep: #0A2F5C; --navy-mid: #1665C0; --blue-bright: #3FA9F5;
-    --brand-gradient: linear-gradient(135deg, #0A2F5C 0%, #1665C0 55%, #3FA9F5 100%);
-  }
+  /* NOT: "Damla" teması artık ayrı bir varyant değil — kök (:root) renk paleti zaten bu canlı
+     lacivert→camgöbeği + turuncu palet. Kullanıcı "varsayılan"ı seçtiğinde otomatik bu oluyor. */
 
   * { box-sizing: border-box; }
 
@@ -61,6 +57,17 @@
   }
   h1 { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: clamp(20px, 6vw, 26px); margin: 0; letter-spacing: -0.01em; }
   .pin-count { font-size: 12px; color: rgba(255,255,255,0.82); }
+  .pin-count::after { content: ' abone'; }
+  #subCountNum { display: inline-block; font-weight: 800; font-size: 15px; color: #fff; animation: sub-pop 0.5s ease; }
+  @keyframes sub-pop { from { opacity: 0; transform: translateY(-4px) scale(0.85); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+  .theme-swatches { display: flex; align-items: center; gap: 6px; }
+  .theme-dot {
+    width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5);
+    padding: 0; cursor: pointer; transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+  .theme-dot:hover { transform: scale(1.15); }
+  .theme-dot.active { border-color: #fff; box-shadow: 0 0 0 2px rgba(255,255,255,0.25); }
 
   /* ÜST HOŞGELDİN MESAJI BARI (artık tıklanabilir, açılır menülü) */
   .top-welcome-badge {
@@ -445,8 +452,13 @@
     font-size: 11.5px; z-index: 50; display: flex; align-items: center;
     justify-content: space-around;
   }
-  .site-footer a { color: var(--muted); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
-  .site-footer a:hover { color: var(--paper); }
+  .site-footer a {
+    color: var(--muted); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;
+    padding: 6px 9px; border-radius: 20px; border: 1px solid transparent; transition: all 0.18s ease;
+  }
+  .site-footer a:hover, .site-footer a:active {
+    color: var(--paper); border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.08);
+  }
 
   /* ORTADAKİ KURUM LOGOSU */
   .footer-center-logo-wrap {
@@ -540,7 +552,7 @@
   .modal-backdrop.show { display: block; opacity: 1; }
 
   /* POPUP SAYFALARI */
-  #feedbackModal, #profileModal, #mealsModal, #pollModal, #bloodBankModal {
+  #feedbackModal, #profileModal, #mealsModal, #pollModal, #bloodBankModal, #forgotPassModal {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
     width: min(480px, calc(100vw - 32px)); max-height: 85vh; overflow-y: auto;
     z-index: 1700; margin-bottom: 0;
@@ -553,8 +565,8 @@
     from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
     to { opacity: 0; transform: translate(-50%, -50%) scale(0.94); }
   }
-  #feedbackModal.anim-open, #profileModal.anim-open, #mealsModal.anim-open, #chatModal.anim-open, #pollModal.anim-open, #bloodBankModal.anim-open { animation: popup-in 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
-  #feedbackModal.anim-close, #profileModal.anim-close, #mealsModal.anim-close, #chatModal.anim-close, #pollModal.anim-close, #bloodBankModal.anim-close { animation: popup-out 0.2s ease forwards; }
+  #feedbackModal.anim-open, #profileModal.anim-open, #mealsModal.anim-open, #chatModal.anim-open, #pollModal.anim-open, #bloodBankModal.anim-open, #forgotPassModal.anim-open { animation: popup-in 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
+  #feedbackModal.anim-close, #profileModal.anim-close, #mealsModal.anim-close, #chatModal.anim-close, #pollModal.anim-close, #bloodBankModal.anim-close, #forgotPassModal.anim-close { animation: popup-out 0.2s ease forwards; }
 </style>
 </head>
 <body>
@@ -714,6 +726,9 @@
         <input type="email" id="wizLoginEmail" placeholder="ornek@gmail.com">
         <label>Şifre</label>
         <input type="password" id="wizLoginPass" placeholder="Şifren">
+        <div style="text-align:right; margin-top:4px;">
+          <a href="#" id="wizForgotPassLink" style="font-size:11.5px; color:var(--clay); font-weight:600;">Şifremi unuttum</a>
+        </div>
         <label style="display:flex; align-items:center; gap:8px; margin-top:12px; cursor:pointer; text-transform:none; letter-spacing:normal; font-weight:400; font-size:12.5px; color:#555;">
           <input type="checkbox" id="wizRememberMe" checked>
           <span>Bu cihazda beni hatırla</span>
@@ -795,36 +810,39 @@
 <div class="wrap">
   <header>
     <div style="display:flex; align-items:center; gap:10px;">
-      <img src="/icon-192.png" alt="" class="sway-logo" style="width:34px; height:34px; border-radius:50%;">
+      <img src="/icon-192.png" alt="Kurum logosu — büyütmek için tıklayın" class="sway-logo" id="orgLogoBtn" style="width:34px; height:34px; border-radius:50%; cursor:pointer;">
       <div>
         <div style="display:flex; align-items:center; gap:8px;">
           <h1>Duyurular</h1>
           <!-- DİNAMİK BİLDİRİM ZİL İKONU (AKTİF/KAPALI DURUMU & ANİMASYONU) -->
           <div class="bell-status-compact inactive" id="bellStatus" title="Bildirimler Kapalı (Açmak için tıklayın)">🔔</div>
         </div>
-        <!-- HESABIM / HOŞ GELDİN AÇILIR MENÜSÜ -->
+        <!-- HOŞ GELDİN ROZETİ (sade, tıklanabilir değil — sadece durum göstergesi) -->
         <div id="topWelcomeBar" class="top-welcome-badge">
           <span id="topWelcomeIcon">👤</span> <span id="topWelcomeText">Hesabım</span>
-          <div class="account-menu" id="accountMenu">
-            <button type="button" id="accMenuProfile">👤 Profil</button>
-            <button type="button" id="accMenuMeals">🍽️ Yemekhane Kayıtlarım &amp; Borç</button>
-            <button type="button" id="accMenuBloodBank">🩸 Kan Bankası</button>
-            <button type="button" id="accMenuPoll">📊 Anket</button>
-          </div>
         </div>
       </div>
     </div>
-    <div style="display:flex; align-items:center; gap:10px;">
-      <select id="themeSelect" style="background:rgba(255,255,255,0.12); color:#fff; border:1px solid rgba(255,255,255,0.35); border-radius:20px; font-size:11px; padding:4px 8px;">
-        <option value="klasik">🎨 Varsayılan</option>
-        <option value="lacivert">🔵 Lacivert</option>
-        <option value="zeytin">🟢 Zeytin</option>
-        <option value="bordo">🔴 Bordo</option>
-        <option value="banka">🏦 Banka</option>
-      </select>
-      <span class="pin-count" id="subCount">— abone</span>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <!-- HIZLI TEMA SEÇİCİ: küçük renk yuvarlakları, tıklayınca hemen uygulanır. Detaylı seçim Profil'de. -->
+      <div class="theme-swatches" id="themeSwatches" title="Tema değiştir">
+        <button type="button" class="theme-dot" data-theme-val="klasik" style="background:linear-gradient(135deg,#0B2A4C,#1E88D0);" title="Damla (varsayılan)"></button>
+        <button type="button" class="theme-dot" data-theme-val="lacivert" style="background:linear-gradient(135deg,#0F1F33,#3E8FD0);" title="Lacivert"></button>
+        <button type="button" class="theme-dot" data-theme-val="zeytin" style="background:linear-gradient(135deg,#1E2A1C,#7C9A4A);" title="Zeytin"></button>
+        <button type="button" class="theme-dot" data-theme-val="bordo" style="background:linear-gradient(135deg,#2A1418,#B5384A);" title="Bordo"></button>
+      </div>
+      <span class="pin-count" id="subCount"><span id="subCountNum">—</span></span>
     </div>
   </header>
+
+  <!-- KURUM LOGOSU POPUP -->
+  <div class="toast-overlay" id="orgLogoOverlay">
+    <div class="toast-box" style="max-width:320px;">
+      <img src="/icon-192.png" alt="Kurum logosu" style="width:140px; height:140px; border-radius:50%; margin:0 auto 14px; display:block; box-shadow:0 10px 30px rgba(0,0,0,0.3);">
+      <div class="ttitle" id="orgLogoTitle">Kurum Adı</div>
+      <button type="button" class="btn-primary" id="orgLogoCloseBtn" style="width:100%; margin-top:14px;">Kapat</button>
+    </div>
+  </div>
 
   <div class="status-card" id="subscribeCard">
     <h2>Bildirimleri Aç</h2>
@@ -951,6 +969,9 @@
           <input type="email" id="inlineMealsLoginEmail" placeholder="ornek@gmail.com">
           <label>Şifre</label>
           <input type="password" id="inlineMealsLoginPass" placeholder="Şifren">
+          <div style="text-align:right; margin-top:4px;">
+            <a href="#" id="inlineMealsForgotPassLink" style="font-size:11.5px; color:var(--clay); font-weight:600;">Şifremi unuttum</a>
+          </div>
           <div class="send-row"><button class="btn-primary" id="inlineMealsLoginBtn" style="width:100%;">Giriş Yap</button></div>
           <div class="feedback-msg" id="inlineMealsLoginFeedback"></div>
           <div style="text-align:center; margin-top:14px; font-size:12.5px; color:#777;">
@@ -961,10 +982,12 @@
         <div id="inlineMealsStepRecords" style="display:none;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
             <div class="sub" style="margin:0;" id="inlineMealsRecordsWho"></div>
-            <button type="button" id="inlineMealsLogoutBtn" style="background:none; border:1px solid #ccc; color:#888; font-size:11px; padding:5px 10px; border-radius:20px;">Çıkış</button>
+            <button type="button" id="inlineMealsLogoutBtn" style="background:none; border:1px solid #ccc; color:#888; font-size:11px; padding:5px 10px; border-radius:20px;">🚪 Çıkış</button>
           </div>
+          <label style="margin-top:0;">Dönem</label>
+          <select id="inlineMealsDonemSelect" style="margin-bottom:12px;"></select>
           <div id="inlineMealsDebtBox" style="background:var(--ink); color:var(--paper); border-radius:10px; padding:16px; text-align:center; margin-bottom:14px;">
-            <div style="font-size:11px; opacity:0.7; text-transform:uppercase; letter-spacing:0.05em;">Toplam Borç</div>
+            <div style="font-size:11px; opacity:0.7; text-transform:uppercase; letter-spacing:0.05em;">Seçili Dönem Borcu</div>
             <div style="font-family:'Manrope',sans-serif; font-size:1.8rem; font-weight:700;" id="inlineMealsDebtAmount">—</div>
           </div>
           <div id="inlineMealsRecordsList" class="list-empty">Yükleniyor...</div>
@@ -1123,6 +1146,16 @@
     </label>
     <div class="send-row"><button class="btn-primary" id="profileSaveBtn" style="width:100%;">Kaydet</button></div>
     <div class="feedback-msg" id="profileFeedback"></div>
+
+    <label>Görünüm Teması</label>
+    <select id="profileThemeSelect">
+      <option value="klasik">💧 Damla (varsayılan)</option>
+      <option value="lacivert">🔵 Lacivert</option>
+      <option value="zeytin">🟢 Zeytin</option>
+      <option value="bordo">🔴 Bordo</option>
+    </select>
+
+    <button type="button" id="profileGoBloodBankBtn" class="btn-primary" style="width:100%; margin-top:14px; background:var(--clay,#B5674A);">🩸 Kan Bankası'nı Aç</button>
   </div>
 
   <!-- ÖNERİ - İLETİŞİM MODALI (GÜNCEL) -->
@@ -1133,6 +1166,8 @@
     </div>
     <label>Adınız Soyadınız (Opsiyonel)</label>
     <input type="text" id="feedbackName" placeholder="İsimsiz bırakabilirsiniz">
+    <label>Telefon (Opsiyonel — size geri dönüş yapabilmemiz için)</label>
+    <input type="tel" id="feedbackPhone" placeholder="Örn: 0555 xxx xx xx">
     <label>Mesajınız / Duyuru Metniniz</label>
     <textarea id="feedbackText" placeholder="İletinizi buraya yazabilirsiniz..."></textarea>
     <div class="send-row"><button class="btn-primary" id="feedbackSendBtn">Gönder</button></div>
@@ -1226,6 +1261,30 @@
       <option value="0 Rh-">0 Rh-</option>
     </select>
     <div id="bloodBankResults" class="list-empty" style="margin-top:14px;">Bir kan grubu seç.</div>
+  </div>
+
+  <!-- ŞİFREMİ UNUTTUM MODALI (her iki giriş formundan da kullanılır) -->
+  <div class="card" id="forgotPassModal" style="display:none;">
+    <div class="card-header"><h2>🔑 Şifremi Unuttum</h2><button class="card-close" data-close="forgotPassModal" aria-label="Kapat">✕</button></div>
+
+    <div id="forgotStepEmail">
+      <div class="sub">Kayıtlı e-postana 6 haneli bir kod göndereceğiz.</div>
+      <label>E-posta</label>
+      <input type="email" id="forgotEmail" placeholder="ornek@gmail.com">
+      <div class="send-row"><button class="btn-primary" id="forgotSendCodeBtn" style="width:100%;">Kod Gönder</button></div>
+      <div class="feedback-msg" id="forgotEmailFeedback"></div>
+    </div>
+
+    <div id="forgotStepReset" style="display:none;">
+      <div class="sub" id="forgotResetNote">E-postana gönderilen kodu ve yeni şifreni gir.</div>
+      <label>Kod</label>
+      <input type="text" id="forgotCode" maxlength="6" inputmode="numeric" placeholder="000000" style="text-align:center; font-size:1.4rem; letter-spacing:6px; font-weight:800;">
+      <label>Yeni Şifre</label>
+      <input type="password" id="forgotNewPass" placeholder="En az 6 karakter">
+      <div class="send-row"><button class="btn-primary" id="forgotResetBtn" style="width:100%;">Şifreyi Güncelle</button></div>
+      <button type="button" id="forgotResendBtn" style="width:100%; background:none; color:#777; font-weight:600; font-size:12.5px; margin-top:8px;">Kodu Tekrar Gönder</button>
+      <div class="feedback-msg" id="forgotResetFeedback"></div>
+    </div>
   </div>
 
   <!-- YÖNETİCİ MODALI -->
@@ -1324,15 +1383,15 @@
 
 <!-- SABİT ALT FOOTER -->
 <footer class="site-footer">
-  <a href="#" id="profileLink" style="display:none;">👤 Profilim</a>
+  <a href="#" id="profileLink">👤 Profil</a>
   <a href="#" id="chatLink">🗨️ Sohbet</a>
 
   <div class="footer-center-logo-wrap" id="centerLogoBtn" title="Öneri ve İletişim">
     <img src="/icon-192.png" alt="Amasya Valiliği" class="footer-center-logo">
   </div>
 
-  <a href="#" id="mealsLink" style="display:none;">🍽️ Yemek Kaydım</a>
-  <a href="#" id="pollLink" style="display:none;">📊 Anket</a>
+  <a href="#" id="pollLink">📊 Anket</a>
+  <a href="#" id="mealsLink">🍽️ Yemekhane</a>
   <a href="#" id="bloodBankLink" style="display:none;">🩸 Kan Bankası</a>
   <a href="/admin/" id="adminSecretBtn" title="" style="color:var(--line); text-decoration:none; padding:0 4px; font-size:14px;">•</a>
 </footer>
@@ -1382,15 +1441,104 @@ window.addEventListener('load', () => {
   updateMealsWelcomeBar();
 });
 
-const themeSelect = document.getElementById('themeSelect');
 const savedTheme = localStorage.getItem('theme') || 'klasik';
-if (savedTheme !== 'klasik') document.body.setAttribute('data-theme', savedTheme);
-themeSelect.value = savedTheme;
-themeSelect.addEventListener('change', () => {
-  const val = themeSelect.value;
+function applyTheme(val) {
   if (val === 'klasik') document.body.removeAttribute('data-theme');
   else document.body.setAttribute('data-theme', val);
   localStorage.setItem('theme', val);
+  document.querySelectorAll('.theme-dot').forEach(d => d.classList.toggle('active', d.dataset.themeVal === val));
+  const fullSelect = document.getElementById('profileThemeSelect');
+  if (fullSelect) fullSelect.value = val;
+}
+applyTheme(savedTheme);
+
+document.querySelectorAll('.theme-dot').forEach(dot => {
+  dot.addEventListener('click', () => applyTheme(dot.dataset.themeVal));
+});
+
+document.getElementById('orgLogoBtn').addEventListener('click', () => {
+  document.getElementById('orgLogoTitle').textContent = document.title || 'Kurum';
+  document.getElementById('orgLogoOverlay').classList.add('show');
+});
+document.getElementById('orgLogoCloseBtn').addEventListener('click', () => {
+  document.getElementById('orgLogoOverlay').classList.remove('show');
+});
+document.getElementById('orgLogoOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'orgLogoOverlay') document.getElementById('orgLogoOverlay').classList.remove('show');
+});
+
+// ---------- ŞİFREMİ UNUTTUM (her iki giriş formundan da açılır) ----------
+let forgotPendingEmail = '';
+
+function openForgotPassModal(prefillEmail) {
+  document.getElementById('forgotStepEmail').style.display = 'block';
+  document.getElementById('forgotStepReset').style.display = 'none';
+  document.getElementById('forgotEmail').value = prefillEmail || '';
+  document.getElementById('forgotEmailFeedback').textContent = '';
+  document.getElementById('forgotResetFeedback').textContent = '';
+  openModal('forgotPassModal');
+}
+
+document.getElementById('wizForgotPassLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  openForgotPassModal(document.getElementById('wizLoginEmail').value.trim());
+});
+document.getElementById('inlineMealsForgotPassLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  openForgotPassModal(document.getElementById('inlineMealsLoginEmail').value.trim());
+});
+
+document.getElementById('forgotSendCodeBtn').addEventListener('click', async () => {
+  const email = document.getElementById('forgotEmail').value.trim();
+  const fb = document.getElementById('forgotEmailFeedback');
+  if (!email) { fb.textContent = 'E-posta gerekli.'; fb.className = 'feedback-msg err'; return; }
+  const btn = document.getElementById('forgotSendCodeBtn');
+  btn.disabled = true; fb.textContent = 'Gönderiliyor...'; fb.className = 'feedback-msg';
+  try {
+    await fetch('/api/self-forgot-password', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    // Güvenlik amacıyla e-posta kayıtlı olsa da olmasa da aynı mesajı gösteriyoruz.
+    forgotPendingEmail = email;
+    document.getElementById('forgotResetNote').textContent = email + ' adresi sistemimizde kayıtlıysa, oraya bir kod gönderdik.';
+    document.getElementById('forgotStepEmail').style.display = 'none';
+    document.getElementById('forgotStepReset').style.display = 'block';
+  } catch { fb.textContent = 'Bağlantı hatası, tekrar deneyin.'; fb.className = 'feedback-msg err'; }
+  finally { btn.disabled = false; }
+});
+
+document.getElementById('forgotResendBtn').addEventListener('click', async () => {
+  const fb = document.getElementById('forgotResetFeedback');
+  try {
+    await fetch('/api/self-forgot-password', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: forgotPendingEmail })
+    });
+    fb.textContent = 'Yeni kod gönderildi (kayıtlıysa).'; fb.className = 'feedback-msg ok';
+  } catch { fb.textContent = 'Gönderilemedi.'; fb.className = 'feedback-msg err'; }
+});
+
+document.getElementById('forgotResetBtn').addEventListener('click', async () => {
+  const kod = document.getElementById('forgotCode').value.trim();
+  const yeniSifre = document.getElementById('forgotNewPass').value;
+  const fb = document.getElementById('forgotResetFeedback');
+  if (!kod || yeniSifre.length < 6) { fb.textContent = 'Kodu girin ve en az 6 karakterli yeni şifre belirleyin.'; fb.className = 'feedback-msg err'; return; }
+  const btn = document.getElementById('forgotResetBtn');
+  btn.disabled = true; fb.textContent = 'Güncelleniyor...'; fb.className = 'feedback-msg';
+  try {
+    const res = await fetch('/api/self-reset-password', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: forgotPendingEmail, kod, yeniSifre })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Güncellenemedi.');
+    showToast('Şifren güncellendi, şimdi giriş yapabilirsin.', 'ok');
+    closeModal('forgotPassModal');
+    document.getElementById('wizLoginEmail').value = forgotPendingEmail;
+    document.getElementById('inlineMealsLoginEmail').value = forgotPendingEmail;
+  } catch (e) { fb.textContent = e.message; fb.className = 'feedback-msg err'; }
+  finally { btn.disabled = false; }
 });
 
 function getDeviceId() {
@@ -1714,11 +1862,15 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 async function refreshCount() {
+  const numEl = document.getElementById('subCountNum');
   try {
     const res = await fetch('/api/subscriber-count');
     const data = await res.json();
-    document.getElementById('subCount').textContent = data.total + ' abone';
-  } catch { document.getElementById('subCount').textContent = ''; }
+    numEl.style.animation = 'none';
+    numEl.offsetHeight; // reflow — animasyonu her güncellemede yeniden tetiklemek için
+    numEl.style.animation = '';
+    numEl.textContent = data.total;
+  } catch { numEl.textContent = '—'; }
 }
 
 function setBellStatusUI(active) {
@@ -2508,7 +2660,7 @@ document.getElementById('islerSubTabPhones').addEventListener('click', () => {
 
 // --- MODALLAR ---
 function openModal(modalId) {
-  ['profileModal', 'feedbackModal', 'adminModal', 'chatModal', 'mealsModal', 'pollModal', 'bloodBankModal'].forEach(id => {
+  ['profileModal', 'feedbackModal', 'adminModal', 'chatModal', 'mealsModal', 'pollModal', 'bloodBankModal', 'forgotPassModal'].forEach(id => {
     if (id !== modalId) {
       const el = document.getElementById(id);
       if (el) {
@@ -2550,7 +2702,7 @@ document.querySelectorAll('.card-close').forEach(btn => {
 });
 
 document.getElementById('feedbackBackdrop').addEventListener('click', () => {
-  ['profileModal', 'feedbackModal', 'adminModal', 'chatModal', 'mealsModal', 'pollModal', 'bloodBankModal'].forEach(id => closeModal(id));
+  ['profileModal', 'feedbackModal', 'adminModal', 'chatModal', 'mealsModal', 'pollModal', 'bloodBankModal', 'forgotPassModal'].forEach(id => closeModal(id));
 });
 
 document.getElementById('centerLogoBtn').addEventListener('click', (e) => {
@@ -2567,7 +2719,7 @@ document.getElementById('profileLink').addEventListener('click', async (e) => {
   document.getElementById('profileBloodType').value = localStorage.getItem('selfBloodType') || '';
   renderProfileAccountBox();
   try {
-    const res = await fetch('/api/self-profile/' + getDeviceId());
+    const res = await fetch('/api/self-profile/' + getDeviceId() + '?_=' + Date.now(), { cache: 'no-store' });
     const data = await res.json();
     if (data.profile) {
       if (data.profile.bloodType) document.getElementById('profileBloodType').value = data.profile.bloodType;
@@ -2590,7 +2742,7 @@ function renderProfileAccountBox() {
     box.style.background = '#f0fdf4'; box.style.border = '1px solid #dcfce7';
     box.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
         <span>✓ Yemekhane hesabına bağlısın.</span>
-        <button type="button" id="profileLogoutBtn" style="background:none; border:1px solid #ccc; color:#888; font-size:11px; padding:5px 10px; border-radius:20px;">Çıkış</button>
+        <button type="button" id="profileLogoutBtn" style="background:none; border:1px solid #ccc; color:#888; font-size:11px; padding:5px 10px; border-radius:20px;">🚪 Çıkış</button>
       </div>`;
     document.getElementById('profileLogoutBtn').addEventListener('click', () => {
       mealsSetToken(null);
@@ -2643,16 +2795,24 @@ document.getElementById('profileSaveBtn').addEventListener('click', async () => 
   } catch { fb.textContent = ''; showToast('Hata oluştu.', 'err'); }
 });
 
+document.getElementById('profileThemeSelect').addEventListener('change', (e) => applyTheme(e.target.value));
+document.getElementById('profileGoBloodBankBtn').addEventListener('click', () => {
+  closeModal('profileModal');
+  document.getElementById('bloodBankLink').click();
+});
+
 // ÖNERİ - İLETİŞİM GÖNDERME
 document.getElementById('feedbackSendBtn').addEventListener('click', async () => {
   const text = document.getElementById('feedbackText').value.trim();
   const name = document.getElementById('feedbackName').value.trim();
+  const phone = document.getElementById('feedbackPhone').value.trim();
   const fb = document.getElementById('feedbackModalFeedback');
   if (!text) { showToast('Mesaj boş bırakılamaz.', 'err'); return; }
   try {
-    const res = await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, name }) });
+    const res = await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, name, phone }) });
     if (!res.ok) throw new Error();
     document.getElementById('feedbackText').value = '';
+    document.getElementById('feedbackPhone').value = '';
     fb.textContent = ''; showToast('İletildi, teşekkürler.', 'ok');
     closeModal('feedbackModal');
   } catch { showToast('Gönderilemedi.', 'err'); }
@@ -3286,7 +3446,7 @@ async function updateMealsWelcomeBar() {
       const data = await res.json();
       if (data.ok && data.adSoyad) {
         topIcon.textContent = '👋';
-        topText.textContent = 'Hoşgeldin, ' + data.adSoyad;
+        topText.innerHTML = 'Hoşgeldin, ' + esc(data.adSoyad) + ' <span title="Doğrulanmış hesap" style="color:#7ED8A0;">✓</span>';
         return;
       }
     } catch(e){}
@@ -3294,33 +3454,6 @@ async function updateMealsWelcomeBar() {
   topIcon.textContent = '👤';
   topText.textContent = localStorage.getItem('selfName') || 'Hesabım';
 }
-
-document.getElementById('topWelcomeBar').addEventListener('click', (e) => {
-  e.stopPropagation();
-  document.getElementById('accountMenu').classList.toggle('show');
-});
-document.addEventListener('click', () => document.getElementById('accountMenu').classList.remove('show'));
-
-document.getElementById('accMenuProfile').addEventListener('click', (e) => {
-  e.stopPropagation();
-  document.getElementById('accountMenu').classList.remove('show');
-  document.getElementById('profileLink').click();
-});
-document.getElementById('accMenuMeals').addEventListener('click', (e) => {
-  e.stopPropagation();
-  document.getElementById('accountMenu').classList.remove('show');
-  document.getElementById('mealsLink').click();
-});
-document.getElementById('accMenuBloodBank').addEventListener('click', (e) => {
-  e.stopPropagation();
-  document.getElementById('accountMenu').classList.remove('show');
-  document.getElementById('bloodBankLink').click();
-});
-document.getElementById('accMenuPoll').addEventListener('click', (e) => {
-  e.stopPropagation();
-  document.getElementById('accountMenu').classList.remove('show');
-  document.getElementById('pollLink').click();
-});
 
 document.getElementById('mealsLink').addEventListener('click', (e) => {
   e.preventDefault();
@@ -3335,7 +3468,7 @@ document.getElementById('mealsLink').addEventListener('click', (e) => {
     const n = localStorage.getItem('selfName'); if (n) document.getElementById('inlineMealsRegName').value = n;
     const p = localStorage.getItem('selfPhone'); if (p) document.getElementById('inlineMealsRegPhone').value = p;
     const b = localStorage.getItem('selfBloodType'); if (b) document.getElementById('inlineMealsRegBloodType').value = b;
-    fetch('/api/self-profile/' + getDeviceId()).then(r => r.json()).then(data => {
+    fetch('/api/self-profile/' + getDeviceId() + '?_=' + Date.now(), { cache: 'no-store' }).then(r => r.json()).then(data => {
       if (data.profile && data.profile.avatar) {
         const img = document.getElementById('inlineMealsAvatarPreview');
         img.src = data.profile.avatar; img.style.display = 'block';
@@ -3367,7 +3500,7 @@ async function loadBloodBank() {
   if (!type) { el.className = 'list-empty'; el.textContent = 'Bir kan grubu seç.'; return; }
   el.className = 'list-empty'; el.textContent = 'Aranıyor...';
   try {
-    const res = await fetch('/api/blood-bank?type=' + encodeURIComponent(type));
+    const res = await fetch('/api/blood-bank?type=' + encodeURIComponent(type) + '&_=' + Date.now(), { cache: 'no-store' });
     const data = await res.json();
     const list = data.results || [];
     if (list.length === 0) {
@@ -3594,16 +3727,19 @@ document.getElementById('inlineMealsLoginBtn').addEventListener('click', async (
 
 document.getElementById('inlineMealsLogoutBtn').addEventListener('click', () => {
   mealsSetToken(null);
+  document.getElementById('inlineMealsDonemSelect').innerHTML = '';
   inlineMealsShowStep('inlineMealsStepLogin');
 });
 
-async function inlineMealsLoadRecords() {
+async function inlineMealsLoadRecords(donemId) {
   const listEl = document.getElementById('inlineMealsRecordsList');
   const whoEl = document.getElementById('inlineMealsRecordsWho');
   const debtEl = document.getElementById('inlineMealsDebtAmount');
+  const donemSel = document.getElementById('inlineMealsDonemSelect');
   listEl.className = 'list-empty'; listEl.textContent = 'Yükleniyor...';
   try {
-    const res = await fetch('/api/my-meals', { headers: { 'Authorization': 'Bearer ' + mealsGetToken() } });
+    const url = '/api/my-meals' + (donemId ? '?donem_id=' + encodeURIComponent(donemId) : '');
+    const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + mealsGetToken() } });
     const data = await res.json();
     if (res.status === 401) { mealsSetToken(null); inlineMealsShowStep('inlineMealsStepLogin'); return; }
     if (!data.ok) { listEl.textContent = data.error || 'Kayıtlar alınamadı.'; return; }
@@ -3611,17 +3747,25 @@ async function inlineMealsLoadRecords() {
     whoEl.textContent = `${data.adSoyad || ''}${data.birim ? ' · ' + data.birim : ''}`;
     debtEl.textContent = (data.toplamBorc || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₺';
 
+    // Dönem comboboxını sadece ilk yüklemede (boşsa) dolduruyoruz, sonra kullanıcı kendi seçiyor.
+    if (data.donemler && donemSel.options.length === 0) {
+      donemSel.innerHTML = data.donemler.map(d =>
+        `<option value="${d.id}">${esc(d.ad)} (${d.baslangic} – ${d.bitis})</option>`
+      ).join('');
+    }
+    if (data.seciliDonem) donemSel.value = data.seciliDonem.id;
+
     if (data.adSoyad) {
       const topIcon = document.getElementById('topWelcomeIcon');
       const topText = document.getElementById('topWelcomeText');
       if (topIcon && topText) {
         topIcon.textContent = '👋';
-        topText.textContent = 'Hoşgeldin, ' + data.adSoyad;
+        topText.innerHTML = 'Hoşgeldin, ' + esc(data.adSoyad) + ' <span title="Doğrulanmış hesap" style="color:#7ED8A0;">✓</span>';
       }
     }
 
     if (!data.kayitlar || data.kayitlar.length === 0) {
-      listEl.className = 'list-empty'; listEl.textContent = 'Henüz yemek kaydın yok.'; return;
+      listEl.className = 'list-empty'; listEl.textContent = 'Bu dönemde yemek kaydın yok.'; return;
     }
     listEl.className = '';
     listEl.innerHTML = data.kayitlar.map(k => {
@@ -3635,6 +3779,10 @@ async function inlineMealsLoadRecords() {
     }).join('');
   } catch { listEl.className = 'list-empty'; listEl.textContent = 'Yüklenemedi.'; }
 }
+
+document.getElementById('inlineMealsDonemSelect').addEventListener('change', (e) => {
+  inlineMealsLoadRecords(e.target.value);
+});
 </script>
 </body>
 </html>
