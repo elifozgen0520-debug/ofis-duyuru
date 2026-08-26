@@ -1287,6 +1287,18 @@
     <div id="bloodBankResults" class="list-empty" style="margin-top:14px;">Bir kan grubu seç.</div>
   </div>
 
+  <!-- ÜYELİK GEREKLİ POPUP (Anket/Kan Bankası/Profil/Yemekhane'ye giriş yapmadan girilince açılır) -->
+  <div class="toast-overlay" id="authRequiredOverlay">
+    <div class="toast-box">
+      <div class="ticon">🔒</div>
+      <div class="ttitle" id="authRequiredTitle">Üyelik Gerekli</div>
+      <div class="tmsg" id="authRequiredMsg">Bu özelliği kullanmak için üye girişi yapmalı ya da üye olmalısın.</div>
+      <button type="button" class="btn-primary" id="authRequiredLoginBtn" style="width:100%; margin-bottom:8px;">🔑 Üye Girişi Yap</button>
+      <button type="button" class="btn-primary" id="authRequiredRegisterBtn" style="width:100%; background:var(--sage,#6B8F71); margin-bottom:8px;">📝 Üye Ol</button>
+      <button type="button" id="authRequiredCloseBtn" style="width:100%; background:none; color:#999; font-weight:600;">Vazgeç</button>
+    </div>
+  </div>
+
   <!-- ŞİFREMİ UNUTTUM MODALI (her iki giriş formundan da kullanılır) -->
   <div class="card" id="forgotPassModal" style="display:none;">
     <div class="card-header"><h2>🔑 Şifremi Unuttum</h2><button class="card-close" data-close="forgotPassModal" aria-label="Kapat">✕</button></div>
@@ -2763,13 +2775,31 @@ document.getElementById('centerLogoBtn').addEventListener('click', (e) => {
 
 // Tek üyelik ilkesi: Profil / Yemekhane Kayıtlarım / Kan Bankası / Anket hepsi AYNI
 // e-posta+şifre hesabına bağlı. Giriş yapılmamışsa bu alanlardan hiçbiri doğrudan açılmaz,
-// bunun yerine kullanıcı üye giriş/kayıt ekranına yönlendirilir.
+// bunun yerine net bir "Üye Girişi Yap / Üye Ol" popup'ı gösterilir.
 function requireMealsLogin(featureLabel) {
   if (mealsGetToken()) return true;
-  showToast((featureLabel || 'Bu özellik') + ' için önce üye girişi yapmalı ya da üye olmalısın.', 'err');
-  document.getElementById('mealsLink').click();
+  document.getElementById('authRequiredTitle').textContent = (featureLabel || 'Bu özellik') + ' İçin Üyelik Gerekli';
+  document.getElementById('authRequiredMsg').textContent = (featureLabel || 'Bu özelliği kullanmak') + ' için üye girişi yapmalı ya da üye olmalısın.';
+  document.getElementById('authRequiredOverlay').classList.add('show');
   return false;
 }
+
+document.getElementById('authRequiredCloseBtn').addEventListener('click', () => {
+  document.getElementById('authRequiredOverlay').classList.remove('show');
+});
+document.getElementById('authRequiredOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'authRequiredOverlay') document.getElementById('authRequiredOverlay').classList.remove('show');
+});
+document.getElementById('authRequiredLoginBtn').addEventListener('click', () => {
+  document.getElementById('authRequiredOverlay').classList.remove('show');
+  document.getElementById('mealsLink').click();
+  setTimeout(() => inlineMealsShowStep('inlineMealsStepLogin'), 50);
+});
+document.getElementById('authRequiredRegisterBtn').addEventListener('click', () => {
+  document.getElementById('authRequiredOverlay').classList.remove('show');
+  document.getElementById('mealsLink').click();
+  setTimeout(() => inlineMealsShowStep('inlineMealsStepRegister'), 50);
+});
 
 // PROFİL
 document.getElementById('profileLink').addEventListener('click', async (e) => {
